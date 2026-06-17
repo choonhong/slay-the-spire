@@ -1,0 +1,5002 @@
+[
+  {
+    "id": "CARD.BIG_BANG",
+    "name": "Big Bang",
+    "pickRate": 82.2,
+    "winRateDelta": 31.5,
+    "timesPicked": 2077,
+    "powerScore": 79.7,
+    "powerTier": "A",
+    "eloRating": 1750
+  },
+  {
+    "id": "CARD.ADRENALINE",
+    "name": "Adrenaline",
+    "pickRate": 77.6,
+    "winRateDelta": 30.8,
+    "timesPicked": 1981,
+    "powerScore": 78.1,
+    "powerTier": "A",
+    "eloRating": 1656
+  },
+  {
+    "id": "CARD.OFFERING",
+    "name": "Offering",
+    "pickRate": 70.6,
+    "winRateDelta": 30.0,
+    "timesPicked": 2182,
+    "powerScore": 76.3,
+    "powerTier": "A",
+    "eloRating": 1674
+  },
+  {
+    "id": "CARD.TANTRUM",
+    "name": "Tantrum",
+    "pickRate": 75.0,
+    "winRateDelta": 63.9,
+    "timesPicked": 12,
+    "powerScore": 74.9,
+    "powerTier": "A",
+    "eloRating": 1339
+  },
+  {
+    "id": "CARD.INDIGNATION",
+    "name": "Indignation",
+    "pickRate": 42.9,
+    "winRateDelta": 77.2,
+    "timesPicked": 6,
+    "powerScore": 74.8,
+    "powerTier": "A",
+    "eloRating": 1265
+  },
+  {
+    "id": "CARD.WALLOP",
+    "name": "Wallop",
+    "pickRate": 64.3,
+    "winRateDelta": 71.7,
+    "timesPicked": 9,
+    "powerScore": 74.6,
+    "powerTier": "A",
+    "eloRating": 1287
+  },
+  {
+    "id": "CARD.FOLLOW_UP",
+    "name": "Follow Up",
+    "pickRate": 17.1,
+    "winRateDelta": 77.2,
+    "timesPicked": 7,
+    "powerScore": 74.6,
+    "powerTier": "A",
+    "eloRating": 1209
+  },
+  {
+    "id": "CARD.RAGNAROK",
+    "name": "Ragnarok",
+    "pickRate": 72.7,
+    "winRateDelta": 77.2,
+    "timesPicked": 8,
+    "powerScore": 74.2,
+    "powerTier": "A",
+    "eloRating": 1282
+  },
+  {
+    "id": "CARD.AFTERIMAGE",
+    "name": "Afterimage",
+    "pickRate": 67.8,
+    "winRateDelta": 33.0,
+    "timesPicked": 1823,
+    "powerScore": 73.4,
+    "powerTier": "A",
+    "eloRating": 1626
+  },
+  {
+    "id": "CARD.WEEP_IN_GRIEF",
+    "name": "Weep In Grief",
+    "pickRate": 46.2,
+    "winRateDelta": 39.7,
+    "timesPicked": 6,
+    "powerScore": 73.1,
+    "powerTier": "A",
+    "eloRating": 1242
+  },
+  {
+    "id": "CARD.MENTAL_BARRIERS",
+    "name": "Mental Barriers",
+    "pickRate": 35.7,
+    "winRateDelta": 60.6,
+    "timesPicked": 5,
+    "powerScore": 73.1,
+    "powerTier": "A",
+    "eloRating": 1224
+  },
+  {
+    "id": "CARD.FLURRY_OF_BLOWS",
+    "name": "Flurry Of Blows",
+    "pickRate": 41.7,
+    "winRateDelta": 72.0,
+    "timesPicked": 15,
+    "powerScore": 72.9,
+    "powerTier": "A",
+    "eloRating": 1353
+  },
+  {
+    "id": "CARD.LACERATION",
+    "name": "Laceration",
+    "pickRate": 50.0,
+    "winRateDelta": 10.6,
+    "timesPicked": 6,
+    "powerScore": 72.3,
+    "powerTier": "A",
+    "eloRating": 1241
+  },
+  {
+    "id": "CARD.BLOOD_DELIGHT",
+    "name": "Blood Delight",
+    "pickRate": 36.4,
+    "winRateDelta": 43.9,
+    "timesPicked": 4,
+    "powerScore": 72.3,
+    "powerTier": "A",
+    "eloRating": 1238
+  },
+  {
+    "id": "CARD.THOUGHT_STREAM",
+    "name": "Thought Stream",
+    "pickRate": 62.5,
+    "winRateDelta": 77.2,
+    "timesPicked": 5,
+    "powerScore": 72.3,
+    "powerTier": "A",
+    "eloRating": 1215
+  },
+  {
+    "id": "CARD.MORDEKAISER_COM_DASHFORWARD",
+    "name": "Mordekaiser Com Dashforward",
+    "pickRate": 26.7,
+    "winRateDelta": 77.2,
+    "timesPicked": 4,
+    "powerScore": 71.9,
+    "powerTier": "A",
+    "eloRating": 1192
+  },
+  {
+    "id": "CARD.MORDEKAISER_RARE_UNBREAKABLE",
+    "name": "Mordekaiser Rare Unbreakable",
+    "pickRate": 66.7,
+    "winRateDelta": 77.2,
+    "timesPicked": 4,
+    "powerScore": 71.9,
+    "powerTier": "A",
+    "eloRating": 1193
+  },
+  {
+    "id": "CARD.DEMESNE",
+    "name": "Demesne",
+    "pickRate": 69.3,
+    "winRateDelta": 29.2,
+    "timesPicked": 1348,
+    "powerScore": 71.5,
+    "powerTier": "A",
+    "eloRating": 1483
+  },
+  {
+    "id": "CARD.BLADE_OF_INK",
+    "name": "Blade Of Ink",
+    "pickRate": 56.0,
+    "winRateDelta": 35.0,
+    "timesPicked": 1243,
+    "powerScore": 71.0,
+    "powerTier": "A",
+    "eloRating": 1544
+  },
+  {
+    "id": "CARD.NEUROSURGE",
+    "name": "Neurosurge",
+    "pickRate": 61.7,
+    "winRateDelta": 29.4,
+    "timesPicked": 1191,
+    "powerScore": 70.2,
+    "powerTier": "A",
+    "eloRating": 1467
+  },
+  {
+    "id": "CARD.RUSHDOWN",
+    "name": "Rushdown",
+    "pickRate": 100.0,
+    "winRateDelta": 71.4,
+    "timesPicked": 18,
+    "powerScore": 70.0,
+    "powerTier": "A",
+    "eloRating": 1386
+  },
+  {
+    "id": "CARD.TALK_TO_THE_HAND",
+    "name": "Talk To The Hand",
+    "pickRate": 87.5,
+    "winRateDelta": 71.0,
+    "timesPicked": 14,
+    "powerScore": 68.9,
+    "powerTier": "B",
+    "eloRating": 1359
+  },
+  {
+    "id": "CARD.ECHO_FORM",
+    "name": "Echo Form",
+    "pickRate": 68.4,
+    "winRateDelta": 25.0,
+    "timesPicked": 1526,
+    "powerScore": 68.5,
+    "powerTier": "B",
+    "eloRating": 1640
+  },
+  {
+    "id": "CARD.CRIMSON_MANTLE",
+    "name": "Crimson Mantle",
+    "pickRate": 51.7,
+    "winRateDelta": 27.2,
+    "timesPicked": 1593,
+    "powerScore": 67.8,
+    "powerTier": "B",
+    "eloRating": 1522
+  },
+  {
+    "id": "CARD.WREATH_OF_FLAME",
+    "name": "Wreath Of Flame",
+    "pickRate": 71.4,
+    "winRateDelta": 64.7,
+    "timesPicked": 10,
+    "powerScore": 66.9,
+    "powerTier": "B",
+    "eloRating": 1316
+  },
+  {
+    "id": "CARD.MORDEKAISER_COM_DUALHAMMERSLAM",
+    "name": "Mordekaiser Com Dualhammerslam",
+    "pickRate": 16.7,
+    "winRateDelta": 66.1,
+    "timesPicked": 2,
+    "powerScore": 66.3,
+    "powerTier": "B",
+    "eloRating": 1192
+  },
+  {
+    "id": "CARD.DEFRAGMENT",
+    "name": "Defragment",
+    "pickRate": 67.9,
+    "winRateDelta": 26.8,
+    "timesPicked": 1433,
+    "powerScore": 65.8,
+    "powerTier": "B",
+    "eloRating": 1521
+  },
+  {
+    "id": "CARD.CRUSH_JOINTS",
+    "name": "Crush Joints",
+    "pickRate": 28.2,
+    "winRateDelta": 69.5,
+    "timesPicked": 11,
+    "powerScore": 65.7,
+    "powerTier": "B",
+    "eloRating": 1284
+  },
+  {
+    "id": "CARD.GUARDS",
+    "name": "Guards",
+    "pickRate": 44.4,
+    "winRateDelta": 32.1,
+    "timesPicked": 1153,
+    "powerScore": 65.6,
+    "powerTier": "B",
+    "eloRating": 1346
+  },
+  {
+    "id": "CARD.OLD_TO_NEW",
+    "name": "Old To New",
+    "pickRate": 36.4,
+    "winRateDelta": 21.7,
+    "timesPicked": 8,
+    "powerScore": 65.6,
+    "powerTier": "B",
+    "eloRating": 1255
+  },
+  {
+    "id": "CARD.UNMOVABLE",
+    "name": "Unmovable",
+    "pickRate": 56.9,
+    "winRateDelta": 28.6,
+    "timesPicked": 1778,
+    "powerScore": 65.5,
+    "powerTier": "B",
+    "eloRating": 1455
+  },
+  {
+    "id": "CARD.ARSENAL",
+    "name": "Arsenal",
+    "pickRate": 42.0,
+    "winRateDelta": 29.5,
+    "timesPicked": 1005,
+    "powerScore": 65.4,
+    "powerTier": "B",
+    "eloRating": 1406
+  },
+  {
+    "id": "CARD.VOID_FORM",
+    "name": "Void Form",
+    "pickRate": 61.4,
+    "winRateDelta": 27.0,
+    "timesPicked": 1570,
+    "powerScore": 65.3,
+    "powerTier": "B",
+    "eloRating": 1589
+  },
+  {
+    "id": "CARD.FOR_LEISURE",
+    "name": "For Leisure",
+    "pickRate": 38.9,
+    "winRateDelta": 27.2,
+    "timesPicked": 7,
+    "powerScore": 65.1,
+    "powerTier": "B",
+    "eloRating": 1210
+  },
+  {
+    "id": "CARD.HEART_TO_HEART",
+    "name": "Heart To Heart",
+    "pickRate": 21.1,
+    "winRateDelta": 48.7,
+    "timesPicked": 4,
+    "powerScore": 64.0,
+    "powerTier": "B",
+    "eloRating": 1141
+  },
+  {
+    "id": "CARD.ABRASIVE",
+    "name": "Abrasive",
+    "pickRate": 53.0,
+    "winRateDelta": 24.5,
+    "timesPicked": 1373,
+    "powerScore": 63.9,
+    "powerTier": "B",
+    "eloRating": 1431
+  },
+  {
+    "id": "CARD.BLOOD_BARRIER",
+    "name": "Blood Barrier",
+    "pickRate": 36.4,
+    "winRateDelta": 17.2,
+    "timesPicked": 8,
+    "powerScore": 63.6,
+    "powerTier": "B",
+    "eloRating": 1226
+  },
+  {
+    "id": "CARD.HIDDEN_GEM",
+    "name": "Hidden Gem",
+    "pickRate": 4.3,
+    "winRateDelta": 27.4,
+    "timesPicked": 32,
+    "powerScore": 63.2,
+    "powerTier": "B",
+    "eloRating": 1444
+  },
+  {
+    "id": "CARD.SUDDEN_MIND",
+    "name": "Sudden Mind",
+    "pickRate": 40.9,
+    "winRateDelta": 43.9,
+    "timesPicked": 9,
+    "powerScore": 63.1,
+    "powerTier": "B",
+    "eloRating": 1235
+  },
+  {
+    "id": "CARD.AIR_BLADE_ALPHA",
+    "name": "Air Blade Alpha",
+    "pickRate": 50.0,
+    "winRateDelta": 27.2,
+    "timesPicked": 5,
+    "powerScore": 62.7,
+    "powerTier": "B",
+    "eloRating": 1223
+  },
+  {
+    "id": "CARD.PYRE",
+    "name": "Pyre",
+    "pickRate": 48.2,
+    "winRateDelta": 25.3,
+    "timesPicked": 1591,
+    "powerScore": 62.6,
+    "powerTier": "B",
+    "eloRating": 1555
+  },
+  {
+    "id": "CARD.KNIFE_TRAP",
+    "name": "Knife Trap",
+    "pickRate": 41.4,
+    "winRateDelta": 33.6,
+    "timesPicked": 1077,
+    "powerScore": 62.1,
+    "powerTier": "B",
+    "eloRating": 1421
+  },
+  {
+    "id": "CARD.TOOLS_OF_THE_TRADE",
+    "name": "Tools Of The Trade",
+    "pickRate": 50.9,
+    "winRateDelta": 30.1,
+    "timesPicked": 1358,
+    "powerScore": 62.0,
+    "powerTier": "B",
+    "eloRating": 1559
+  },
+  {
+    "id": "CARD.IMPERVIOUS",
+    "name": "Impervious",
+    "pickRate": 40.2,
+    "winRateDelta": 28.5,
+    "timesPicked": 1205,
+    "powerScore": 62.0,
+    "powerTier": "B",
+    "eloRating": 1378
+  },
+  {
+    "id": "CARD.COMET",
+    "name": "Comet",
+    "pickRate": 42.6,
+    "winRateDelta": 30.7,
+    "timesPicked": 1063,
+    "powerScore": 62.0,
+    "powerTier": "B",
+    "eloRating": 1366
+  },
+  {
+    "id": "CARD.BLOOD_SHEILD",
+    "name": "Blood Sheild",
+    "pickRate": 36.0,
+    "winRateDelta": 32.8,
+    "timesPicked": 9,
+    "powerScore": 61.9,
+    "powerTier": "B",
+    "eloRating": 1252
+  },
+  {
+    "id": "CARD.DECISIONS_DECISIONS",
+    "name": "Decisions Decisions",
+    "pickRate": 45.1,
+    "winRateDelta": 29.5,
+    "timesPicked": 1146,
+    "powerScore": 61.7,
+    "powerTier": "B",
+    "eloRating": 1419
+  },
+  {
+    "id": "CARD.MAKE_IT_SO",
+    "name": "Make It So",
+    "pickRate": 37.8,
+    "winRateDelta": 26.0,
+    "timesPicked": 1003,
+    "powerScore": 61.6,
+    "powerTier": "B",
+    "eloRating": 1345
+  },
+  {
+    "id": "CARD.CALL_OF_THE_VOID",
+    "name": "Call Of The Void",
+    "pickRate": 46.0,
+    "winRateDelta": 25.6,
+    "timesPicked": 915,
+    "powerScore": 61.5,
+    "powerTier": "B",
+    "eloRating": 1356
+  },
+  {
+    "id": "CARD.REFLECT",
+    "name": "Reflect",
+    "pickRate": 66.1,
+    "winRateDelta": 18.5,
+    "timesPicked": 3543,
+    "powerScore": 61.4,
+    "powerTier": "B",
+    "eloRating": 1505
+  },
+  {
+    "id": "CARD.BULWARK",
+    "name": "Bulwark",
+    "pickRate": 60.2,
+    "winRateDelta": 17.7,
+    "timesPicked": 3158,
+    "powerScore": 61.4,
+    "powerTier": "B",
+    "eloRating": 1344
+  },
+  {
+    "id": "CARD.TRACKING",
+    "name": "Tracking",
+    "pickRate": 41.8,
+    "winRateDelta": 31.8,
+    "timesPicked": 1105,
+    "powerScore": 61.3,
+    "powerTier": "B",
+    "eloRating": 1370
+  },
+  {
+    "id": "CARD.MASTER_OF_STRATEGY",
+    "name": "Master Of Strategy",
+    "pickRate": 2.3,
+    "winRateDelta": 38.5,
+    "timesPicked": 20,
+    "powerScore": 61.0,
+    "powerTier": "B",
+    "eloRating": 1366
+  },
+  {
+    "id": "CARD.SECRET_TECHNIQUE",
+    "name": "Secret Technique",
+    "pickRate": 2.7,
+    "winRateDelta": 37.7,
+    "timesPicked": 24,
+    "powerScore": 61.0,
+    "powerTier": "B",
+    "eloRating": 1389
+  },
+  {
+    "id": "CARD.MACHINE_LEARNING",
+    "name": "Machine Learning",
+    "pickRate": 52.0,
+    "winRateDelta": 26.1,
+    "timesPicked": 1210,
+    "powerScore": 60.8,
+    "powerTier": "B",
+    "eloRating": 1449
+  },
+  {
+    "id": "CARD.SUPERCRITICAL",
+    "name": "Supercritical",
+    "pickRate": 49.7,
+    "winRateDelta": 25.1,
+    "timesPicked": 1074,
+    "powerScore": 60.8,
+    "powerTier": "B",
+    "eloRating": 1445
+  },
+  {
+    "id": "CARD.CRUELTY",
+    "name": "Cruelty",
+    "pickRate": 49.9,
+    "winRateDelta": 21.8,
+    "timesPicked": 1486,
+    "powerScore": 60.6,
+    "powerTier": "B",
+    "eloRating": 1586
+  },
+  {
+    "id": "CARD.BUNDLE_OF_JOY",
+    "name": "Bundle Of Joy",
+    "pickRate": 28.8,
+    "winRateDelta": 29.6,
+    "timesPicked": 739,
+    "powerScore": 60.6,
+    "powerTier": "B",
+    "eloRating": 1263
+  },
+  {
+    "id": "CARD.THRASH",
+    "name": "Thrash",
+    "pickRate": 39.7,
+    "winRateDelta": 19.5,
+    "timesPicked": 1265,
+    "powerScore": 60.1,
+    "powerTier": "B",
+    "eloRating": 1455
+  },
+  {
+    "id": "CARD.FINESSE",
+    "name": "Finesse",
+    "pickRate": 27.1,
+    "winRateDelta": 26.7,
+    "timesPicked": 239,
+    "powerScore": 60.0,
+    "powerTier": "B",
+    "eloRating": 1412
+  },
+  {
+    "id": "CARD.MODDED",
+    "name": "Modded",
+    "pickRate": 56.0,
+    "winRateDelta": 20.9,
+    "timesPicked": 1255,
+    "powerScore": 59.9,
+    "powerTier": "B",
+    "eloRating": 1444
+  },
+  {
+    "id": "CARD.SERPENT_FORM",
+    "name": "Serpent Form",
+    "pickRate": 33.2,
+    "winRateDelta": 28.3,
+    "timesPicked": 937,
+    "powerScore": 59.7,
+    "powerTier": "B",
+    "eloRating": 1348
+  },
+  {
+    "id": "CARD.AGGRESSION",
+    "name": "Aggression",
+    "pickRate": 27.6,
+    "winRateDelta": 26.6,
+    "timesPicked": 829,
+    "powerScore": 59.5,
+    "powerTier": "B",
+    "eloRating": 1320
+  },
+  {
+    "id": "CARD.SHOCKWAVE",
+    "name": "Shockwave",
+    "pickRate": 17.8,
+    "winRateDelta": 27.2,
+    "timesPicked": 178,
+    "powerScore": 59.3,
+    "powerTier": "B",
+    "eloRating": 1318
+  },
+  {
+    "id": "CARD.CRASH_LANDING",
+    "name": "Crash Landing",
+    "pickRate": 22.7,
+    "winRateDelta": 26.1,
+    "timesPicked": 573,
+    "powerScore": 59.3,
+    "powerTier": "B",
+    "eloRating": 1238
+  },
+  {
+    "id": "CARD.FLASH_OF_STEEL",
+    "name": "Flash Of Steel",
+    "pickRate": 25.9,
+    "winRateDelta": 22.1,
+    "timesPicked": 233,
+    "powerScore": 59.1,
+    "powerTier": "B",
+    "eloRating": 1409
+  },
+  {
+    "id": "CARD.FASTEN",
+    "name": "Fasten",
+    "pickRate": 30.1,
+    "winRateDelta": 19.7,
+    "timesPicked": 260,
+    "powerScore": 59.0,
+    "powerTier": "B",
+    "eloRating": 1539
+  },
+  {
+    "id": "CARD.FOOTWORK",
+    "name": "Footwork",
+    "pickRate": 58.7,
+    "winRateDelta": 19.2,
+    "timesPicked": 3476,
+    "powerScore": 58.6,
+    "powerTier": "B",
+    "eloRating": 1287
+  },
+  {
+    "id": "CARD.END_OF_DAYS",
+    "name": "End Of Days",
+    "pickRate": 43.6,
+    "winRateDelta": 19.3,
+    "timesPicked": 817,
+    "powerScore": 58.6,
+    "powerTier": "B",
+    "eloRating": 1366
+  },
+  {
+    "id": "CARD.CHILD_OF_THE_STARS",
+    "name": "Child Of The Stars",
+    "pickRate": 53.7,
+    "winRateDelta": 18.7,
+    "timesPicked": 3019,
+    "powerScore": 58.5,
+    "powerTier": "B",
+    "eloRating": 1317
+  },
+  {
+    "id": "CARD.GENESIS",
+    "name": "Genesis",
+    "pickRate": 46.4,
+    "winRateDelta": 23.6,
+    "timesPicked": 1223,
+    "powerScore": 58.3,
+    "powerTier": "B",
+    "eloRating": 1438
+  },
+  {
+    "id": "CARD.ALL_FOR_ONE",
+    "name": "All For One",
+    "pickRate": 38.0,
+    "winRateDelta": 25.3,
+    "timesPicked": 826,
+    "powerScore": 58.3,
+    "powerTier": "B",
+    "eloRating": 1485
+  },
+  {
+    "id": "CARD.EMPTINESS",
+    "name": "Emptiness",
+    "pickRate": 27.8,
+    "winRateDelta": 27.2,
+    "timesPicked": 5,
+    "powerScore": 58.0,
+    "powerTier": "B",
+    "eloRating": 1196
+  },
+  {
+    "id": "CARD.CHARGE",
+    "name": "Charge",
+    "pickRate": 47.6,
+    "winRateDelta": 17.6,
+    "timesPicked": 2507,
+    "powerScore": 57.7,
+    "powerTier": "B",
+    "eloRating": 1328
+  },
+  {
+    "id": "CARD.HEMORRHAGE",
+    "name": "Hemorrhage",
+    "pickRate": 25.0,
+    "winRateDelta": 48.7,
+    "timesPicked": 2,
+    "powerScore": 57.6,
+    "powerTier": "B",
+    "eloRating": 1176
+  },
+  {
+    "id": "CARD.SHADOWMELD",
+    "name": "Shadowmeld",
+    "pickRate": 27.9,
+    "winRateDelta": 21.7,
+    "timesPicked": 775,
+    "powerScore": 57.5,
+    "powerTier": "B",
+    "eloRating": 1411
+  },
+  {
+    "id": "CARD.AUTOMATION",
+    "name": "Automation",
+    "pickRate": 18.5,
+    "winRateDelta": 25.5,
+    "timesPicked": 173,
+    "powerScore": 57.4,
+    "powerTier": "B",
+    "eloRating": 1330
+  },
+  {
+    "id": "CARD.TYRANNY",
+    "name": "Tyranny",
+    "pickRate": 35.9,
+    "winRateDelta": 33.9,
+    "timesPicked": 935,
+    "powerScore": 57.4,
+    "powerTier": "B",
+    "eloRating": 1348
+  },
+  {
+    "id": "CARD.BUFFER",
+    "name": "Buffer",
+    "pickRate": 36.2,
+    "winRateDelta": 26.3,
+    "timesPicked": 794,
+    "powerScore": 57.4,
+    "powerTier": "B",
+    "eloRating": 1366
+  },
+  {
+    "id": "CARD.SCRAWL",
+    "name": "Scrawl",
+    "pickRate": 1.0,
+    "winRateDelta": 45.9,
+    "timesPicked": 8,
+    "powerScore": 57.4,
+    "powerTier": "B",
+    "eloRating": 1232
+  },
+  {
+    "id": "CARD.TRASH_TO_TREASURE",
+    "name": "Trash To Treasure",
+    "pickRate": 35.9,
+    "winRateDelta": 24.8,
+    "timesPicked": 772,
+    "powerScore": 57.3,
+    "powerTier": "B",
+    "eloRating": 1358
+  },
+  {
+    "id": "CARD.THE_SMITH",
+    "name": "The Smith",
+    "pickRate": 35.0,
+    "winRateDelta": 19.1,
+    "timesPicked": 904,
+    "powerScore": 57.2,
+    "powerTier": "B",
+    "eloRating": 1379
+  },
+  {
+    "id": "CARD.NOT_YET",
+    "name": "Not Yet",
+    "pickRate": 40.8,
+    "winRateDelta": 22.7,
+    "timesPicked": 1246,
+    "powerScore": 57.1,
+    "powerTier": "B",
+    "eloRating": 1399
+  },
+  {
+    "id": "CARD.CONVERGENCE",
+    "name": "Convergence",
+    "pickRate": 55.7,
+    "winRateDelta": 18.3,
+    "timesPicked": 2935,
+    "powerScore": 56.9,
+    "powerTier": "B",
+    "eloRating": 1337
+  },
+  {
+    "id": "CARD.BRAND",
+    "name": "Brand",
+    "pickRate": 40.1,
+    "winRateDelta": 20.8,
+    "timesPicked": 1181,
+    "powerScore": 56.9,
+    "powerTier": "B",
+    "eloRating": 1400
+  },
+  {
+    "id": "CARD.DYING_STAR",
+    "name": "Dying Star",
+    "pickRate": 38.6,
+    "winRateDelta": 20.8,
+    "timesPicked": 989,
+    "powerScore": 56.9,
+    "powerTier": "B",
+    "eloRating": 1509
+  },
+  {
+    "id": "CARD.COOLANT",
+    "name": "Coolant",
+    "pickRate": 31.2,
+    "winRateDelta": 23.9,
+    "timesPicked": 734,
+    "powerScore": 56.9,
+    "powerTier": "B",
+    "eloRating": 1319
+  },
+  {
+    "id": "CARD.HANG",
+    "name": "Hang",
+    "pickRate": 35.1,
+    "winRateDelta": 16.0,
+    "timesPicked": 658,
+    "powerScore": 56.8,
+    "powerTier": "B",
+    "eloRating": 1416
+  },
+  {
+    "id": "CARD.DISCOVERY",
+    "name": "Discovery",
+    "pickRate": 19.6,
+    "winRateDelta": 20.2,
+    "timesPicked": 191,
+    "powerScore": 56.7,
+    "powerTier": "B",
+    "eloRating": 1341
+  },
+  {
+    "id": "CARD.FIEND_FIRE",
+    "name": "Fiend Fire",
+    "pickRate": 27.2,
+    "winRateDelta": 24.5,
+    "timesPicked": 793,
+    "powerScore": 56.5,
+    "powerTier": "B",
+    "eloRating": 1401
+  },
+  {
+    "id": "CARD.PRESEVING_MEMORIES",
+    "name": "Preseving Memories",
+    "pickRate": 48.1,
+    "winRateDelta": 23.4,
+    "timesPicked": 13,
+    "powerScore": 56.4,
+    "powerTier": "B",
+    "eloRating": 1247
+  },
+  {
+    "id": "CARD.DOMINATE",
+    "name": "Dominate",
+    "pickRate": 58.2,
+    "winRateDelta": 19.2,
+    "timesPicked": 3549,
+    "powerScore": 56.3,
+    "powerTier": "B",
+    "eloRating": 1445
+  },
+  {
+    "id": "CARD.ESCAPE_PLAN",
+    "name": "Escape Plan",
+    "pickRate": 57.8,
+    "winRateDelta": 18.3,
+    "timesPicked": 3147,
+    "powerScore": 56.3,
+    "powerTier": "B",
+    "eloRating": 1282
+  },
+  {
+    "id": "CARD.FRIENDSHIP",
+    "name": "Friendship",
+    "pickRate": 53.1,
+    "winRateDelta": 16.8,
+    "timesPicked": 2135,
+    "powerScore": 56.3,
+    "powerTier": "B",
+    "eloRating": 1329
+  },
+  {
+    "id": "CARD.BATTLE_TRANCE",
+    "name": "Battle Trance",
+    "pickRate": 56.0,
+    "winRateDelta": 18.4,
+    "timesPicked": 3674,
+    "powerScore": 56.0,
+    "powerTier": "B",
+    "eloRating": 1355
+  },
+  {
+    "id": "CARD.PUTREFY",
+    "name": "Putrefy",
+    "pickRate": 47.5,
+    "winRateDelta": 17.5,
+    "timesPicked": 1762,
+    "powerScore": 55.9,
+    "powerTier": "B",
+    "eloRating": 1255
+  },
+  {
+    "id": "CARD.ENTROPY",
+    "name": "Entropy",
+    "pickRate": 1.0,
+    "winRateDelta": 35.5,
+    "timesPicked": 9,
+    "powerScore": 55.9,
+    "powerTier": "B",
+    "eloRating": 1179
+  },
+  {
+    "id": "CARD.COLOSSUS",
+    "name": "Colossus",
+    "pickRate": 57.6,
+    "winRateDelta": 18.2,
+    "timesPicked": 3606,
+    "powerScore": 55.8,
+    "powerTier": "B",
+    "eloRating": 1412
+  },
+  {
+    "id": "CARD.PRODUCTION",
+    "name": "Production",
+    "pickRate": 21.7,
+    "winRateDelta": 22.8,
+    "timesPicked": 200,
+    "powerScore": 55.6,
+    "powerTier": "B",
+    "eloRating": 1354
+  },
+  {
+    "id": "CARD.THORN_ARMOR",
+    "name": "Thorn Armor",
+    "pickRate": 31.8,
+    "winRateDelta": 27.2,
+    "timesPicked": 7,
+    "powerScore": 55.6,
+    "powerTier": "B",
+    "eloRating": 1198
+  },
+  {
+    "id": "CARD.UNWILLING_TO_PART",
+    "name": "Unwilling To Part",
+    "pickRate": 40.0,
+    "winRateDelta": 43.9,
+    "timesPicked": 4,
+    "powerScore": 55.6,
+    "powerTier": "B",
+    "eloRating": 1201
+  },
+  {
+    "id": "CARD.MEMORY_SURGE",
+    "name": "Memory Surge",
+    "pickRate": 16.7,
+    "winRateDelta": 27.2,
+    "timesPicked": 1,
+    "powerScore": 55.6,
+    "powerTier": "B",
+    "eloRating": 1193
+  },
+  {
+    "id": "CARD.ANOINTED",
+    "name": "Anointed",
+    "pickRate": 0.4,
+    "winRateDelta": 45.5,
+    "timesPicked": 3,
+    "powerScore": 55.5,
+    "powerTier": "B",
+    "eloRating": 1108
+  },
+  {
+    "id": "CARD.MALAISE",
+    "name": "Malaise",
+    "pickRate": 26.1,
+    "winRateDelta": 28.7,
+    "timesPicked": 704,
+    "powerScore": 55.4,
+    "powerTier": "B",
+    "eloRating": 1221
+  },
+  {
+    "id": "CARD.BURST",
+    "name": "Burst",
+    "pickRate": 35.5,
+    "winRateDelta": 19.8,
+    "timesPicked": 909,
+    "powerScore": 55.3,
+    "powerTier": "B",
+    "eloRating": 1453
+  },
+  {
+    "id": "CARD.BLOOD_FEAST",
+    "name": "Blood Feast",
+    "pickRate": 28.6,
+    "winRateDelta": 43.9,
+    "timesPicked": 2,
+    "powerScore": 55.2,
+    "powerTier": "B",
+    "eloRating": 1184
+  },
+  {
+    "id": "CARD.ILAI",
+    "name": "Ilai",
+    "pickRate": 71.4,
+    "winRateDelta": 17.2,
+    "timesPicked": 5,
+    "powerScore": 55.2,
+    "powerTier": "B",
+    "eloRating": 1231
+  },
+  {
+    "id": "CARD.REAPER_FORM",
+    "name": "Reaper Form",
+    "pickRate": 35.1,
+    "winRateDelta": 19.2,
+    "timesPicked": 688,
+    "powerScore": 55.0,
+    "powerTier": "B",
+    "eloRating": 1369
+  },
+  {
+    "id": "CARD.BEAT_DOWN",
+    "name": "Beat Down",
+    "pickRate": 0.7,
+    "winRateDelta": 41.8,
+    "timesPicked": 6,
+    "powerScore": 55.0,
+    "powerTier": "B",
+    "eloRating": 1130
+  },
+  {
+    "id": "CARD.GLACIER",
+    "name": "Glacier",
+    "pickRate": 55.5,
+    "winRateDelta": 16.5,
+    "timesPicked": 2384,
+    "powerScore": 54.9,
+    "powerTier": "C",
+    "eloRating": 1290
+  },
+  {
+    "id": "CARD.CREATIVE_AI",
+    "name": "Creative Ai",
+    "pickRate": 40.4,
+    "winRateDelta": 19.8,
+    "timesPicked": 904,
+    "powerScore": 54.9,
+    "powerTier": "C",
+    "eloRating": 1403
+  },
+  {
+    "id": "CARD.CASCADE",
+    "name": "Cascade",
+    "pickRate": 25.6,
+    "winRateDelta": 28.7,
+    "timesPicked": 791,
+    "powerScore": 54.9,
+    "powerTier": "C",
+    "eloRating": 1326
+  },
+  {
+    "id": "CARD.TAUNT",
+    "name": "Taunt",
+    "pickRate": 52.6,
+    "winRateDelta": 13.6,
+    "timesPicked": 3358,
+    "powerScore": 54.8,
+    "powerTier": "C",
+    "eloRating": 1301
+  },
+  {
+    "id": "CARD.SENTRY_MODE",
+    "name": "Sentry Mode",
+    "pickRate": 28.8,
+    "winRateDelta": 21.3,
+    "timesPicked": 542,
+    "powerScore": 54.8,
+    "powerTier": "C",
+    "eloRating": 1273
+  },
+  {
+    "id": "CARD.JACKPOT",
+    "name": "Jackpot",
+    "pickRate": 1.2,
+    "winRateDelta": 30.1,
+    "timesPicked": 10,
+    "powerScore": 54.8,
+    "powerTier": "C",
+    "eloRating": 1216
+  },
+  {
+    "id": "CARD.CALCULATED_GAMBLE",
+    "name": "Calculated Gamble",
+    "pickRate": 55.2,
+    "winRateDelta": 20.9,
+    "timesPicked": 2988,
+    "powerScore": 54.7,
+    "powerTier": "C",
+    "eloRating": 1376
+  },
+  {
+    "id": "CARD.HIDDEN_DAGGERS",
+    "name": "Hidden Daggers",
+    "pickRate": 52.6,
+    "winRateDelta": 18.8,
+    "timesPicked": 2427,
+    "powerScore": 54.7,
+    "powerTier": "C",
+    "eloRating": 1392
+  },
+  {
+    "id": "CARD.FLAK_CANNON",
+    "name": "Flak Cannon",
+    "pickRate": 31.9,
+    "winRateDelta": 21.9,
+    "timesPicked": 628,
+    "powerScore": 54.7,
+    "powerTier": "C",
+    "eloRating": 1308
+  },
+  {
+    "id": "CARD.DEATHBRINGER",
+    "name": "Deathbringer",
+    "pickRate": 47.8,
+    "winRateDelta": 14.7,
+    "timesPicked": 1791,
+    "powerScore": 54.6,
+    "powerTier": "C",
+    "eloRating": 1191
+  },
+  {
+    "id": "CARD.TRANSFIGURE",
+    "name": "Transfigure",
+    "pickRate": 36.2,
+    "winRateDelta": 20.4,
+    "timesPicked": 688,
+    "powerScore": 54.6,
+    "powerTier": "C",
+    "eloRating": 1389
+  },
+  {
+    "id": "CARD.BORROWED_TIME",
+    "name": "Borrowed Time",
+    "pickRate": 45.7,
+    "winRateDelta": 16.9,
+    "timesPicked": 1717,
+    "powerScore": 54.5,
+    "powerTier": "C",
+    "eloRating": 1297
+  },
+  {
+    "id": "CARD.PACTS_END",
+    "name": "Pacts End",
+    "pickRate": 32.7,
+    "winRateDelta": 24.1,
+    "timesPicked": 952,
+    "powerScore": 54.5,
+    "powerTier": "C",
+    "eloRating": 1396
+  },
+  {
+    "id": "CARD.ENVENOM",
+    "name": "Envenom",
+    "pickRate": 29.7,
+    "winRateDelta": 19.8,
+    "timesPicked": 801,
+    "powerScore": 54.5,
+    "powerTier": "C",
+    "eloRating": 1493
+  },
+  {
+    "id": "CARD.REND",
+    "name": "Rend",
+    "pickRate": 0.4,
+    "winRateDelta": 43.2,
+    "timesPicked": 3,
+    "powerScore": 54.5,
+    "powerTier": "C",
+    "eloRating": 1092
+  },
+  {
+    "id": "CARD.OBLIVION",
+    "name": "Oblivion",
+    "pickRate": 37.6,
+    "winRateDelta": 20.9,
+    "timesPicked": 707,
+    "powerScore": 54.4,
+    "powerTier": "C",
+    "eloRating": 1348
+  },
+  {
+    "id": "CARD.BANSHEES_CRY",
+    "name": "Banshees Cry",
+    "pickRate": 33.9,
+    "winRateDelta": 23.7,
+    "timesPicked": 510,
+    "powerScore": 54.4,
+    "powerTier": "C",
+    "eloRating": 1346
+  },
+  {
+    "id": "CARD.ALCHEMIZE",
+    "name": "Alchemize",
+    "pickRate": 1.3,
+    "winRateDelta": 28.3,
+    "timesPicked": 11,
+    "powerScore": 54.4,
+    "powerTier": "C",
+    "eloRating": 1245
+  },
+  {
+    "id": "CARD.ETERNAL_ARMOR",
+    "name": "Eternal Armor",
+    "pickRate": 0.7,
+    "winRateDelta": 33.2,
+    "timesPicked": 6,
+    "powerScore": 54.3,
+    "powerTier": "C",
+    "eloRating": 1165
+  },
+  {
+    "id": "CARD.BLUR",
+    "name": "Blur",
+    "pickRate": 47.5,
+    "winRateDelta": 17.9,
+    "timesPicked": 2644,
+    "powerScore": 54.2,
+    "powerTier": "C",
+    "eloRating": 1342
+  },
+  {
+    "id": "CARD.SPINNER",
+    "name": "Spinner",
+    "pickRate": 39.0,
+    "winRateDelta": 18.3,
+    "timesPicked": 864,
+    "powerScore": 54.2,
+    "powerTier": "C",
+    "eloRating": 1515
+  },
+  {
+    "id": "CARD.MAYHEM",
+    "name": "Mayhem",
+    "pickRate": 1.8,
+    "winRateDelta": 34.3,
+    "timesPicked": 17,
+    "powerScore": 54.1,
+    "powerTier": "C",
+    "eloRating": 1321
+  },
+  {
+    "id": "CARD.EXPOSE",
+    "name": "Expose",
+    "pickRate": 45.0,
+    "winRateDelta": 17.0,
+    "timesPicked": 2398,
+    "powerScore": 54.0,
+    "powerTier": "C",
+    "eloRating": 1367
+  },
+  {
+    "id": "CARD.BARRICADE",
+    "name": "Barricade",
+    "pickRate": 29.1,
+    "winRateDelta": 21.3,
+    "timesPicked": 880,
+    "powerScore": 54.0,
+    "powerTier": "C",
+    "eloRating": 1231
+  },
+  {
+    "id": "CARD.REANIMATE",
+    "name": "Reanimate",
+    "pickRate": 40.2,
+    "winRateDelta": 29.0,
+    "timesPicked": 743,
+    "powerScore": 53.9,
+    "powerTier": "C",
+    "eloRating": 1329
+  },
+  {
+    "id": "CARD.SECRET_WEAPON",
+    "name": "Secret Weapon",
+    "pickRate": 1.4,
+    "winRateDelta": 41.2,
+    "timesPicked": 12,
+    "powerScore": 53.7,
+    "powerTier": "C",
+    "eloRating": 1225
+  },
+  {
+    "id": "CARD.THE_GAMBIT",
+    "name": "The Gambit",
+    "pickRate": 0.2,
+    "winRateDelta": 41.5,
+    "timesPicked": 2,
+    "powerScore": 53.7,
+    "powerTier": "C",
+    "eloRating": 1103
+  },
+  {
+    "id": "CARD.SPECTRUM_SHIFT",
+    "name": "Spectrum Shift",
+    "pickRate": 32.4,
+    "winRateDelta": 22.1,
+    "timesPicked": 1884,
+    "powerScore": 53.6,
+    "powerTier": "C",
+    "eloRating": 1224
+  },
+  {
+    "id": "CARD.SWORD_SAGE",
+    "name": "Sword Sage",
+    "pickRate": 31.7,
+    "winRateDelta": 24.0,
+    "timesPicked": 814,
+    "powerScore": 53.6,
+    "powerTier": "C",
+    "eloRating": 1428
+  },
+  {
+    "id": "CARD.MENTAL_FORTRESS",
+    "name": "Mental Fortress",
+    "pickRate": 63.6,
+    "winRateDelta": 58.5,
+    "timesPicked": 7,
+    "powerScore": 53.6,
+    "powerTier": "C",
+    "eloRating": 1363
+  },
+  {
+    "id": "CARD.FLASH_BACK",
+    "name": "Flash Back",
+    "pickRate": 62.5,
+    "winRateDelta": 20.1,
+    "timesPicked": 5,
+    "powerScore": 53.5,
+    "powerTier": "C",
+    "eloRating": 1231
+  },
+  {
+    "id": "CARD.TEAR_ASUNDER",
+    "name": "Tear Asunder",
+    "pickRate": 27.9,
+    "winRateDelta": 25.1,
+    "timesPicked": 738,
+    "powerScore": 53.4,
+    "powerTier": "C",
+    "eloRating": 1297
+  },
+  {
+    "id": "CARD.FISTICUFFS",
+    "name": "Fisticuffs",
+    "pickRate": 14.4,
+    "winRateDelta": 21.1,
+    "timesPicked": 140,
+    "powerScore": 53.2,
+    "powerTier": "C",
+    "eloRating": 1248
+  },
+  {
+    "id": "CARD.CALAMITY",
+    "name": "Calamity",
+    "pickRate": 0.8,
+    "winRateDelta": 26.9,
+    "timesPicked": 7,
+    "powerScore": 53.2,
+    "powerTier": "C",
+    "eloRating": 1153
+  },
+  {
+    "id": "CARD.RED_BLADE_SLASH",
+    "name": "Red Blade Slash",
+    "pickRate": 33.3,
+    "winRateDelta": 39.7,
+    "timesPicked": 4,
+    "powerScore": 53.2,
+    "powerTier": "C",
+    "eloRating": 1170
+  },
+  {
+    "id": "CARD.STOKE",
+    "name": "Stoke",
+    "pickRate": 31.8,
+    "winRateDelta": 23.7,
+    "timesPicked": 1007,
+    "powerScore": 53.1,
+    "powerTier": "C",
+    "eloRating": 1392
+  },
+  {
+    "id": "CARD.BOMBARDMENT",
+    "name": "Bombardment",
+    "pickRate": 31.1,
+    "winRateDelta": 27.1,
+    "timesPicked": 782,
+    "powerScore": 53.1,
+    "powerTier": "C",
+    "eloRating": 1408
+  },
+  {
+    "id": "CARD.SEANCE",
+    "name": "Seance",
+    "pickRate": 39.9,
+    "winRateDelta": 19.2,
+    "timesPicked": 796,
+    "powerScore": 53.1,
+    "powerTier": "C",
+    "eloRating": 1232
+  },
+  {
+    "id": "CARD.ACCELERANT",
+    "name": "Accelerant",
+    "pickRate": 28.8,
+    "winRateDelta": 19.2,
+    "timesPicked": 736,
+    "powerScore": 53.1,
+    "powerTier": "C",
+    "eloRating": 1410
+  },
+  {
+    "id": "CARD.ERADICATE",
+    "name": "Eradicate",
+    "pickRate": 26.9,
+    "winRateDelta": 26.6,
+    "timesPicked": 507,
+    "powerScore": 53.0,
+    "powerTier": "C",
+    "eloRating": 1333
+  },
+  {
+    "id": "CARD.DRAMATIC_ENTRANCE",
+    "name": "Dramatic Entrance",
+    "pickRate": 19.6,
+    "winRateDelta": 16.8,
+    "timesPicked": 178,
+    "powerScore": 52.9,
+    "powerTier": "C",
+    "eloRating": 1386
+  },
+  {
+    "id": "CARD.WELL_LAID_PLANS",
+    "name": "Well Laid Plans",
+    "pickRate": 43.3,
+    "winRateDelta": 20.4,
+    "timesPicked": 2577,
+    "powerScore": 52.7,
+    "powerTier": "C",
+    "eloRating": 1354
+  },
+  {
+    "id": "CARD.COUGHING_UP_BLOOD",
+    "name": "Coughing Up Blood",
+    "pickRate": 25.0,
+    "winRateDelta": 27.2,
+    "timesPicked": 4,
+    "powerScore": 52.7,
+    "powerTier": "C",
+    "eloRating": 1211
+  },
+  {
+    "id": "CARD.ONE_TWO_PUNCH",
+    "name": "One Two Punch",
+    "pickRate": 27.0,
+    "winRateDelta": 19.6,
+    "timesPicked": 852,
+    "powerScore": 52.6,
+    "powerTier": "C",
+    "eloRating": 1394
+  },
+  {
+    "id": "CARD.LETHALITY",
+    "name": "Lethality",
+    "pickRate": 50.0,
+    "winRateDelta": 14.4,
+    "timesPicked": 2082,
+    "powerScore": 52.4,
+    "powerTier": "C",
+    "eloRating": 1437
+  },
+  {
+    "id": "CARD.PROWESS",
+    "name": "Prowess",
+    "pickRate": 21.3,
+    "winRateDelta": 22.5,
+    "timesPicked": 184,
+    "powerScore": 52.3,
+    "powerTier": "C",
+    "eloRating": 1405
+  },
+  {
+    "id": "CARD.DARK_SHACKLES",
+    "name": "Dark Shackles",
+    "pickRate": 16.1,
+    "winRateDelta": 26.1,
+    "timesPicked": 171,
+    "powerScore": 52.3,
+    "powerTier": "C",
+    "eloRating": 1199
+  },
+  {
+    "id": "CARD.DIHUIXING",
+    "name": "Dihuixing",
+    "pickRate": 50.0,
+    "winRateDelta": 37.2,
+    "timesPicked": 3,
+    "powerScore": 52.3,
+    "powerTier": "C",
+    "eloRating": 1208
+  },
+  {
+    "id": "CARD.THINKING_AHEAD",
+    "name": "Thinking Ahead",
+    "pickRate": 8.4,
+    "winRateDelta": 27.7,
+    "timesPicked": 96,
+    "powerScore": 52.2,
+    "powerTier": "C",
+    "eloRating": 1126
+  },
+  {
+    "id": "CARD.FAN_OF_KNIVES",
+    "name": "Fan Of Knives",
+    "pickRate": 41.9,
+    "winRateDelta": 25.0,
+    "timesPicked": 1084,
+    "powerScore": 52.1,
+    "powerTier": "C",
+    "eloRating": 1373
+  },
+  {
+    "id": "CARD.SPIRIT_OF_ASH",
+    "name": "Spirit Of Ash",
+    "pickRate": 33.4,
+    "winRateDelta": 21.4,
+    "timesPicked": 670,
+    "powerScore": 51.9,
+    "powerTier": "C",
+    "eloRating": 1256
+  },
+  {
+    "id": "CARD.BURNING_PACT",
+    "name": "Burning Pact",
+    "pickRate": 46.0,
+    "winRateDelta": 14.9,
+    "timesPicked": 2897,
+    "powerScore": 51.7,
+    "powerTier": "C",
+    "eloRating": 1235
+  },
+  {
+    "id": "CARD.MASTER_PLANNER",
+    "name": "Master Planner",
+    "pickRate": 31.6,
+    "winRateDelta": 20.0,
+    "timesPicked": 730,
+    "powerScore": 51.7,
+    "powerTier": "C",
+    "eloRating": 1328
+  },
+  {
+    "id": "CARD.ACROBATICS",
+    "name": "Acrobatics",
+    "pickRate": 64.7,
+    "winRateDelta": 15.4,
+    "timesPicked": 3582,
+    "powerScore": 51.6,
+    "powerTier": "C",
+    "eloRating": 1314
+  },
+  {
+    "id": "CARD.SPLASH",
+    "name": "Splash",
+    "pickRate": 18.6,
+    "winRateDelta": 19.2,
+    "timesPicked": 162,
+    "powerScore": 51.5,
+    "powerTier": "C",
+    "eloRating": 1355
+  },
+  {
+    "id": "CARD.BLEEDING_DAGGER",
+    "name": "Bleeding Dagger",
+    "pickRate": 50.0,
+    "winRateDelta": 22.7,
+    "timesPicked": 10,
+    "powerScore": 51.5,
+    "powerTier": "C",
+    "eloRating": 1242
+  },
+  {
+    "id": "CARD.FORGOTTEN_BONE",
+    "name": "Forgotten Bone",
+    "pickRate": 29.0,
+    "winRateDelta": 17.2,
+    "timesPicked": 9,
+    "powerScore": 51.3,
+    "powerTier": "C",
+    "eloRating": 1190
+  },
+  {
+    "id": "CARD.QUASAR",
+    "name": "Quasar",
+    "pickRate": 30.3,
+    "winRateDelta": 19.9,
+    "timesPicked": 1562,
+    "powerScore": 51.1,
+    "powerTier": "C",
+    "eloRating": 1141
+  },
+  {
+    "id": "CARD.ICE_LANCE",
+    "name": "Ice Lance",
+    "pickRate": 30.2,
+    "winRateDelta": 21.3,
+    "timesPicked": 687,
+    "powerScore": 51.1,
+    "powerTier": "C",
+    "eloRating": 1321
+  },
+  {
+    "id": "CARD.PANACHE",
+    "name": "Panache",
+    "pickRate": 13.3,
+    "winRateDelta": 25.2,
+    "timesPicked": 134,
+    "powerScore": 51.1,
+    "powerTier": "C",
+    "eloRating": 1188
+  },
+  {
+    "id": "CARD.SIGNAL_BOOST",
+    "name": "Signal Boost",
+    "pickRate": 36.7,
+    "winRateDelta": 20.5,
+    "timesPicked": 851,
+    "powerScore": 51.0,
+    "powerTier": "C",
+    "eloRating": 1347
+  },
+  {
+    "id": "CARD.HEAVENLY_DRILL",
+    "name": "Heavenly Drill",
+    "pickRate": 15.5,
+    "winRateDelta": 22.0,
+    "timesPicked": 339,
+    "powerScore": 51.0,
+    "powerTier": "C",
+    "eloRating": 1166
+  },
+  {
+    "id": "CARD.PAINFUL_RECALL",
+    "name": "Painful Recall",
+    "pickRate": 30.8,
+    "winRateDelta": 52.2,
+    "timesPicked": 4,
+    "powerScore": 50.9,
+    "powerTier": "C",
+    "eloRating": 1256
+  },
+  {
+    "id": "CARD.CAPACITOR",
+    "name": "Capacitor",
+    "pickRate": 49.3,
+    "winRateDelta": 11.5,
+    "timesPicked": 2343,
+    "powerScore": 50.8,
+    "powerTier": "C",
+    "eloRating": 1262
+  },
+  {
+    "id": "CARD.GENETIC_ALGORITHM",
+    "name": "Genetic Algorithm",
+    "pickRate": 31.8,
+    "winRateDelta": 15.2,
+    "timesPicked": 697,
+    "powerScore": 50.8,
+    "powerTier": "C",
+    "eloRating": 1467
+  },
+  {
+    "id": "CARD.BOLAS",
+    "name": "Bolas",
+    "pickRate": 0.7,
+    "winRateDelta": 33.8,
+    "timesPicked": 6,
+    "powerScore": 50.8,
+    "powerTier": "C",
+    "eloRating": 1170
+  },
+  {
+    "id": "CARD.ENFEEBLING_TOUCH",
+    "name": "Enfeebling Touch",
+    "pickRate": 53.1,
+    "winRateDelta": 16.2,
+    "timesPicked": 2087,
+    "powerScore": 50.7,
+    "powerTier": "C",
+    "eloRating": 1372
+  },
+  {
+    "id": "CARD.FOREGONE_CONCLUSION",
+    "name": "Foregone Conclusion",
+    "pickRate": 22.6,
+    "winRateDelta": 26.5,
+    "timesPicked": 594,
+    "powerScore": 50.7,
+    "powerTier": "C",
+    "eloRating": 1205
+  },
+  {
+    "id": "CARD.MANIFEST_AUTHORITY",
+    "name": "Manifest Authority",
+    "pickRate": 33.5,
+    "winRateDelta": 19.4,
+    "timesPicked": 1758,
+    "powerScore": 50.6,
+    "powerTier": "C",
+    "eloRating": 1250
+  },
+  {
+    "id": "CARD.SALVO",
+    "name": "Salvo",
+    "pickRate": 0.6,
+    "winRateDelta": 36.1,
+    "timesPicked": 6,
+    "powerScore": 50.4,
+    "powerTier": "C",
+    "eloRating": 1157
+  },
+  {
+    "id": "CARD.BLOOD_DEFEND",
+    "name": "Blood Defend",
+    "pickRate": 26.1,
+    "winRateDelta": 27.2,
+    "timesPicked": 6,
+    "powerScore": 50.4,
+    "powerTier": "C",
+    "eloRating": 1173
+  },
+  {
+    "id": "CARD.HELLRAISER",
+    "name": "Hellraiser",
+    "pickRate": 30.2,
+    "winRateDelta": 18.2,
+    "timesPicked": 910,
+    "powerScore": 50.2,
+    "powerTier": "C",
+    "eloRating": 1420
+  },
+  {
+    "id": "CARD.SHARED_FATE",
+    "name": "Shared Fate",
+    "pickRate": 25.8,
+    "winRateDelta": 26.1,
+    "timesPicked": 498,
+    "powerScore": 50.2,
+    "powerTier": "C",
+    "eloRating": 1319
+  },
+  {
+    "id": "CARD.PROLONG",
+    "name": "Prolong",
+    "pickRate": 13.5,
+    "winRateDelta": 25.6,
+    "timesPicked": 139,
+    "powerScore": 50.1,
+    "powerTier": "C",
+    "eloRating": 1319
+  },
+  {
+    "id": "CARD.DARK_EMBRACE",
+    "name": "Dark Embrace",
+    "pickRate": 29.7,
+    "winRateDelta": 24.0,
+    "timesPicked": 883,
+    "powerScore": 50.0,
+    "powerTier": "C",
+    "eloRating": 1446
+  },
+  {
+    "id": "CARD.DEMON_FORM",
+    "name": "Demon Form",
+    "pickRate": 23.5,
+    "winRateDelta": 19.5,
+    "timesPicked": 749,
+    "powerScore": 50.0,
+    "powerTier": "C",
+    "eloRating": 1356
+  },
+  {
+    "id": "CARD.PILLAR_OF_CREATION",
+    "name": "Pillar Of Creation",
+    "pickRate": 32.2,
+    "winRateDelta": 22.4,
+    "timesPicked": 1886,
+    "powerScore": 49.8,
+    "powerTier": "C",
+    "eloRating": 1086
+  },
+  {
+    "id": "CARD.UNDEATH",
+    "name": "Undeath",
+    "pickRate": 30.9,
+    "winRateDelta": 18.6,
+    "timesPicked": 599,
+    "powerScore": 49.8,
+    "powerTier": "C",
+    "eloRating": 1264
+  },
+  {
+    "id": "CARD.ROYALTIES",
+    "name": "Royalties",
+    "pickRate": 20.3,
+    "winRateDelta": 13.1,
+    "timesPicked": 545,
+    "powerScore": 49.8,
+    "powerTier": "C",
+    "eloRating": 1266
+  },
+  {
+    "id": "CARD.TEAR_TENDONS",
+    "name": "Tear Tendons",
+    "pickRate": 25.0,
+    "winRateDelta": 35.6,
+    "timesPicked": 4,
+    "powerScore": 49.7,
+    "powerTier": "C",
+    "eloRating": 1178
+  },
+  {
+    "id": "CARD.NOXIOUS_FUMES",
+    "name": "Noxious Fumes",
+    "pickRate": 39.3,
+    "winRateDelta": 12.7,
+    "timesPicked": 2418,
+    "powerScore": 49.5,
+    "powerTier": "C",
+    "eloRating": 1320
+  },
+  {
+    "id": "CARD.REBOOT",
+    "name": "Reboot",
+    "pickRate": 34.2,
+    "winRateDelta": 23.3,
+    "timesPicked": 782,
+    "powerScore": 49.5,
+    "powerTier": "C",
+    "eloRating": 1318
+  },
+  {
+    "id": "CARD.TACTICIAN",
+    "name": "Tactician",
+    "pickRate": 50.1,
+    "winRateDelta": 14.7,
+    "timesPicked": 2686,
+    "powerScore": 49.4,
+    "powerTier": "C",
+    "eloRating": 1318
+  },
+  {
+    "id": "CARD.OVERCLOCK",
+    "name": "Overclock",
+    "pickRate": 47.6,
+    "winRateDelta": 19.1,
+    "timesPicked": 2090,
+    "powerScore": 49.4,
+    "powerTier": "C",
+    "eloRating": 1283
+  },
+  {
+    "id": "CARD.FETCH",
+    "name": "Fetch",
+    "pickRate": 37.4,
+    "winRateDelta": 14.8,
+    "timesPicked": 1396,
+    "powerScore": 49.4,
+    "powerTier": "C",
+    "eloRating": 1182
+  },
+  {
+    "id": "CARD.LOSE_MEMORY",
+    "name": "Lose Memory",
+    "pickRate": 42.9,
+    "winRateDelta": 13.6,
+    "timesPicked": 9,
+    "powerScore": 49.2,
+    "powerTier": "C",
+    "eloRating": 1210
+  },
+  {
+    "id": "CARD.ASSASSINATE",
+    "name": "Assassinate",
+    "pickRate": 32.6,
+    "winRateDelta": 21.5,
+    "timesPicked": 884,
+    "powerScore": 49.0,
+    "powerTier": "C",
+    "eloRating": 1493
+  },
+  {
+    "id": "CARD.EQUILIBRIUM",
+    "name": "Equilibrium",
+    "pickRate": 10.5,
+    "winRateDelta": 26.6,
+    "timesPicked": 109,
+    "powerScore": 49.0,
+    "powerTier": "C",
+    "eloRating": 1162
+  },
+  {
+    "id": "CARD.STRATAGEM",
+    "name": "Stratagem",
+    "pickRate": 7.4,
+    "winRateDelta": 30.2,
+    "timesPicked": 78,
+    "powerScore": 49.0,
+    "powerTier": "C",
+    "eloRating": 1154
+  },
+  {
+    "id": "CARD.ACCURACY",
+    "name": "Accuracy",
+    "pickRate": 39.6,
+    "winRateDelta": 20.1,
+    "timesPicked": 2409,
+    "powerScore": 48.8,
+    "powerTier": "C",
+    "eloRating": 1324
+  },
+  {
+    "id": "CARD.GAMMA_BLAST",
+    "name": "Gamma Blast",
+    "pickRate": 36.7,
+    "winRateDelta": 20.7,
+    "timesPicked": 1943,
+    "powerScore": 48.5,
+    "powerTier": "C",
+    "eloRating": 1220
+  },
+  {
+    "id": "CARD.SQUEEZE",
+    "name": "Squeeze",
+    "pickRate": 23.8,
+    "winRateDelta": 21.9,
+    "timesPicked": 461,
+    "powerScore": 48.5,
+    "powerTier": "C",
+    "eloRating": 1331
+  },
+  {
+    "id": "CARD.DEATHS_DOOR",
+    "name": "Deaths Door",
+    "pickRate": 35.2,
+    "winRateDelta": 16.1,
+    "timesPicked": 1352,
+    "powerScore": 48.4,
+    "powerTier": "C",
+    "eloRating": 1135
+  },
+  {
+    "id": "CARD.GLOW",
+    "name": "Glow",
+    "pickRate": 40.4,
+    "winRateDelta": 13.9,
+    "timesPicked": 5848,
+    "powerScore": 48.3,
+    "powerTier": "C",
+    "eloRating": 1153
+  },
+  {
+    "id": "CARD.OMNISLICE",
+    "name": "Omnislice",
+    "pickRate": 15.5,
+    "winRateDelta": 12.2,
+    "timesPicked": 144,
+    "powerScore": 48.3,
+    "powerTier": "C",
+    "eloRating": 1342
+  },
+  {
+    "id": "CARD.BACKFLIP",
+    "name": "Backflip",
+    "pickRate": 39.5,
+    "winRateDelta": 14.9,
+    "timesPicked": 5966,
+    "powerScore": 48.2,
+    "powerTier": "C",
+    "eloRating": 1011
+  },
+  {
+    "id": "CARD.NECRO_MASTERY",
+    "name": "Necro Mastery",
+    "pickRate": 28.9,
+    "winRateDelta": 21.6,
+    "timesPicked": 561,
+    "powerScore": 48.2,
+    "powerTier": "C",
+    "eloRating": 1356
+  },
+  {
+    "id": "CARD.PREPARED",
+    "name": "Prepared",
+    "pickRate": 52.1,
+    "winRateDelta": 12.4,
+    "timesPicked": 7802,
+    "powerScore": 48.1,
+    "powerTier": "C",
+    "eloRating": 1266
+  },
+  {
+    "id": "CARD.STORM_OF_STEEL",
+    "name": "Storm Of Steel",
+    "pickRate": 21.7,
+    "winRateDelta": 23.2,
+    "timesPicked": 577,
+    "powerScore": 48.0,
+    "powerTier": "C",
+    "eloRating": 1391
+  },
+  {
+    "id": "CARD.NOSTALGIA",
+    "name": "Nostalgia",
+    "pickRate": 0.8,
+    "winRateDelta": 23.2,
+    "timesPicked": 6,
+    "powerScore": 48.0,
+    "powerTier": "C",
+    "eloRating": 1167
+  },
+  {
+    "id": "CARD.FEEL_NO_PAIN",
+    "name": "Feel No Pain",
+    "pickRate": 29.1,
+    "winRateDelta": 18.1,
+    "timesPicked": 1989,
+    "powerScore": 47.9,
+    "powerTier": "C",
+    "eloRating": 1270
+  },
+  {
+    "id": "CARD.COMPACT",
+    "name": "Compact",
+    "pickRate": 42.5,
+    "winRateDelta": 13.7,
+    "timesPicked": 1881,
+    "powerScore": 47.9,
+    "powerTier": "C",
+    "eloRating": 1201
+  },
+  {
+    "id": "CARD.GOLD_AXE",
+    "name": "Gold Axe",
+    "pickRate": 1.0,
+    "winRateDelta": 29.3,
+    "timesPicked": 9,
+    "powerScore": 47.9,
+    "powerTier": "C",
+    "eloRating": 1198
+  },
+  {
+    "id": "CARD.SLEIGHT_OF_FLESH",
+    "name": "Sleight Of Flesh",
+    "pickRate": 35.5,
+    "winRateDelta": 15.0,
+    "timesPicked": 1456,
+    "powerScore": 47.8,
+    "powerTier": "C",
+    "eloRating": 1252
+  },
+  {
+    "id": "CARD.SUPERMASSIVE",
+    "name": "Supermassive",
+    "pickRate": 19.4,
+    "winRateDelta": 23.8,
+    "timesPicked": 949,
+    "powerScore": 47.7,
+    "powerTier": "C",
+    "eloRating": 1139
+  },
+  {
+    "id": "CARD.ULTIMATE_DEFEND",
+    "name": "Ultimate Defend",
+    "pickRate": 12.1,
+    "winRateDelta": 22.9,
+    "timesPicked": 121,
+    "powerScore": 47.6,
+    "powerTier": "C",
+    "eloRating": 1204
+  },
+  {
+    "id": "CARD.BLOODLETTING",
+    "name": "Bloodletting",
+    "pickRate": 42.8,
+    "winRateDelta": 9.9,
+    "timesPicked": 7642,
+    "powerScore": 47.4,
+    "powerTier": "C",
+    "eloRating": 1199
+  },
+  {
+    "id": "CARD.CHILL",
+    "name": "Chill",
+    "pickRate": 46.5,
+    "winRateDelta": 15.4,
+    "timesPicked": 2071,
+    "powerScore": 47.4,
+    "powerTier": "C",
+    "eloRating": 1292
+  },
+  {
+    "id": "CARD.THE_HUNT",
+    "name": "The Hunt",
+    "pickRate": 23.2,
+    "winRateDelta": 17.1,
+    "timesPicked": 618,
+    "powerScore": 47.4,
+    "powerTier": "C",
+    "eloRating": 1390
+  },
+  {
+    "id": "CARD.ORBIT",
+    "name": "Orbit",
+    "pickRate": 40.3,
+    "winRateDelta": 20.3,
+    "timesPicked": 2308,
+    "powerScore": 47.3,
+    "powerTier": "C",
+    "eloRating": 1262
+  },
+  {
+    "id": "CARD.QUADRUPLE_STRIKE",
+    "name": "Quadruple Strike",
+    "pickRate": 53.8,
+    "winRateDelta": 21.7,
+    "timesPicked": 7,
+    "powerScore": 47.3,
+    "powerTier": "C",
+    "eloRating": 1185
+  },
+  {
+    "id": "CARD.SMOKE_OF_BATTLE",
+    "name": "Smoke Of Battle",
+    "pickRate": 60.0,
+    "winRateDelta": 27.2,
+    "timesPicked": 3,
+    "powerScore": 47.3,
+    "powerTier": "C",
+    "eloRating": 1207
+  },
+  {
+    "id": "CARD.REFLEX",
+    "name": "Reflex",
+    "pickRate": 42.2,
+    "winRateDelta": 19.0,
+    "timesPicked": 2083,
+    "powerScore": 47.2,
+    "powerTier": "C",
+    "eloRating": 1258
+  },
+  {
+    "id": "CARD.ASHEN_STRIKE",
+    "name": "Ashen Strike",
+    "pickRate": 31.4,
+    "winRateDelta": 16.0,
+    "timesPicked": 1950,
+    "powerScore": 47.0,
+    "powerTier": "C",
+    "eloRating": 1279
+  },
+  {
+    "id": "CARD.PURITY",
+    "name": "Purity",
+    "pickRate": 8.9,
+    "winRateDelta": 29.2,
+    "timesPicked": 104,
+    "powerScore": 47.0,
+    "powerTier": "C",
+    "eloRating": 1177
+  },
+  {
+    "id": "CARD.PALE_BLUE_DOT",
+    "name": "Pale Blue Dot",
+    "pickRate": 17.8,
+    "winRateDelta": 27.5,
+    "timesPicked": 1022,
+    "powerScore": 46.9,
+    "powerTier": "C",
+    "eloRating": 970
+  },
+  {
+    "id": "CARD.RAGE",
+    "name": "Rage",
+    "pickRate": 31.9,
+    "winRateDelta": 12.0,
+    "timesPicked": 2086,
+    "powerScore": 46.8,
+    "powerTier": "C",
+    "eloRating": 1240
+  },
+  {
+    "id": "CARD.INFINITE_BLADES",
+    "name": "Infinite Blades",
+    "pickRate": 32.5,
+    "winRateDelta": 18.9,
+    "timesPicked": 1942,
+    "powerScore": 46.6,
+    "powerTier": "C",
+    "eloRating": 1116
+  },
+  {
+    "id": "CARD.DIRGE",
+    "name": "Dirge",
+    "pickRate": 44.9,
+    "winRateDelta": 15.3,
+    "timesPicked": 1677,
+    "powerScore": 46.6,
+    "powerTier": "C",
+    "eloRating": 1302
+  },
+  {
+    "id": "CARD.BEGONE",
+    "name": "Begone",
+    "pickRate": 27.5,
+    "winRateDelta": 13.8,
+    "timesPicked": 3704,
+    "powerScore": 46.5,
+    "powerTier": "C",
+    "eloRating": 1128
+  },
+  {
+    "id": "CARD.MURDER",
+    "name": "Murder",
+    "pickRate": 18.2,
+    "winRateDelta": 26.6,
+    "timesPicked": 503,
+    "powerScore": 46.5,
+    "powerTier": "C",
+    "eloRating": 1224
+  },
+  {
+    "id": "CARD.LEG_SWEEP",
+    "name": "Leg Sweep",
+    "pickRate": 38.0,
+    "winRateDelta": 15.6,
+    "timesPicked": 2122,
+    "powerScore": 46.3,
+    "powerTier": "C",
+    "eloRating": 1192
+  },
+  {
+    "id": "CARD.PARTICLE_WALL",
+    "name": "Particle Wall",
+    "pickRate": 41.3,
+    "winRateDelta": 18.7,
+    "timesPicked": 2160,
+    "powerScore": 46.2,
+    "powerTier": "C",
+    "eloRating": 1235
+  },
+  {
+    "id": "CARD.NIGHTMARE",
+    "name": "Nightmare",
+    "pickRate": 16.1,
+    "winRateDelta": 23.0,
+    "timesPicked": 428,
+    "powerScore": 46.2,
+    "powerTier": "C",
+    "eloRating": 1281
+  },
+  {
+    "id": "CARD.JACK_OF_ALL_TRADES",
+    "name": "Jack Of All Trades",
+    "pickRate": 6.5,
+    "winRateDelta": 27.8,
+    "timesPicked": 66,
+    "powerScore": 46.2,
+    "powerTier": "C",
+    "eloRating": 1070
+  },
+  {
+    "id": "CARD.SACRIFICE",
+    "name": "Sacrifice",
+    "pickRate": 13.1,
+    "winRateDelta": 19.0,
+    "timesPicked": 224,
+    "powerScore": 46.2,
+    "powerTier": "C",
+    "eloRating": 1134
+  },
+  {
+    "id": "CARD.GRAVE_WARDEN",
+    "name": "Grave Warden",
+    "pickRate": 41.0,
+    "winRateDelta": 10.3,
+    "timesPicked": 4378,
+    "powerScore": 46.1,
+    "powerTier": "C",
+    "eloRating": 1050
+  },
+  {
+    "id": "CARD.TIMES_UP",
+    "name": "Times Up",
+    "pickRate": 16.6,
+    "winRateDelta": 17.4,
+    "timesPicked": 314,
+    "powerScore": 46.1,
+    "powerTier": "C",
+    "eloRating": 1253
+  },
+  {
+    "id": "CARD.THUNDER",
+    "name": "Thunder",
+    "pickRate": 32.4,
+    "winRateDelta": 11.2,
+    "timesPicked": 1555,
+    "powerScore": 46.0,
+    "powerTier": "C",
+    "eloRating": 1187
+  },
+  {
+    "id": "CARD.COUNTDOWN",
+    "name": "Countdown",
+    "pickRate": 34.2,
+    "winRateDelta": 11.9,
+    "timesPicked": 1359,
+    "powerScore": 45.9,
+    "powerTier": "C",
+    "eloRating": 1148
+  },
+  {
+    "id": "CARD.BLACK_HOLE",
+    "name": "Black Hole",
+    "pickRate": 34.4,
+    "winRateDelta": 14.0,
+    "timesPicked": 1980,
+    "powerScore": 45.8,
+    "powerTier": "C",
+    "eloRating": 1226
+  },
+  {
+    "id": "CARD.SEEKING_EDGE",
+    "name": "Seeking Edge",
+    "pickRate": 28.3,
+    "winRateDelta": 18.1,
+    "timesPicked": 725,
+    "powerScore": 45.8,
+    "powerTier": "C",
+    "eloRating": 1393
+  },
+  {
+    "id": "CARD.I_AM_INVINCIBLE",
+    "name": "I Am Invincible",
+    "pickRate": 23.3,
+    "winRateDelta": 24.3,
+    "timesPicked": 617,
+    "powerScore": 45.7,
+    "powerTier": "C",
+    "eloRating": 1233
+  },
+  {
+    "id": "CARD.BULLET_TIME",
+    "name": "Bullet Time",
+    "pickRate": 21.3,
+    "winRateDelta": 19.7,
+    "timesPicked": 555,
+    "powerScore": 45.7,
+    "powerTier": "C",
+    "eloRating": 1360
+  },
+  {
+    "id": "CARD.HEIRLOOM_HAMMER",
+    "name": "Heirloom Hammer",
+    "pickRate": 12.5,
+    "winRateDelta": 21.5,
+    "timesPicked": 333,
+    "powerScore": 45.7,
+    "powerTier": "C",
+    "eloRating": 1163
+  },
+  {
+    "id": "CARD.ROLLING_BOULDER",
+    "name": "Rolling Boulder",
+    "pickRate": 0.8,
+    "winRateDelta": 26.6,
+    "timesPicked": 7,
+    "powerScore": 45.7,
+    "powerTier": "C",
+    "eloRating": 1117
+  },
+  {
+    "id": "CARD.DOUBLE_ENERGY",
+    "name": "Double Energy",
+    "pickRate": 32.6,
+    "winRateDelta": 14.9,
+    "timesPicked": 1441,
+    "powerScore": 45.6,
+    "powerTier": "C",
+    "eloRating": 1260
+  },
+  {
+    "id": "CARD.MISERY",
+    "name": "Misery",
+    "pickRate": 27.4,
+    "winRateDelta": 16.2,
+    "timesPicked": 527,
+    "powerScore": 45.5,
+    "powerTier": "C",
+    "eloRating": 1303
+  },
+  {
+    "id": "CARD.BOOT_SEQUENCE",
+    "name": "Boot Sequence",
+    "pickRate": 40.8,
+    "winRateDelta": 13.1,
+    "timesPicked": 1824,
+    "powerScore": 45.3,
+    "powerTier": "C",
+    "eloRating": 1314
+  },
+  {
+    "id": "CARD.NULL",
+    "name": "Null",
+    "pickRate": 30.9,
+    "winRateDelta": 16.7,
+    "timesPicked": 1415,
+    "powerScore": 45.3,
+    "powerTier": "C",
+    "eloRating": 1231
+  },
+  {
+    "id": "CARD.SHATTER",
+    "name": "Shatter",
+    "pickRate": 22.4,
+    "winRateDelta": 8.1,
+    "timesPicked": 524,
+    "powerScore": 45.3,
+    "powerTier": "C",
+    "eloRating": 1399
+  },
+  {
+    "id": "CARD.SUBROUTINE",
+    "name": "Subroutine",
+    "pickRate": 36.4,
+    "winRateDelta": 16.2,
+    "timesPicked": 1715,
+    "powerScore": 45.2,
+    "powerTier": "C",
+    "eloRating": 1296
+  },
+  {
+    "id": "CARD.EVIL_EYE",
+    "name": "Evil Eye",
+    "pickRate": 32.8,
+    "winRateDelta": 15.8,
+    "timesPicked": 2117,
+    "powerScore": 44.8,
+    "powerTier": "C",
+    "eloRating": 1216
+  },
+  {
+    "id": "CARD.CORROSIVE_WAVE",
+    "name": "Corrosive Wave",
+    "pickRate": 27.3,
+    "winRateDelta": 17.4,
+    "timesPicked": 709,
+    "powerScore": 44.8,
+    "powerTier": "C",
+    "eloRating": 1370
+  },
+  {
+    "id": "CARD.FLAME_BARRIER",
+    "name": "Flame Barrier",
+    "pickRate": 39.7,
+    "winRateDelta": 14.0,
+    "timesPicked": 2568,
+    "powerScore": 44.7,
+    "powerTier": "C",
+    "eloRating": 1333
+  },
+  {
+    "id": "CARD.DEBILITATE",
+    "name": "Debilitate",
+    "pickRate": 32.9,
+    "winRateDelta": 17.0,
+    "timesPicked": 1233,
+    "powerScore": 44.7,
+    "powerTier": "C",
+    "eloRating": 1162
+  },
+  {
+    "id": "CARD.PIERCING_WAIL",
+    "name": "Piercing Wail",
+    "pickRate": 33.9,
+    "winRateDelta": 13.5,
+    "timesPicked": 5056,
+    "powerScore": 44.6,
+    "powerTier": "C",
+    "eloRating": 1289
+  },
+  {
+    "id": "CARD.PHANTOM_BLADES",
+    "name": "Phantom Blades",
+    "pickRate": 28.5,
+    "winRateDelta": 20.3,
+    "timesPicked": 1479,
+    "powerScore": 44.6,
+    "powerTier": "C",
+    "eloRating": 1282
+  },
+  {
+    "id": "CARD.VOLTAIC",
+    "name": "Voltaic",
+    "pickRate": 32.6,
+    "winRateDelta": 18.4,
+    "timesPicked": 712,
+    "powerScore": 44.6,
+    "powerTier": "C",
+    "eloRating": 1409
+  },
+  {
+    "id": "CARD.ALIGNMENT",
+    "name": "Alignment",
+    "pickRate": 28.7,
+    "winRateDelta": 16.1,
+    "timesPicked": 1491,
+    "powerScore": 44.5,
+    "powerTier": "C",
+    "eloRating": 1271
+  },
+  {
+    "id": "CARD.SEVEN_STARS",
+    "name": "Seven Stars",
+    "pickRate": 21.0,
+    "winRateDelta": 17.2,
+    "timesPicked": 565,
+    "powerScore": 44.5,
+    "powerTier": "C",
+    "eloRating": 1287
+  },
+  {
+    "id": "CARD.HELIX_DRILL",
+    "name": "Helix Drill",
+    "pickRate": 18.7,
+    "winRateDelta": 24.1,
+    "timesPicked": 348,
+    "powerScore": 44.4,
+    "powerTier": "C",
+    "eloRating": 1260
+  },
+  {
+    "id": "CARD.POMMEL_STRIKE",
+    "name": "Pommel Strike",
+    "pickRate": 46.2,
+    "winRateDelta": 9.5,
+    "timesPicked": 8054,
+    "powerScore": 44.3,
+    "powerTier": "C",
+    "eloRating": 1328
+  },
+  {
+    "id": "CARD.GATHER_LIGHT",
+    "name": "Gather Light",
+    "pickRate": 34.7,
+    "winRateDelta": 12.1,
+    "timesPicked": 5054,
+    "powerScore": 44.2,
+    "powerTier": "C",
+    "eloRating": 1096
+  },
+  {
+    "id": "CARD.ROYAL_GAMBLE",
+    "name": "Royal Gamble",
+    "pickRate": 42.9,
+    "winRateDelta": 19.8,
+    "timesPicked": 2202,
+    "powerScore": 44.2,
+    "powerTier": "C",
+    "eloRating": 1301
+  },
+  {
+    "id": "CARD.FEED",
+    "name": "Feed",
+    "pickRate": 30.8,
+    "winRateDelta": 18.3,
+    "timesPicked": 915,
+    "powerScore": 44.2,
+    "powerTier": "C",
+    "eloRating": 1382
+  },
+  {
+    "id": "CARD.DEFY",
+    "name": "Defy",
+    "pickRate": 46.1,
+    "winRateDelta": 11.8,
+    "timesPicked": 4868,
+    "powerScore": 44.1,
+    "powerTier": "C",
+    "eloRating": 1119
+  },
+  {
+    "id": "CARD.UPPERCUT",
+    "name": "Uppercut",
+    "pickRate": 39.7,
+    "winRateDelta": 13.9,
+    "timesPicked": 2561,
+    "powerScore": 44.0,
+    "powerTier": "C",
+    "eloRating": 1224
+  },
+  {
+    "id": "CARD.RAINBOW",
+    "name": "Rainbow",
+    "pickRate": 17.3,
+    "winRateDelta": 17.4,
+    "timesPicked": 399,
+    "powerScore": 44.0,
+    "powerTier": "C",
+    "eloRating": 1163
+  },
+  {
+    "id": "CARD.SEEKER_STRIKE",
+    "name": "Seeker Strike",
+    "pickRate": 4.6,
+    "winRateDelta": 25.3,
+    "timesPicked": 49,
+    "powerScore": 43.9,
+    "powerTier": "C",
+    "eloRating": 1039
+  },
+  {
+    "id": "CARD.NO_ESCAPE",
+    "name": "No Escape",
+    "pickRate": 38.9,
+    "winRateDelta": 13.9,
+    "timesPicked": 1430,
+    "powerScore": 43.4,
+    "powerTier": "C",
+    "eloRating": 1318
+  },
+  {
+    "id": "CARD.JUGGERNAUT",
+    "name": "Juggernaut",
+    "pickRate": 12.4,
+    "winRateDelta": 21.1,
+    "timesPicked": 377,
+    "powerScore": 43.4,
+    "powerTier": "C",
+    "eloRating": 1187
+  },
+  {
+    "id": "CARD.STONE_ARMOR",
+    "name": "Stone Armor",
+    "pickRate": 22.0,
+    "winRateDelta": 15.4,
+    "timesPicked": 1550,
+    "powerScore": 43.3,
+    "powerTier": "C",
+    "eloRating": 1151
+  },
+  {
+    "id": "CARD.WHITE_NOISE",
+    "name": "White Noise",
+    "pickRate": 52.4,
+    "winRateDelta": 12.1,
+    "timesPicked": 2329,
+    "powerScore": 43.1,
+    "powerTier": "C",
+    "eloRating": 1347
+  },
+  {
+    "id": "CARD.MANGLE",
+    "name": "Mangle",
+    "pickRate": 17.6,
+    "winRateDelta": 22.5,
+    "timesPicked": 539,
+    "powerScore": 43.0,
+    "powerTier": "C",
+    "eloRating": 1237
+  },
+  {
+    "id": "CARD.SHROUD",
+    "name": "Shroud",
+    "pickRate": 29.0,
+    "winRateDelta": 13.3,
+    "timesPicked": 1194,
+    "powerScore": 42.9,
+    "powerTier": "C",
+    "eloRating": 1131
+  },
+  {
+    "id": "CARD.BULK_UP",
+    "name": "Bulk Up",
+    "pickRate": 23.0,
+    "winRateDelta": 15.5,
+    "timesPicked": 1095,
+    "powerScore": 42.9,
+    "powerTier": "C",
+    "eloRating": 1236
+  },
+  {
+    "id": "CARD.GO_FOR_THE_EYES",
+    "name": "Go For The Eyes",
+    "pickRate": 28.8,
+    "winRateDelta": 12.2,
+    "timesPicked": 3563,
+    "powerScore": 42.8,
+    "powerTier": "C",
+    "eloRating": 1103
+  },
+  {
+    "id": "CARD.PILLAGE",
+    "name": "Pillage",
+    "pickRate": 23.0,
+    "winRateDelta": 14.4,
+    "timesPicked": 1471,
+    "powerScore": 42.7,
+    "powerTier": "C",
+    "eloRating": 1105
+  },
+  {
+    "id": "CARD.DELAY",
+    "name": "Delay",
+    "pickRate": 35.3,
+    "winRateDelta": 13.4,
+    "timesPicked": 1356,
+    "powerScore": 42.6,
+    "powerTier": "C",
+    "eloRating": 1108
+  },
+  {
+    "id": "CARD.VICIOUS",
+    "name": "Vicious",
+    "pickRate": 31.0,
+    "winRateDelta": 16.9,
+    "timesPicked": 2107,
+    "powerScore": 42.5,
+    "powerTier": "C",
+    "eloRating": 1243
+  },
+  {
+    "id": "CARD.FTL",
+    "name": "Ftl",
+    "pickRate": 33.8,
+    "winRateDelta": 14.3,
+    "timesPicked": 1552,
+    "powerScore": 42.5,
+    "powerTier": "C",
+    "eloRating": 1225
+  },
+  {
+    "id": "CARD.WISP",
+    "name": "Wisp",
+    "pickRate": 29.9,
+    "winRateDelta": 10.7,
+    "timesPicked": 3145,
+    "powerScore": 42.4,
+    "powerTier": "C",
+    "eloRating": 1255
+  },
+  {
+    "id": "CARD.PULL_FROM_BELOW",
+    "name": "Pull From Below",
+    "pickRate": 18.6,
+    "winRateDelta": 12.9,
+    "timesPicked": 722,
+    "powerScore": 42.3,
+    "powerTier": "C",
+    "eloRating": 1102
+  },
+  {
+    "id": "CARD.KNOW_THY_PLACE",
+    "name": "Know Thy Place",
+    "pickRate": 28.3,
+    "winRateDelta": 14.4,
+    "timesPicked": 4107,
+    "powerScore": 42.1,
+    "powerTier": "C",
+    "eloRating": 1071
+  },
+  {
+    "id": "CARD.ITERATION",
+    "name": "Iteration",
+    "pickRate": 25.2,
+    "winRateDelta": 17.5,
+    "timesPicked": 1178,
+    "powerScore": 42.1,
+    "powerTier": "C",
+    "eloRating": 1066
+  },
+  {
+    "id": "CARD.SHADOW_STEP",
+    "name": "Shadow Step",
+    "pickRate": 18.5,
+    "winRateDelta": 17.3,
+    "timesPicked": 501,
+    "powerScore": 42.1,
+    "powerTier": "C",
+    "eloRating": 1416
+  },
+  {
+    "id": "CARD.FORGOTTEN_RITUAL",
+    "name": "Forgotten Ritual",
+    "pickRate": 24.7,
+    "winRateDelta": 17.1,
+    "timesPicked": 1589,
+    "powerScore": 41.9,
+    "powerTier": "C",
+    "eloRating": 1290
+  },
+  {
+    "id": "CARD.NEUTRON_AEGIS",
+    "name": "Neutron Aegis",
+    "pickRate": 15.4,
+    "winRateDelta": 24.6,
+    "timesPicked": 415,
+    "powerScore": 41.8,
+    "powerTier": "C",
+    "eloRating": 1214
+  },
+  {
+    "id": "CARD.FIGHT_THROUGH",
+    "name": "Fight Through",
+    "pickRate": 30.5,
+    "winRateDelta": 16.1,
+    "timesPicked": 1357,
+    "powerScore": 41.7,
+    "powerTier": "C",
+    "eloRating": 1217
+  },
+  {
+    "id": "CARD.NEGATIVE_PULSE",
+    "name": "Negative Pulse",
+    "pickRate": 32.8,
+    "winRateDelta": 6.6,
+    "timesPicked": 3467,
+    "powerScore": 41.5,
+    "powerTier": "C",
+    "eloRating": 1081
+  },
+  {
+    "id": "CARD.LEADING_STRIKE",
+    "name": "Leading Strike",
+    "pickRate": 23.9,
+    "winRateDelta": 12.6,
+    "timesPicked": 3544,
+    "powerScore": 41.5,
+    "powerTier": "C",
+    "eloRating": 1173
+  },
+  {
+    "id": "CARD.COLLISION_COURSE",
+    "name": "Collision Course",
+    "pickRate": 15.3,
+    "winRateDelta": 14.0,
+    "timesPicked": 2256,
+    "powerScore": 41.5,
+    "powerTier": "C",
+    "eloRating": 934
+  },
+  {
+    "id": "CARD.SHRUG_IT_OFF",
+    "name": "Shrug It Off",
+    "pickRate": 38.0,
+    "winRateDelta": 10.1,
+    "timesPicked": 6793,
+    "powerScore": 41.4,
+    "powerTier": "C",
+    "eloRating": 1102
+  },
+  {
+    "id": "CARD.PANIC_BUTTON",
+    "name": "Panic Button",
+    "pickRate": 3.1,
+    "winRateDelta": 26.8,
+    "timesPicked": 35,
+    "powerScore": 41.4,
+    "powerTier": "C",
+    "eloRating": 892
+  },
+  {
+    "id": "CARD.ADAPTIVE_STRIKE",
+    "name": "Adaptive Strike",
+    "pickRate": 22.2,
+    "winRateDelta": 20.0,
+    "timesPicked": 489,
+    "powerScore": 41.3,
+    "powerTier": "C",
+    "eloRating": 1294
+  },
+  {
+    "id": "CARD.UP_MY_SLEEVE",
+    "name": "Up My Sleeve",
+    "pickRate": 32.0,
+    "winRateDelta": 13.7,
+    "timesPicked": 1753,
+    "powerScore": 40.9,
+    "powerTier": "C",
+    "eloRating": 1224
+  },
+  {
+    "id": "CARD.CONFLAGRATION",
+    "name": "Conflagration",
+    "pickRate": 17.7,
+    "winRateDelta": 15.0,
+    "timesPicked": 547,
+    "powerScore": 40.9,
+    "powerTier": "C",
+    "eloRating": 1320
+  },
+  {
+    "id": "CARD.HAND_OF_GREED",
+    "name": "Hand Of Greed",
+    "pickRate": 0.9,
+    "winRateDelta": 18.4,
+    "timesPicked": 8,
+    "powerScore": 40.9,
+    "powerTier": "C",
+    "eloRating": 1171
+  },
+  {
+    "id": "CARD.PRIMAL_FORCE",
+    "name": "Primal Force",
+    "pickRate": 14.5,
+    "winRateDelta": 15.0,
+    "timesPicked": 465,
+    "powerScore": 40.8,
+    "powerTier": "C",
+    "eloRating": 1218
+  },
+  {
+    "id": "CARD.HAILSTORM",
+    "name": "Hailstorm",
+    "pickRate": 27.3,
+    "winRateDelta": 12.4,
+    "timesPicked": 1326,
+    "powerScore": 40.7,
+    "powerTier": "C",
+    "eloRating": 1077
+  },
+  {
+    "id": "CARD.RADIATE",
+    "name": "Radiate",
+    "pickRate": 24.1,
+    "winRateDelta": 14.0,
+    "timesPicked": 1276,
+    "powerScore": 40.7,
+    "powerTier": "C",
+    "eloRating": 1188
+  },
+  {
+    "id": "CARD.WHIRLWIND",
+    "name": "Whirlwind",
+    "pickRate": 22.8,
+    "winRateDelta": 10.7,
+    "timesPicked": 1461,
+    "powerScore": 40.6,
+    "powerTier": "C",
+    "eloRating": 1230
+  },
+  {
+    "id": "CARD.BULLY",
+    "name": "Bully",
+    "pickRate": 25.9,
+    "winRateDelta": 14.1,
+    "timesPicked": 1643,
+    "powerScore": 40.5,
+    "powerTier": "C",
+    "eloRating": 1221
+  },
+  {
+    "id": "CARD.SECOND_WIND",
+    "name": "Second Wind",
+    "pickRate": 27.2,
+    "winRateDelta": 12.8,
+    "timesPicked": 1758,
+    "powerScore": 40.4,
+    "powerTier": "C",
+    "eloRating": 1122
+  },
+  {
+    "id": "CARD.COOLHEADED",
+    "name": "Coolheaded",
+    "pickRate": 38.6,
+    "winRateDelta": 11.7,
+    "timesPicked": 4884,
+    "powerScore": 40.3,
+    "powerTier": "C",
+    "eloRating": 1136
+  },
+  {
+    "id": "CARD.CAPTURE_SPIRIT",
+    "name": "Capture Spirit",
+    "pickRate": 38.7,
+    "winRateDelta": 11.7,
+    "timesPicked": 1445,
+    "powerScore": 40.3,
+    "powerTier": "C",
+    "eloRating": 1331
+  },
+  {
+    "id": "CARD.STARDUST",
+    "name": "Stardust",
+    "pickRate": 22.2,
+    "winRateDelta": 15.4,
+    "timesPicked": 1185,
+    "powerScore": 40.3,
+    "powerTier": "C",
+    "eloRating": 1169
+  },
+  {
+    "id": "CARD.BEAT_INTO_SHAPE",
+    "name": "Beat Into Shape",
+    "pickRate": 17.4,
+    "winRateDelta": 15.1,
+    "timesPicked": 438,
+    "powerScore": 40.2,
+    "powerTier": "C",
+    "eloRating": 1328
+  },
+  {
+    "id": "CARD.CATASTROPHE",
+    "name": "Catastrophe",
+    "pickRate": 4.4,
+    "winRateDelta": 24.9,
+    "timesPicked": 49,
+    "powerScore": 40.0,
+    "powerTier": "C",
+    "eloRating": 1057
+  },
+  {
+    "id": "CARD.TREMBLE",
+    "name": "Tremble",
+    "pickRate": 30.2,
+    "winRateDelta": 11.3,
+    "timesPicked": 5552,
+    "powerScore": 39.9,
+    "powerTier": "D",
+    "eloRating": 1232
+  },
+  {
+    "id": "CARD.FERAL",
+    "name": "Feral",
+    "pickRate": 24.8,
+    "winRateDelta": 12.8,
+    "timesPicked": 1203,
+    "powerScore": 39.9,
+    "powerTier": "D",
+    "eloRating": 1225
+  },
+  {
+    "id": "CARD.ASTRAL_PULSE",
+    "name": "Astral Pulse",
+    "pickRate": 23.8,
+    "winRateDelta": 7.3,
+    "timesPicked": 3491,
+    "powerScore": 39.8,
+    "powerTier": "D",
+    "eloRating": 1169
+  },
+  {
+    "id": "CARD.BLADE_DANCE",
+    "name": "Blade Dance",
+    "pickRate": 31.3,
+    "winRateDelta": 12.4,
+    "timesPicked": 4719,
+    "powerScore": 39.6,
+    "powerTier": "D",
+    "eloRating": 1216
+  },
+  {
+    "id": "CARD.SCOURGE",
+    "name": "Scourge",
+    "pickRate": 21.7,
+    "winRateDelta": 8.3,
+    "timesPicked": 2229,
+    "powerScore": 39.6,
+    "powerTier": "D",
+    "eloRating": 962
+  },
+  {
+    "id": "CARD.FIGHT_ME",
+    "name": "Fight Me",
+    "pickRate": 18.5,
+    "winRateDelta": 11.7,
+    "timesPicked": 1164,
+    "powerScore": 39.6,
+    "powerTier": "D",
+    "eloRating": 1028
+  },
+  {
+    "id": "CARD.CHARGE_BATTERY",
+    "name": "Charge Battery",
+    "pickRate": 31.1,
+    "winRateDelta": 8.3,
+    "timesPicked": 3892,
+    "powerScore": 39.5,
+    "powerTier": "D",
+    "eloRating": 1153
+  },
+  {
+    "id": "CARD.GRAVEBLAST",
+    "name": "Graveblast",
+    "pickRate": 17.4,
+    "winRateDelta": 13.2,
+    "timesPicked": 1831,
+    "powerScore": 39.5,
+    "powerTier": "D",
+    "eloRating": 1227
+  },
+  {
+    "id": "CARD.PARSE",
+    "name": "Parse",
+    "pickRate": 24.2,
+    "winRateDelta": 17.0,
+    "timesPicked": 895,
+    "powerScore": 39.5,
+    "powerTier": "D",
+    "eloRating": 1163
+  },
+  {
+    "id": "CARD.CLEANSE",
+    "name": "Cleanse",
+    "pickRate": 25.0,
+    "winRateDelta": 11.8,
+    "timesPicked": 946,
+    "powerScore": 39.4,
+    "powerTier": "D",
+    "eloRating": 1119
+  },
+  {
+    "id": "CARD.SOUL_STORM",
+    "name": "Soul Storm",
+    "pickRate": 17.6,
+    "winRateDelta": 9.3,
+    "timesPicked": 346,
+    "powerScore": 39.4,
+    "powerTier": "D",
+    "eloRating": 1294
+  },
+  {
+    "id": "CARD.HAZE",
+    "name": "Haze",
+    "pickRate": 32.3,
+    "winRateDelta": 10.2,
+    "timesPicked": 1762,
+    "powerScore": 39.3,
+    "powerTier": "D",
+    "eloRating": 1417
+  },
+  {
+    "id": "CARD.ROCKET_PUNCH",
+    "name": "Rocket Punch",
+    "pickRate": 26.2,
+    "winRateDelta": 16.2,
+    "timesPicked": 1213,
+    "powerScore": 39.3,
+    "powerTier": "D",
+    "eloRating": 1180
+  },
+  {
+    "id": "CARD.STRANGLE",
+    "name": "Strangle",
+    "pickRate": 20.2,
+    "winRateDelta": 11.5,
+    "timesPicked": 1118,
+    "powerScore": 39.3,
+    "powerTier": "D",
+    "eloRating": 1316
+  },
+  {
+    "id": "CARD.CONSUMING_SHADOW",
+    "name": "Consuming Shadow",
+    "pickRate": 13.4,
+    "winRateDelta": 14.8,
+    "timesPicked": 296,
+    "powerScore": 39.3,
+    "powerTier": "D",
+    "eloRating": 1175
+  },
+  {
+    "id": "CARD.COSMIC_INDIFFERENCE",
+    "name": "Cosmic Indifference",
+    "pickRate": 22.4,
+    "winRateDelta": 14.9,
+    "timesPicked": 3267,
+    "powerScore": 39.2,
+    "powerTier": "D",
+    "eloRating": 1145
+  },
+  {
+    "id": "CARD.RUPTURE",
+    "name": "Rupture",
+    "pickRate": 28.7,
+    "winRateDelta": 12.3,
+    "timesPicked": 1978,
+    "powerScore": 39.2,
+    "powerTier": "D",
+    "eloRating": 1177
+  },
+  {
+    "id": "CARD.STORM",
+    "name": "Storm",
+    "pickRate": 25.7,
+    "winRateDelta": 13.1,
+    "timesPicked": 1228,
+    "powerScore": 39.1,
+    "powerTier": "D",
+    "eloRating": 1182
+  },
+  {
+    "id": "CARD.INFLAME",
+    "name": "Inflame",
+    "pickRate": 23.9,
+    "winRateDelta": 10.4,
+    "timesPicked": 1707,
+    "powerScore": 39.0,
+    "powerTier": "D",
+    "eloRating": 1172
+  },
+  {
+    "id": "CARD.DREDGE",
+    "name": "Dredge",
+    "pickRate": 25.7,
+    "winRateDelta": 21.2,
+    "timesPicked": 979,
+    "powerScore": 39.0,
+    "powerTier": "D",
+    "eloRating": 1193
+  },
+  {
+    "id": "CARD.INFERNO",
+    "name": "Inferno",
+    "pickRate": 31.5,
+    "winRateDelta": 10.4,
+    "timesPicked": 1879,
+    "powerScore": 38.8,
+    "powerTier": "D",
+    "eloRating": 1235
+  },
+  {
+    "id": "CARD.MIND_BLAST",
+    "name": "Mind Blast",
+    "pickRate": 3.2,
+    "winRateDelta": 32.4,
+    "timesPicked": 35,
+    "powerScore": 38.8,
+    "powerTier": "D",
+    "eloRating": 1100
+  },
+  {
+    "id": "CARD.HIDDEN_CACHE",
+    "name": "Hidden Cache",
+    "pickRate": 28.1,
+    "winRateDelta": 13.1,
+    "timesPicked": 4075,
+    "powerScore": 38.7,
+    "powerTier": "D",
+    "eloRating": 1095
+  },
+  {
+    "id": "CARD.DEVOUR_LIFE",
+    "name": "Devour Life",
+    "pickRate": 30.2,
+    "winRateDelta": 12.9,
+    "timesPicked": 566,
+    "powerScore": 38.7,
+    "powerTier": "D",
+    "eloRating": 1384
+  },
+  {
+    "id": "CARD.STAMPEDE",
+    "name": "Stampede",
+    "pickRate": 26.5,
+    "winRateDelta": 10.0,
+    "timesPicked": 1796,
+    "powerScore": 38.4,
+    "powerTier": "D",
+    "eloRating": 1277
+  },
+  {
+    "id": "CARD.SKIM",
+    "name": "Skim",
+    "pickRate": 33.0,
+    "winRateDelta": 21.0,
+    "timesPicked": 1465,
+    "powerScore": 38.3,
+    "powerTier": "D",
+    "eloRating": 1286
+  },
+  {
+    "id": "CARD.THE_SCYTHE",
+    "name": "The Scythe",
+    "pickRate": 17.0,
+    "winRateDelta": 14.9,
+    "timesPicked": 314,
+    "powerScore": 38.3,
+    "powerTier": "D",
+    "eloRating": 1309
+  },
+  {
+    "id": "CARD.HEADBUTT",
+    "name": "Headbutt",
+    "pickRate": 18.9,
+    "winRateDelta": 9.7,
+    "timesPicked": 3332,
+    "powerScore": 38.2,
+    "powerTier": "D",
+    "eloRating": 1129
+  },
+  {
+    "id": "CARD.BLOOD_WALL",
+    "name": "Blood Wall",
+    "pickRate": 25.6,
+    "winRateDelta": 8.5,
+    "timesPicked": 4035,
+    "powerScore": 38.1,
+    "powerTier": "D",
+    "eloRating": 1121
+  },
+  {
+    "id": "CARD.SYNCHRONIZE",
+    "name": "Synchronize",
+    "pickRate": 27.4,
+    "winRateDelta": 13.8,
+    "timesPicked": 1215,
+    "powerScore": 38.0,
+    "powerTier": "D",
+    "eloRating": 1183
+  },
+  {
+    "id": "CARD.FURNACE",
+    "name": "Furnace",
+    "pickRate": 22.1,
+    "winRateDelta": 12.0,
+    "timesPicked": 1245,
+    "powerScore": 37.8,
+    "powerTier": "D",
+    "eloRating": 1142
+  },
+  {
+    "id": "CARD.EXPECT_A_FIGHT",
+    "name": "Expect A Fight",
+    "pickRate": 24.5,
+    "winRateDelta": 13.0,
+    "timesPicked": 1593,
+    "powerScore": 37.7,
+    "powerTier": "D",
+    "eloRating": 1181
+  },
+  {
+    "id": "CARD.GLASSWORK",
+    "name": "Glasswork",
+    "pickRate": 32.1,
+    "winRateDelta": 10.5,
+    "timesPicked": 1450,
+    "powerScore": 37.7,
+    "powerTier": "D",
+    "eloRating": 1248
+  },
+  {
+    "id": "CARD.CLAW",
+    "name": "Claw",
+    "pickRate": 23.6,
+    "winRateDelta": 2.9,
+    "timesPicked": 2895,
+    "powerScore": 37.6,
+    "powerTier": "D",
+    "eloRating": 1300
+  },
+  {
+    "id": "CARD.BACKSTAB",
+    "name": "Backstab",
+    "pickRate": 29.3,
+    "winRateDelta": 11.0,
+    "timesPicked": 1670,
+    "powerScore": 37.4,
+    "powerTier": "D",
+    "eloRating": 1302
+  },
+  {
+    "id": "CARD.DASH",
+    "name": "Dash",
+    "pickRate": 19.8,
+    "winRateDelta": 5.9,
+    "timesPicked": 1097,
+    "powerScore": 37.4,
+    "powerTier": "D",
+    "eloRating": 1068
+  },
+  {
+    "id": "CARD.CLOAK_AND_DAGGER",
+    "name": "Cloak And Dagger",
+    "pickRate": 29.3,
+    "winRateDelta": 13.0,
+    "timesPicked": 4448,
+    "powerScore": 37.2,
+    "powerTier": "D",
+    "eloRating": 1076
+  },
+  {
+    "id": "CARD.CLOAK_OF_STARS",
+    "name": "Cloak Of Stars",
+    "pickRate": 24.5,
+    "winRateDelta": 12.2,
+    "timesPicked": 3583,
+    "powerScore": 37.2,
+    "powerTier": "D",
+    "eloRating": 1081
+  },
+  {
+    "id": "CARD.SHADOW_SHIELD",
+    "name": "Shadow Shield",
+    "pickRate": 32.7,
+    "winRateDelta": 14.1,
+    "timesPicked": 1457,
+    "powerScore": 37.2,
+    "powerTier": "D",
+    "eloRating": 1226
+  },
+  {
+    "id": "CARD.GLIMMER",
+    "name": "Glimmer",
+    "pickRate": 22.0,
+    "winRateDelta": 20.3,
+    "timesPicked": 1177,
+    "powerScore": 37.2,
+    "powerTier": "D",
+    "eloRating": 1147
+  },
+  {
+    "id": "CARD.BONE_SHARDS",
+    "name": "Bone Shards",
+    "pickRate": 27.6,
+    "winRateDelta": 8.9,
+    "timesPicked": 1031,
+    "powerScore": 37.2,
+    "powerTier": "D",
+    "eloRating": 1253
+  },
+  {
+    "id": "CARD.VEILPIERCER",
+    "name": "Veilpiercer",
+    "pickRate": 23.3,
+    "winRateDelta": 7.5,
+    "timesPicked": 730,
+    "powerScore": 37.1,
+    "powerTier": "D",
+    "eloRating": 1134
+  },
+  {
+    "id": "CARD.HOLOGRAM",
+    "name": "Hologram",
+    "pickRate": 36.9,
+    "winRateDelta": 13.3,
+    "timesPicked": 4620,
+    "powerScore": 37.0,
+    "powerTier": "D",
+    "eloRating": 1317
+  },
+  {
+    "id": "CARD.LOOP",
+    "name": "Loop",
+    "pickRate": 29.5,
+    "winRateDelta": 11.0,
+    "timesPicked": 1386,
+    "powerScore": 37.0,
+    "powerTier": "D",
+    "eloRating": 1329
+  },
+  {
+    "id": "CARD.BLUDGEON",
+    "name": "Bludgeon",
+    "pickRate": 21.9,
+    "winRateDelta": 9.7,
+    "timesPicked": 1407,
+    "powerScore": 37.0,
+    "powerTier": "D",
+    "eloRating": 1014
+  },
+  {
+    "id": "CARD.TURBO",
+    "name": "Turbo",
+    "pickRate": 33.7,
+    "winRateDelta": 11.1,
+    "timesPicked": 3730,
+    "powerScore": 36.7,
+    "powerTier": "D",
+    "eloRating": 1347
+  },
+  {
+    "id": "CARD.ULTIMATE_STRIKE",
+    "name": "Ultimate Strike",
+    "pickRate": 6.2,
+    "winRateDelta": 21.1,
+    "timesPicked": 66,
+    "powerScore": 36.7,
+    "powerTier": "D",
+    "eloRating": 1062
+  },
+  {
+    "id": "CARD.ECHOING_SLASH",
+    "name": "Echoing Slash",
+    "pickRate": 17.9,
+    "winRateDelta": 10.7,
+    "timesPicked": 475,
+    "powerScore": 36.6,
+    "powerTier": "D",
+    "eloRating": 1284
+  },
+  {
+    "id": "CARD.SCAVENGE",
+    "name": "Scavenge",
+    "pickRate": 25.4,
+    "winRateDelta": 11.8,
+    "timesPicked": 983,
+    "powerScore": 36.5,
+    "powerTier": "D",
+    "eloRating": 1054
+  },
+  {
+    "id": "CARD.DANSE_MACABRE",
+    "name": "Danse Macabre",
+    "pickRate": 18.3,
+    "winRateDelta": 19.2,
+    "timesPicked": 771,
+    "powerScore": 36.5,
+    "powerTier": "D",
+    "eloRating": 970
+  },
+  {
+    "id": "CARD.BURY",
+    "name": "Bury",
+    "pickRate": 10.3,
+    "winRateDelta": 16.3,
+    "timesPicked": 382,
+    "powerScore": 36.5,
+    "powerTier": "D",
+    "eloRating": 1020
+  },
+  {
+    "id": "CARD.PAGESTORM",
+    "name": "Pagestorm",
+    "pickRate": 23.0,
+    "winRateDelta": 16.3,
+    "timesPicked": 928,
+    "powerScore": 36.1,
+    "powerTier": "D",
+    "eloRating": 1134
+  },
+  {
+    "id": "CARD.SPUR",
+    "name": "Spur",
+    "pickRate": 27.7,
+    "winRateDelta": 12.3,
+    "timesPicked": 1051,
+    "powerScore": 35.8,
+    "powerTier": "D",
+    "eloRating": 1202
+  },
+  {
+    "id": "CARD.BOUNCING_FLASK",
+    "name": "Bouncing Flask",
+    "pickRate": 17.4,
+    "winRateDelta": 9.6,
+    "timesPicked": 946,
+    "powerScore": 35.8,
+    "powerTier": "D",
+    "eloRating": 1056
+  },
+  {
+    "id": "CARD.KINGLY_PUNCH",
+    "name": "Kingly Punch",
+    "pickRate": 13.5,
+    "winRateDelta": 10.7,
+    "timesPicked": 720,
+    "powerScore": 35.6,
+    "powerTier": "D",
+    "eloRating": 1126
+  },
+  {
+    "id": "CARD.DARKNESS",
+    "name": "Darkness",
+    "pickRate": 27.0,
+    "winRateDelta": 11.9,
+    "timesPicked": 1194,
+    "powerScore": 35.4,
+    "powerTier": "D",
+    "eloRating": 1249
+  },
+  {
+    "id": "CARD.INFERNAL_BLADE",
+    "name": "Infernal Blade",
+    "pickRate": 19.3,
+    "winRateDelta": 8.8,
+    "timesPicked": 1207,
+    "powerScore": 35.2,
+    "powerTier": "D",
+    "eloRating": 1272
+  },
+  {
+    "id": "CARD.SHINING_STRIKE",
+    "name": "Shining Strike",
+    "pickRate": 23.1,
+    "winRateDelta": 11.0,
+    "timesPicked": 1252,
+    "powerScore": 35.2,
+    "powerTier": "D",
+    "eloRating": 1232
+  },
+  {
+    "id": "CARD.BUBBLE_BUBBLE",
+    "name": "Bubble Bubble",
+    "pickRate": 19.3,
+    "winRateDelta": 11.3,
+    "timesPicked": 1044,
+    "powerScore": 35.2,
+    "powerTier": "D",
+    "eloRating": 1152
+  },
+  {
+    "id": "CARD.GRAND_FINALE",
+    "name": "Grand Finale",
+    "pickRate": 7.7,
+    "winRateDelta": 13.9,
+    "timesPicked": 207,
+    "powerScore": 35.2,
+    "powerTier": "D",
+    "eloRating": 1078
+  },
+  {
+    "id": "CARD.MOLTEN_FIST",
+    "name": "Molten Fist",
+    "pickRate": 24.9,
+    "winRateDelta": 10.8,
+    "timesPicked": 4319,
+    "powerScore": 35.1,
+    "powerTier": "D",
+    "eloRating": 1193
+  },
+  {
+    "id": "CARD.UNRELENTING",
+    "name": "Unrelenting",
+    "pickRate": 20.2,
+    "winRateDelta": 9.5,
+    "timesPicked": 1272,
+    "powerScore": 35.1,
+    "powerTier": "D",
+    "eloRating": 1056
+  },
+  {
+    "id": "CARD.HIGH_FIVE",
+    "name": "High Five",
+    "pickRate": 25.2,
+    "winRateDelta": 7.7,
+    "timesPicked": 945,
+    "powerScore": 35.0,
+    "powerTier": "D",
+    "eloRating": 1239
+  },
+  {
+    "id": "CARD.TRUE_GRIT",
+    "name": "True Grit",
+    "pickRate": 19.0,
+    "winRateDelta": 9.0,
+    "timesPicked": 3415,
+    "powerScore": 34.9,
+    "powerTier": "D",
+    "eloRating": 1004
+  },
+  {
+    "id": "CARD.PREDATOR",
+    "name": "Predator",
+    "pickRate": 10.7,
+    "winRateDelta": 8.8,
+    "timesPicked": 579,
+    "powerScore": 34.7,
+    "powerTier": "D",
+    "eloRating": 1037
+  },
+  {
+    "id": "CARD.SEVERANCE",
+    "name": "Severance",
+    "pickRate": 22.6,
+    "winRateDelta": 9.6,
+    "timesPicked": 859,
+    "powerScore": 34.5,
+    "powerTier": "D",
+    "eloRating": 1147
+  },
+  {
+    "id": "CARD.SUMMON_FORTH",
+    "name": "Summon Forth",
+    "pickRate": 28.7,
+    "winRateDelta": 14.8,
+    "timesPicked": 1498,
+    "powerScore": 34.4,
+    "powerTier": "D",
+    "eloRating": 1274
+  },
+  {
+    "id": "CARD.RIGHT_HAND_HAND",
+    "name": "Right Hand Hand",
+    "pickRate": 18.4,
+    "winRateDelta": 10.3,
+    "timesPicked": 711,
+    "powerScore": 34.4,
+    "powerTier": "D",
+    "eloRating": 1202
+  },
+  {
+    "id": "CARD.DODGE_AND_ROLL",
+    "name": "Dodge And Roll",
+    "pickRate": 15.3,
+    "winRateDelta": 14.2,
+    "timesPicked": 2298,
+    "powerScore": 34.2,
+    "powerTier": "D",
+    "eloRating": 994
+  },
+  {
+    "id": "CARD.PARRY",
+    "name": "Parry",
+    "pickRate": 22.0,
+    "winRateDelta": 14.4,
+    "timesPicked": 1264,
+    "powerScore": 34.2,
+    "powerTier": "D",
+    "eloRating": 1197
+  },
+  {
+    "id": "CARD.THRUMMING_HATCHET",
+    "name": "Thrumming Hatchet",
+    "pickRate": 6.4,
+    "winRateDelta": 14.7,
+    "timesPicked": 65,
+    "powerScore": 34.2,
+    "powerTier": "D",
+    "eloRating": 1190
+  },
+  {
+    "id": "CARD.PREP_TIME",
+    "name": "Prep Time",
+    "pickRate": 5.2,
+    "winRateDelta": 15.5,
+    "timesPicked": 56,
+    "powerScore": 34.2,
+    "powerTier": "D",
+    "eloRating": 1131
+  },
+  {
+    "id": "CARD.MONARCHS_GAZE",
+    "name": "Monarchs Gaze",
+    "pickRate": 8.0,
+    "winRateDelta": 20.8,
+    "timesPicked": 211,
+    "powerScore": 34.2,
+    "powerTier": "D",
+    "eloRating": 1048
+  },
+  {
+    "id": "CARD.EXPERTISE",
+    "name": "Expertise",
+    "pickRate": 13.5,
+    "winRateDelta": 14.5,
+    "timesPicked": 745,
+    "powerScore": 34.1,
+    "powerTier": "D",
+    "eloRating": 1055
+  },
+  {
+    "id": "CARD.PINPOINT",
+    "name": "Pinpoint",
+    "pickRate": 21.4,
+    "winRateDelta": 7.5,
+    "timesPicked": 1190,
+    "powerScore": 33.9,
+    "powerTier": "D",
+    "eloRating": 1240
+  },
+  {
+    "id": "CARD.PRECISE_CUT",
+    "name": "Precise Cut",
+    "pickRate": 13.2,
+    "winRateDelta": 9.0,
+    "timesPicked": 737,
+    "powerScore": 33.9,
+    "powerTier": "D",
+    "eloRating": 1272
+  },
+  {
+    "id": "CARD.BODY_SLAM",
+    "name": "Body Slam",
+    "pickRate": 10.5,
+    "winRateDelta": 11.7,
+    "timesPicked": 1862,
+    "powerScore": 33.8,
+    "powerTier": "D",
+    "eloRating": 923
+  },
+  {
+    "id": "CARD.IMPATIENCE",
+    "name": "Impatience",
+    "pickRate": 4.3,
+    "winRateDelta": 28.9,
+    "timesPicked": 45,
+    "powerScore": 33.8,
+    "powerTier": "D",
+    "eloRating": 1055
+  },
+  {
+    "id": "CARD.INVOKE",
+    "name": "Invoke",
+    "pickRate": 25.9,
+    "winRateDelta": 10.8,
+    "timesPicked": 2753,
+    "powerScore": 33.7,
+    "powerTier": "D",
+    "eloRating": 1138
+  },
+  {
+    "id": "CARD.FLECHETTES",
+    "name": "Flechettes",
+    "pickRate": 14.5,
+    "winRateDelta": 11.3,
+    "timesPicked": 813,
+    "powerScore": 33.7,
+    "powerTier": "D",
+    "eloRating": 1085
+  },
+  {
+    "id": "CARD.RESTLESSNESS",
+    "name": "Restlessness",
+    "pickRate": 5.2,
+    "winRateDelta": 24.0,
+    "timesPicked": 57,
+    "powerScore": 33.7,
+    "powerTier": "D",
+    "eloRating": 1099
+  },
+  {
+    "id": "CARD.HAND_TRICK",
+    "name": "Hand Trick",
+    "pickRate": 21.5,
+    "winRateDelta": 10.6,
+    "timesPicked": 1067,
+    "powerScore": 33.6,
+    "powerTier": "D",
+    "eloRating": 1272
+  },
+  {
+    "id": "CARD.PROPHESIZE",
+    "name": "Prophesize",
+    "pickRate": 5.8,
+    "winRateDelta": 23.1,
+    "timesPicked": 305,
+    "powerScore": 33.6,
+    "powerTier": "D",
+    "eloRating": 883
+  },
+  {
+    "id": "CARD.DEFLECT",
+    "name": "Deflect",
+    "pickRate": 17.9,
+    "winRateDelta": 11.4,
+    "timesPicked": 2674,
+    "powerScore": 33.5,
+    "powerTier": "D",
+    "eloRating": 980
+  },
+  {
+    "id": "CARD.REFINE_BLADE",
+    "name": "Refine Blade",
+    "pickRate": 16.0,
+    "winRateDelta": 10.4,
+    "timesPicked": 2352,
+    "powerScore": 33.5,
+    "powerTier": "D",
+    "eloRating": 900
+  },
+  {
+    "id": "CARD.DISMANTLE",
+    "name": "Dismantle",
+    "pickRate": 26.2,
+    "winRateDelta": 11.2,
+    "timesPicked": 1728,
+    "powerScore": 33.4,
+    "powerTier": "D",
+    "eloRating": 1235
+  },
+  {
+    "id": "CARD.RATTLE",
+    "name": "Rattle",
+    "pickRate": 15.1,
+    "winRateDelta": 8.7,
+    "timesPicked": 563,
+    "powerScore": 33.4,
+    "powerTier": "D",
+    "eloRating": 1127
+  },
+  {
+    "id": "CARD.GLITTERSTREAM",
+    "name": "Glitterstream",
+    "pickRate": 15.1,
+    "winRateDelta": 13.4,
+    "timesPicked": 2204,
+    "powerScore": 33.3,
+    "powerTier": "D",
+    "eloRating": 988
+  },
+  {
+    "id": "CARD.SMOKESTACK",
+    "name": "Smokestack",
+    "pickRate": 22.6,
+    "winRateDelta": 12.3,
+    "timesPicked": 971,
+    "powerScore": 33.3,
+    "powerTier": "D",
+    "eloRating": 1140
+  },
+  {
+    "id": "CARD.FUSION",
+    "name": "Fusion",
+    "pickRate": 14.9,
+    "winRateDelta": 10.9,
+    "timesPicked": 688,
+    "powerScore": 33.1,
+    "powerTier": "D",
+    "eloRating": 1097
+  },
+  {
+    "id": "CARD.FINISHER",
+    "name": "Finisher",
+    "pickRate": 18.0,
+    "winRateDelta": 16.0,
+    "timesPicked": 1002,
+    "powerScore": 32.9,
+    "powerTier": "D",
+    "eloRating": 1199
+  },
+  {
+    "id": "CARD.METEOR_STRIKE",
+    "name": "Meteor Strike",
+    "pickRate": 11.8,
+    "winRateDelta": 19.3,
+    "timesPicked": 275,
+    "powerScore": 32.8,
+    "powerTier": "D",
+    "eloRating": 1015
+  },
+  {
+    "id": "CARD.KINGLY_KICK",
+    "name": "Kingly Kick",
+    "pickRate": 13.7,
+    "winRateDelta": 7.3,
+    "timesPicked": 743,
+    "powerScore": 32.5,
+    "powerTier": "D",
+    "eloRating": 1182
+  },
+  {
+    "id": "CARD.HYPERBEAM",
+    "name": "Hyperbeam",
+    "pickRate": 6.7,
+    "winRateDelta": 8.2,
+    "timesPicked": 148,
+    "powerScore": 32.4,
+    "powerTier": "D",
+    "eloRating": 1222
+  },
+  {
+    "id": "CARD.VOLLEY",
+    "name": "Volley",
+    "pickRate": 3.7,
+    "winRateDelta": 19.9,
+    "timesPicked": 39,
+    "powerScore": 32.4,
+    "powerTier": "D",
+    "eloRating": 926
+  },
+  {
+    "id": "CARD.CALCIFY",
+    "name": "Calcify",
+    "pickRate": 18.5,
+    "winRateDelta": 10.6,
+    "timesPicked": 665,
+    "powerScore": 32.3,
+    "powerTier": "D",
+    "eloRating": 1150
+  },
+  {
+    "id": "CARD.PREVENT_HEMOSTASIS",
+    "name": "Prevent Hemostasis",
+    "pickRate": 62.5,
+    "winRateDelta": -2.8,
+    "timesPicked": 5,
+    "powerScore": 32.3,
+    "powerTier": "D",
+    "eloRating": 1244
+  },
+  {
+    "id": "CARD.THUNDERCLAP",
+    "name": "Thunderclap",
+    "pickRate": 15.7,
+    "winRateDelta": 4.3,
+    "timesPicked": 2765,
+    "powerScore": 32.2,
+    "powerTier": "D",
+    "eloRating": 1118
+  },
+  {
+    "id": "CARD.SCRAPE",
+    "name": "Scrape",
+    "pickRate": 13.5,
+    "winRateDelta": 13.3,
+    "timesPicked": 630,
+    "powerScore": 32.2,
+    "powerTier": "D",
+    "eloRating": 1218
+  },
+  {
+    "id": "CARD.BOOST_AWAY",
+    "name": "Boost Away",
+    "pickRate": 24.1,
+    "winRateDelta": 12.6,
+    "timesPicked": 2990,
+    "powerScore": 32.0,
+    "powerTier": "D",
+    "eloRating": 1193
+  },
+  {
+    "id": "CARD.GUIDING_STAR",
+    "name": "Guiding Star",
+    "pickRate": 16.3,
+    "winRateDelta": 13.5,
+    "timesPicked": 2422,
+    "powerScore": 32.0,
+    "powerTier": "D",
+    "eloRating": 1005
+  },
+  {
+    "id": "CARD.PATTER",
+    "name": "Patter",
+    "pickRate": 17.8,
+    "winRateDelta": 13.1,
+    "timesPicked": 2267,
+    "powerScore": 32.0,
+    "powerTier": "D",
+    "eloRating": 1029
+  },
+  {
+    "id": "CARD.STOMP",
+    "name": "Stomp",
+    "pickRate": 21.0,
+    "winRateDelta": 5.1,
+    "timesPicked": 1363,
+    "powerScore": 32.0,
+    "powerTier": "D",
+    "eloRating": 1151
+  },
+  {
+    "id": "CARD.RICOCHET",
+    "name": "Ricochet",
+    "pickRate": 20.4,
+    "winRateDelta": 7.0,
+    "timesPicked": 3059,
+    "powerScore": 31.9,
+    "powerTier": "D",
+    "eloRating": 1160
+  },
+  {
+    "id": "CARD.GUNK_UP",
+    "name": "Gunk Up",
+    "pickRate": 11.1,
+    "winRateDelta": 6.0,
+    "timesPicked": 1370,
+    "powerScore": 31.8,
+    "powerTier": "D",
+    "eloRating": 878
+  },
+  {
+    "id": "CARD.TEMPEST",
+    "name": "Tempest",
+    "pickRate": 19.5,
+    "winRateDelta": 8.9,
+    "timesPicked": 872,
+    "powerScore": 31.8,
+    "powerTier": "D",
+    "eloRating": 1151
+  },
+  {
+    "id": "CARD.COLD_SNAP",
+    "name": "Cold Snap",
+    "pickRate": 21.5,
+    "winRateDelta": 6.9,
+    "timesPicked": 2700,
+    "powerScore": 31.7,
+    "powerTier": "D",
+    "eloRating": 1035
+  },
+  {
+    "id": "CARD.COMPILE_DRIVER",
+    "name": "Compile Driver",
+    "pickRate": 17.9,
+    "winRateDelta": 14.1,
+    "timesPicked": 2205,
+    "powerScore": 31.5,
+    "powerTier": "D",
+    "eloRating": 1108
+  },
+  {
+    "id": "CARD.OUTBREAK",
+    "name": "Outbreak",
+    "pickRate": 14.1,
+    "winRateDelta": 8.9,
+    "timesPicked": 855,
+    "powerScore": 31.3,
+    "powerTier": "D",
+    "eloRating": 1288
+  },
+  {
+    "id": "CARD.REFRACT",
+    "name": "Refract",
+    "pickRate": 19.0,
+    "winRateDelta": 7.3,
+    "timesPicked": 903,
+    "powerScore": 31.3,
+    "powerTier": "D",
+    "eloRating": 1158
+  },
+  {
+    "id": "CARD.CONQUEROR",
+    "name": "Conqueror",
+    "pickRate": 19.9,
+    "winRateDelta": 12.2,
+    "timesPicked": 1072,
+    "powerScore": 31.2,
+    "powerTier": "D",
+    "eloRating": 1158
+  },
+  {
+    "id": "CARD.ARMAMENTS",
+    "name": "Armaments",
+    "pickRate": 16.7,
+    "winRateDelta": 9.2,
+    "timesPicked": 2986,
+    "powerScore": 31.0,
+    "powerTier": "D",
+    "eloRating": 1000
+  },
+  {
+    "id": "CARD.TESLA_COIL",
+    "name": "Tesla Coil",
+    "pickRate": 15.3,
+    "winRateDelta": 8.6,
+    "timesPicked": 704,
+    "powerScore": 30.9,
+    "powerTier": "D",
+    "eloRating": 1041
+  },
+  {
+    "id": "CARD.BARRAGE",
+    "name": "Barrage",
+    "pickRate": 16.5,
+    "winRateDelta": 8.4,
+    "timesPicked": 1841,
+    "powerScore": 30.8,
+    "powerTier": "D",
+    "eloRating": 1012
+  },
+  {
+    "id": "CARD.POKE",
+    "name": "Poke",
+    "pickRate": 13.7,
+    "winRateDelta": 6.4,
+    "timesPicked": 1427,
+    "powerScore": 30.7,
+    "powerTier": "D",
+    "eloRating": 1035
+  },
+  {
+    "id": "CARD.DAGGER_THROW",
+    "name": "Dagger Throw",
+    "pickRate": 21.5,
+    "winRateDelta": 4.7,
+    "timesPicked": 3222,
+    "powerScore": 30.5,
+    "powerTier": "D",
+    "eloRating": 1169
+  },
+  {
+    "id": "CARD.SNAKEBITE",
+    "name": "Snakebite",
+    "pickRate": 13.9,
+    "winRateDelta": 4.8,
+    "timesPicked": 2036,
+    "powerScore": 30.5,
+    "powerTier": "D",
+    "eloRating": 997
+  },
+  {
+    "id": "CARD.HEGEMONY",
+    "name": "Hegemony",
+    "pickRate": 14.7,
+    "winRateDelta": 10.8,
+    "timesPicked": 790,
+    "powerScore": 30.5,
+    "powerTier": "D",
+    "eloRating": 1000
+  },
+  {
+    "id": "CARD.THE_BOMB",
+    "name": "The Bomb",
+    "pickRate": 5.2,
+    "winRateDelta": 9.9,
+    "timesPicked": 55,
+    "powerScore": 30.5,
+    "powerTier": "D",
+    "eloRating": 1060
+  },
+  {
+    "id": "CARD.DRUM_OF_BATTLE",
+    "name": "Drum Of Battle",
+    "pickRate": 5.3,
+    "winRateDelta": 13.2,
+    "timesPicked": 338,
+    "powerScore": 30.4,
+    "powerTier": "D",
+    "eloRating": 969
+  },
+  {
+    "id": "CARD.SOLAR_STRIKE",
+    "name": "Solar Strike",
+    "pickRate": 13.5,
+    "winRateDelta": 5.8,
+    "timesPicked": 2000,
+    "powerScore": 30.3,
+    "powerTier": "D",
+    "eloRating": 996
+  },
+  {
+    "id": "CARD.FOCUSED_STRIKE",
+    "name": "Focused Strike",
+    "pickRate": 13.0,
+    "winRateDelta": 6.0,
+    "timesPicked": 1594,
+    "powerScore": 30.3,
+    "powerTier": "D",
+    "eloRating": 1018
+  },
+  {
+    "id": "CARD.HAUNT",
+    "name": "Haunt",
+    "pickRate": 20.7,
+    "winRateDelta": 9.1,
+    "timesPicked": 869,
+    "powerScore": 30.3,
+    "powerTier": "D",
+    "eloRating": 1248
+  },
+  {
+    "id": "CARD.MULTI_CAST",
+    "name": "Multi Cast",
+    "pickRate": 14.1,
+    "winRateDelta": 13.9,
+    "timesPicked": 320,
+    "powerScore": 30.3,
+    "powerTier": "D",
+    "eloRating": 1232
+  },
+  {
+    "id": "CARD.FEAR",
+    "name": "Fear",
+    "pickRate": 17.6,
+    "winRateDelta": 6.6,
+    "timesPicked": 1803,
+    "powerScore": 30.2,
+    "powerTier": "D",
+    "eloRating": 1049
+  },
+  {
+    "id": "CARD.SPEEDSTER",
+    "name": "Speedster",
+    "pickRate": 14.3,
+    "winRateDelta": 9.3,
+    "timesPicked": 863,
+    "powerScore": 30.1,
+    "powerTier": "D",
+    "eloRating": 1176
+  },
+  {
+    "id": "CARD.MELANCHOLY",
+    "name": "Melancholy",
+    "pickRate": 16.6,
+    "winRateDelta": 12.1,
+    "timesPicked": 650,
+    "powerScore": 30.1,
+    "powerTier": "D",
+    "eloRating": 975
+  },
+  {
+    "id": "CARD.POUNCE",
+    "name": "Pounce",
+    "pickRate": 9.5,
+    "winRateDelta": 1.8,
+    "timesPicked": 538,
+    "powerScore": 30.1,
+    "powerTier": "D",
+    "eloRating": 1142
+  },
+  {
+    "id": "CARD.BREAKTHROUGH",
+    "name": "Breakthrough",
+    "pickRate": 20.1,
+    "winRateDelta": 3.3,
+    "timesPicked": 3550,
+    "powerScore": 30.0,
+    "powerTier": "D",
+    "eloRating": 1041
+  },
+  {
+    "id": "CARD.AFTERLIFE",
+    "name": "Afterlife",
+    "pickRate": 15.1,
+    "winRateDelta": 9.6,
+    "timesPicked": 1410,
+    "powerScore": 30.0,
+    "powerTier": "D",
+    "eloRating": 996
+  },
+  {
+    "id": "CARD.MIRAGE",
+    "name": "Mirage",
+    "pickRate": 10.1,
+    "winRateDelta": 13.1,
+    "timesPicked": 562,
+    "powerScore": 29.8,
+    "powerTier": "D",
+    "eloRating": 1145
+  },
+  {
+    "id": "CARD.TWIN_STRIKE",
+    "name": "Twin Strike",
+    "pickRate": 14.3,
+    "winRateDelta": 5.2,
+    "timesPicked": 2501,
+    "powerScore": 29.4,
+    "powerTier": "D",
+    "eloRating": 1166
+  },
+  {
+    "id": "CARD.WROUGHT_IN_WAR",
+    "name": "Wrought In War",
+    "pickRate": 9.3,
+    "winRateDelta": 6.0,
+    "timesPicked": 1368,
+    "powerScore": 29.4,
+    "powerTier": "D",
+    "eloRating": 1029
+  },
+  {
+    "id": "CARD.SPITE",
+    "name": "Spite",
+    "pickRate": 18.3,
+    "winRateDelta": 12.0,
+    "timesPicked": 1147,
+    "powerScore": 29.4,
+    "powerTier": "D",
+    "eloRating": 1082
+  },
+  {
+    "id": "CARD.RESONANCE",
+    "name": "Resonance",
+    "pickRate": 11.2,
+    "winRateDelta": 14.2,
+    "timesPicked": 597,
+    "powerScore": 29.3,
+    "powerTier": "D",
+    "eloRating": 1038
+  },
+  {
+    "id": "CARD.PERFECTED_STRIKE",
+    "name": "Perfected Strike",
+    "pickRate": 23.1,
+    "winRateDelta": 3.8,
+    "timesPicked": 4038,
+    "powerScore": 29.2,
+    "powerTier": "D",
+    "eloRating": 1256
+  },
+  {
+    "id": "CARD.DRAIN_POWER",
+    "name": "Drain Power",
+    "pickRate": 14.1,
+    "winRateDelta": 2.1,
+    "timesPicked": 1466,
+    "powerScore": 29.1,
+    "powerTier": "D",
+    "eloRating": 980
+  },
+  {
+    "id": "CARD.HOTFIX",
+    "name": "Hotfix",
+    "pickRate": 25.1,
+    "winRateDelta": 8.8,
+    "timesPicked": 3207,
+    "powerScore": 29.0,
+    "powerTier": "D",
+    "eloRating": 1183
+  },
+  {
+    "id": "CARD.HEMOKINESIS",
+    "name": "Hemokinesis",
+    "pickRate": 18.3,
+    "winRateDelta": 4.8,
+    "timesPicked": 1168,
+    "powerScore": 28.9,
+    "powerTier": "D",
+    "eloRating": 1047
+  },
+  {
+    "id": "CARD.SWORD_BOOMERANG",
+    "name": "Sword Boomerang",
+    "pickRate": 10.1,
+    "winRateDelta": 9.3,
+    "timesPicked": 1775,
+    "powerScore": 28.7,
+    "powerTier": "D",
+    "eloRating": 813
+  },
+  {
+    "id": "CARD.BALL_LIGHTNING",
+    "name": "Ball Lightning",
+    "pickRate": 17.4,
+    "winRateDelta": 2.3,
+    "timesPicked": 2172,
+    "powerScore": 28.5,
+    "powerTier": "D",
+    "eloRating": 1053
+  },
+  {
+    "id": "CARD.HAVOC",
+    "name": "Havoc",
+    "pickRate": 6.5,
+    "winRateDelta": 12.5,
+    "timesPicked": 1151,
+    "powerScore": 28.5,
+    "powerTier": "D",
+    "eloRating": 1130
+  },
+  {
+    "id": "CARD.PHOTON_CUT",
+    "name": "Photon Cut",
+    "pickRate": 11.0,
+    "winRateDelta": 12.0,
+    "timesPicked": 1644,
+    "powerScore": 28.4,
+    "powerTier": "D",
+    "eloRating": 869
+  },
+  {
+    "id": "CARD.SNAP",
+    "name": "Snap",
+    "pickRate": 11.6,
+    "winRateDelta": 6.2,
+    "timesPicked": 1224,
+    "powerScore": 28.4,
+    "powerTier": "D",
+    "eloRating": 1136
+  },
+  {
+    "id": "CARD.LIGHTNING_ROD",
+    "name": "Lightning Rod",
+    "pickRate": 23.2,
+    "winRateDelta": 7.0,
+    "timesPicked": 2902,
+    "powerScore": 28.3,
+    "powerTier": "D",
+    "eloRating": 1179
+  },
+  {
+    "id": "CARD.BEAM_CELL",
+    "name": "Beam Cell",
+    "pickRate": 16.5,
+    "winRateDelta": 8.6,
+    "timesPicked": 2040,
+    "powerScore": 28.3,
+    "powerTier": "D",
+    "eloRating": 1159
+  },
+  {
+    "id": "CARD.POISONED_STAB",
+    "name": "Poisoned Stab",
+    "pickRate": 9.3,
+    "winRateDelta": 2.3,
+    "timesPicked": 1391,
+    "powerScore": 28.3,
+    "powerTier": "D",
+    "eloRating": 1019
+  },
+  {
+    "id": "CARD.EIDOLON",
+    "name": "Eidolon",
+    "pickRate": 3.3,
+    "winRateDelta": 17.0,
+    "timesPicked": 64,
+    "powerScore": 28.2,
+    "powerTier": "D",
+    "eloRating": 871
+  },
+  {
+    "id": "CARD.CHAOS",
+    "name": "Chaos",
+    "pickRate": 15.4,
+    "winRateDelta": 6.8,
+    "timesPicked": 682,
+    "powerScore": 28.1,
+    "powerTier": "D",
+    "eloRating": 1049
+  },
+  {
+    "id": "CARD.SOW",
+    "name": "Sow",
+    "pickRate": 13.0,
+    "winRateDelta": 1.7,
+    "timesPicked": 1358,
+    "powerScore": 27.9,
+    "powerTier": "D",
+    "eloRating": 1058
+  },
+  {
+    "id": "CARD.RAMPAGE",
+    "name": "Rampage",
+    "pickRate": 14.5,
+    "winRateDelta": 3.3,
+    "timesPicked": 936,
+    "powerScore": 27.9,
+    "powerTier": "D",
+    "eloRating": 1190
+  },
+  {
+    "id": "CARD.MONOLOGUE",
+    "name": "Monologue",
+    "pickRate": 12.1,
+    "winRateDelta": 15.0,
+    "timesPicked": 622,
+    "powerScore": 27.6,
+    "powerTier": "D",
+    "eloRating": 1160
+  },
+  {
+    "id": "CARD.SUCKER_PUNCH",
+    "name": "Sucker Punch",
+    "pickRate": 8.3,
+    "winRateDelta": 9.5,
+    "timesPicked": 1258,
+    "powerScore": 27.3,
+    "powerTier": "D",
+    "eloRating": 964
+  },
+  {
+    "id": "CARD.LEAP",
+    "name": "Leap",
+    "pickRate": 14.1,
+    "winRateDelta": 6.1,
+    "timesPicked": 1770,
+    "powerScore": 27.2,
+    "powerTier": "D",
+    "eloRating": 955
+  },
+  {
+    "id": "CARD.DEFILE",
+    "name": "Defile",
+    "pickRate": 14.1,
+    "winRateDelta": 1.7,
+    "timesPicked": 1500,
+    "powerScore": 27.2,
+    "powerTier": "D",
+    "eloRating": 926
+  },
+  {
+    "id": "CARD.DEVASTATE",
+    "name": "Devastate",
+    "pickRate": 11.2,
+    "winRateDelta": 10.9,
+    "timesPicked": 593,
+    "powerScore": 27.2,
+    "powerTier": "D",
+    "eloRating": 1074
+  },
+  {
+    "id": "CARD.DAGGER_SPRAY",
+    "name": "Dagger Spray",
+    "pickRate": 14.3,
+    "winRateDelta": 1.1,
+    "timesPicked": 2147,
+    "powerScore": 27.1,
+    "powerTier": "D",
+    "eloRating": 1067
+  },
+  {
+    "id": "CARD.SPOILS_OF_BATTLE",
+    "name": "Spoils Of Battle",
+    "pickRate": 15.2,
+    "winRateDelta": 11.7,
+    "timesPicked": 2202,
+    "powerScore": 26.6,
+    "powerTier": "D",
+    "eloRating": 956
+  },
+  {
+    "id": "CARD.SWEEPING_BEAM",
+    "name": "Sweeping Beam",
+    "pickRate": 11.8,
+    "winRateDelta": 3.5,
+    "timesPicked": 1474,
+    "powerScore": 26.4,
+    "powerTier": "D",
+    "eloRating": 868
+  },
+  {
+    "id": "CARD.DEADLY_POISON",
+    "name": "Deadly Poison",
+    "pickRate": 13.8,
+    "winRateDelta": 3.5,
+    "timesPicked": 2085,
+    "powerScore": 25.8,
+    "powerTier": "D",
+    "eloRating": 1061
+  },
+  {
+    "id": "CARD.FLATTEN",
+    "name": "Flatten",
+    "pickRate": 15.0,
+    "winRateDelta": 6.2,
+    "timesPicked": 1580,
+    "powerScore": 25.8,
+    "powerTier": "D",
+    "eloRating": 1213
+  },
+  {
+    "id": "CARD.CELESTIAL_MIGHT",
+    "name": "Celestial Might",
+    "pickRate": 8.1,
+    "winRateDelta": 8.0,
+    "timesPicked": 1196,
+    "powerScore": 25.7,
+    "powerTier": "D",
+    "eloRating": 812
+  },
+  {
+    "id": "CARD.UNTOUCHABLE",
+    "name": "Untouchable",
+    "pickRate": 25.7,
+    "winRateDelta": 9.7,
+    "timesPicked": 3851,
+    "powerScore": 25.4,
+    "powerTier": "D",
+    "eloRating": 1126
+  },
+  {
+    "id": "CARD.ANGER",
+    "name": "Anger",
+    "pickRate": 11.7,
+    "winRateDelta": 6.9,
+    "timesPicked": 2064,
+    "powerScore": 25.3,
+    "powerTier": "D",
+    "eloRating": 1064
+  },
+  {
+    "id": "CARD.ANTICIPATE",
+    "name": "Anticipate",
+    "pickRate": 12.3,
+    "winRateDelta": 5.5,
+    "timesPicked": 1876,
+    "powerScore": 25.3,
+    "powerTier": "D",
+    "eloRating": 892
+  },
+  {
+    "id": "CARD.PULL_AGGRO",
+    "name": "Pull Aggro",
+    "pickRate": 14.8,
+    "winRateDelta": 7.6,
+    "timesPicked": 1555,
+    "powerScore": 24.8,
+    "powerTier": "F",
+    "eloRating": 1055
+  },
+  {
+    "id": "CARD.TERRAFORMING",
+    "name": "Terraforming",
+    "pickRate": 8.5,
+    "winRateDelta": 10.6,
+    "timesPicked": 452,
+    "powerScore": 24.7,
+    "powerTier": "F",
+    "eloRating": 931
+  },
+  {
+    "id": "CARD.SYNTHESIS",
+    "name": "Synthesis",
+    "pickRate": 8.8,
+    "winRateDelta": 6.9,
+    "timesPicked": 402,
+    "powerScore": 24.6,
+    "powerTier": "F",
+    "eloRating": 1117
+  },
+  {
+    "id": "CARD.REAP",
+    "name": "Reap",
+    "pickRate": 12.4,
+    "winRateDelta": 6.4,
+    "timesPicked": 1310,
+    "powerScore": 24.4,
+    "powerTier": "F",
+    "eloRating": 908
+  },
+  {
+    "id": "CARD.HOWL_FROM_BEYOND",
+    "name": "Howl From Beyond",
+    "pickRate": 11.7,
+    "winRateDelta": 12.9,
+    "timesPicked": 739,
+    "powerScore": 24.4,
+    "powerTier": "F",
+    "eloRating": 1226
+  },
+  {
+    "id": "CARD.REAVE",
+    "name": "Reave",
+    "pickRate": 9.1,
+    "winRateDelta": -0.2,
+    "timesPicked": 964,
+    "powerScore": 24.3,
+    "powerTier": "F",
+    "eloRating": 1067
+  },
+  {
+    "id": "CARD.IRON_WAVE",
+    "name": "Iron Wave",
+    "pickRate": 9.1,
+    "winRateDelta": 4.2,
+    "timesPicked": 1584,
+    "powerScore": 23.8,
+    "powerTier": "F",
+    "eloRating": 1019
+  },
+  {
+    "id": "CARD.SUNDER",
+    "name": "Sunder",
+    "pickRate": 14.8,
+    "winRateDelta": 1.0,
+    "timesPicked": 682,
+    "powerScore": 23.7,
+    "powerTier": "F",
+    "eloRating": 1130
+  },
+  {
+    "id": "CARD.JUGGLING",
+    "name": "Juggling",
+    "pickRate": 10.6,
+    "winRateDelta": 11.6,
+    "timesPicked": 749,
+    "powerScore": 23.5,
+    "powerTier": "F",
+    "eloRating": 1114
+  },
+  {
+    "id": "CARD.MOMENTUM_STRIKE",
+    "name": "Momentum Strike",
+    "pickRate": 9.9,
+    "winRateDelta": 3.3,
+    "timesPicked": 1237,
+    "powerScore": 23.0,
+    "powerTier": "F",
+    "eloRating": 1215
+  },
+  {
+    "id": "CARD.UPROAR",
+    "name": "Uproar",
+    "pickRate": 6.4,
+    "winRateDelta": 5.0,
+    "timesPicked": 800,
+    "powerScore": 22.7,
+    "powerTier": "F",
+    "eloRating": 870
+  },
+  {
+    "id": "CARD.SCULPTING_STRIKE",
+    "name": "Sculpting Strike",
+    "pickRate": 9.6,
+    "winRateDelta": 3.5,
+    "timesPicked": 827,
+    "powerScore": 22.3,
+    "powerTier": "F",
+    "eloRating": 1029
+  },
+  {
+    "id": "CARD.KNOCKOUT_BLOW",
+    "name": "Knockout Blow",
+    "pickRate": 9.8,
+    "winRateDelta": 4.4,
+    "timesPicked": 526,
+    "powerScore": 22.2,
+    "powerTier": "F",
+    "eloRating": 1081
+  },
+  {
+    "id": "CARD.MEMENTO_MORI",
+    "name": "Memento Mori",
+    "pickRate": 8.5,
+    "winRateDelta": 7.5,
+    "timesPicked": 473,
+    "powerScore": 22.0,
+    "powerTier": "F",
+    "eloRating": 1146
+  },
+  {
+    "id": "CARD.LUNAR_BLAST",
+    "name": "Lunar Blast",
+    "pickRate": 9.3,
+    "winRateDelta": 17.4,
+    "timesPicked": 430,
+    "powerScore": 21.5,
+    "powerTier": "F",
+    "eloRating": 981
+  },
+  {
+    "id": "CARD.SIC_EM",
+    "name": "Sic Em",
+    "pickRate": 12.4,
+    "winRateDelta": 4.8,
+    "timesPicked": 473,
+    "powerScore": 21.4,
+    "powerTier": "F",
+    "eloRating": 1056
+  },
+  {
+    "id": "CARD.FLICK_FLACK",
+    "name": "Flick Flack",
+    "pickRate": 16.5,
+    "winRateDelta": 1.6,
+    "timesPicked": 2491,
+    "powerScore": 21.2,
+    "powerTier": "F",
+    "eloRating": 1255
+  },
+  {
+    "id": "CARD.CINDER",
+    "name": "Cinder",
+    "pickRate": 7.1,
+    "winRateDelta": -0.2,
+    "timesPicked": 1164,
+    "powerScore": 21.2,
+    "powerTier": "F",
+    "eloRating": 983
+  },
+  {
+    "id": "CARD.BLIGHT_STRIKE",
+    "name": "Blight Strike",
+    "pickRate": 9.6,
+    "winRateDelta": 2.7,
+    "timesPicked": 1000,
+    "powerScore": 21.0,
+    "powerTier": "F",
+    "eloRating": 954
+  },
+  {
+    "id": "CARD.SKEWER",
+    "name": "Skewer",
+    "pickRate": 5.3,
+    "winRateDelta": 2.4,
+    "timesPicked": 291,
+    "powerScore": 21.0,
+    "powerTier": "F",
+    "eloRating": 826
+  },
+  {
+    "id": "CARD.SETUP_STRIKE",
+    "name": "Setup Strike",
+    "pickRate": 8.6,
+    "winRateDelta": 4.6,
+    "timesPicked": 1551,
+    "powerScore": 19.6,
+    "powerTier": "F",
+    "eloRating": 1187
+  },
+  {
+    "id": "CARD.CRESCENT_SPEAR",
+    "name": "Crescent Spear",
+    "pickRate": 8.0,
+    "winRateDelta": 7.0,
+    "timesPicked": 1192,
+    "powerScore": 19.6,
+    "powerTier": "F",
+    "eloRating": 1118
+  },
+  {
+    "id": "CARD.FOLLOW_THROUGH",
+    "name": "Follow Through",
+    "pickRate": 4.0,
+    "winRateDelta": 2.4,
+    "timesPicked": 606,
+    "powerScore": 19.2,
+    "powerTier": "F",
+    "eloRating": 907
+  },
+  {
+    "id": "CARD.DEATH_MARCH",
+    "name": "Death March",
+    "pickRate": 8.8,
+    "winRateDelta": 10.0,
+    "timesPicked": 342,
+    "powerScore": 19.1,
+    "powerTier": "F",
+    "eloRating": 1037
+  },
+  {
+    "id": "CARD.CRUSH_UNDER",
+    "name": "Crush Under",
+    "pickRate": 12.1,
+    "winRateDelta": 4.8,
+    "timesPicked": 1810,
+    "powerScore": 18.6,
+    "powerTier": "F",
+    "eloRating": 1091
+  },
+  {
+    "id": "CARD.SLICE",
+    "name": "Slice",
+    "pickRate": 7.1,
+    "winRateDelta": 3.5,
+    "timesPicked": 1060,
+    "powerScore": 14.4,
+    "powerTier": "F",
+    "eloRating": 1019
+  }
+]

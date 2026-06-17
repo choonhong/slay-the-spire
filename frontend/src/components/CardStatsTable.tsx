@@ -8,7 +8,7 @@ import {
   createColumnHelper,
   type SortingState,
 } from '@tanstack/react-table';
-import { fetchCardStats, fetchCharacters, fetchBuilds, type CardStat } from '../api';
+import { fetchCardStats, fetchCharacters, fetchBuilds, fetchCommunityCards, type CardStat, type CommunityCard } from '../api';
 import TopCardsChart from './Charts';
 import { formatCardId, formatCharacter } from '../utils';
 
@@ -56,8 +56,25 @@ function PickRateBar({ value }: { value: number }) {
   );
 }
 
+const TIER_COLOR: Record<string, string> = {
+  S: 'bg-yellow-500 text-black',
+  A: 'bg-green-600 text-white',
+  B: 'bg-blue-600 text-white',
+  C: 'bg-gray-600 text-white',
+  D: 'bg-red-900 text-gray-300',
+};
+
+function TierBadge({ tier, score }: { tier: string; score: number }) {
+  return (
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-bold ${TIER_COLOR[tier] ?? 'bg-gray-700 text-gray-300'}`}>
+      {tier} <span className="font-normal opacity-80">{score.toFixed(0)}</span>
+    </span>
+  );
+}
+
 export default function CardStatsTable() {
   const [data, setData] = useState<CardStat[]>([]);
+  const [communityMap, setCommunityMap] = useState<Map<string, CommunityCard>>(new Map());
   const [characters, setCharacters] = useState<string[]>([]);
   const [builds, setBuilds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +90,7 @@ export default function CardStatsTable() {
     setLoading(true);
     setError(null);
     try {
-      const [stats, chars, buildList] = await Promise.all([
+      const [stats, chars, buildList, communityCards] = await Promise.all([
         fetchCardStats({
           character: selectedChar || undefined,
           buildId: selectedBuild || undefined,
@@ -81,10 +98,12 @@ export default function CardStatsTable() {
         }),
         fetchCharacters(),
         fetchBuilds(),
+        fetchCommunityCards(),
       ]);
       setData(stats);
       setCharacters(chars);
       setBuilds(buildList);
+      setCommunityMap(new Map(communityCards.map(c => [c.id, c])));
     } catch {
       setError('Could not reach the backend. Make sure the server is running on port 3001.');
     } finally {
@@ -106,31 +125,59 @@ export default function CardStatsTable() {
         <span className="font-medium text-gray-100">{formatCardId(info.getValue())}</span>
       ),
     }),
-    col.accessor('times_offered', {
-      header: 'Offered',
-      cell: info => <span className="text-gray-300">{info.getValue()}</span>,
-    }),
-    col.accessor('times_picked', {
-      header: 'Picked',
-      cell: info => <span className="text-gray-300">{info.getValue()}</span>,
+    col.display({
+      id: 'community_score',
+      header: 'Score',
+      cell: info => {
+        const community = communityMap.get(info.row.original.card_id);
+        if (!community) return <span className="text-gray-600">—</span>;
+        return <TierBadge tier={community.powerTier} score={community.powerScore} />;
+      },
     }),
     col.accessor('pick_rate', {
       header: 'Pick Rate',
-      cell: info => <PickRateBar value={info.getValue()} />,
+      cell: info => {
+        const picked = info.row.original.times_picked;
+        const offered = info.row.original.times_offered;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-spire-500 rounded-full transition-all"
+                style={{ width: `${Math.min(info.getValue(), 100)}%` }}
+              />
+            </div>
+            <span className="text-xs text-gray-300 w-10 text-right">{info.getValue().toFixed(1)}%</span>
+            <span className="text-xs text-gray-600 tabular-nums">{picked}/{offered}</span>
+          </div>
+        );
+      },
     }),
     col.accessor('runs_with_card', {
-      header: 'Runs w/ Card',
-      cell: info => <span className="text-gray-300">{info.getValue()}</span>,
-    }),
-    col.accessor('runs_won_with_card', {
-      header: 'Wins w/ Card',
-      cell: info => <span className="text-gray-300">{info.getValue()}</span>,
+      header: 'Runs',
+      cell: info => {
+        const runs = info.getValue();
+        const wins = info.row.original.runs_won_with_card;
+        const pct = runs > 0 ? (wins / runs) * 100 : 0;
+        const barColor = pct >= 60 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-500';
+        return (
+          <div className="flex items-center gap-2 min-w-[90px]">
+            <div className="w-12 h-1.5 bg-gray-700 rounded-full overflow-hidden shrink-0">
+              <div className={`h-full ${barColor} rounded-full`} style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-gray-300 tabular-nums text-xs">
+              <span className="text-gray-100 font-medium">{wins}</span>
+              <span className="text-gray-500">/{runs}</span>
+            </span>
+          </div>
+        );
+      },
     }),
     col.accessor('win_rate', {
       header: 'Win Rate',
       cell: info => <WinRateBadge value={info.getValue()} />,
     }),
-  ], []);
+  ], [communityMap]);
 
   const table = useReactTable({
     data: filtered,

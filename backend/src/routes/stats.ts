@@ -1,5 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { getDb, getCardStats, getCharacters, getBuildIds } from '../db';
+import fs from 'fs';
+import path from 'path';
+
+const COMMUNITY_CARDS_PATH = path.join(__dirname, '../../../data/community_cards.json');
 
 const router = Router();
 
@@ -26,6 +30,15 @@ router.get('/characters', (_req: Request, res: Response) => {
 router.get('/builds', (_req: Request, res: Response) => {
   const db = getDb();
   res.json(getBuildIds(db));
+});
+
+router.get('/community-cards', (_req: Request, res: Response) => {
+  try {
+    const data = fs.readFileSync(COMMUNITY_CARDS_PATH, 'utf-8');
+    res.json(JSON.parse(data));
+  } catch {
+    res.json([]);
+  }
 });
 
 export default router;

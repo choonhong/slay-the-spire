@@ -1,4 +1,4 @@
-.PHONY: dev backend frontend install
+.PHONY: dev backend frontend install scrape
 
 dev:
 	npm run dev
@@ -11,3 +11,6 @@ frontend:
 
 install:
 	npm install
+
+scrape:
+	python3 scripts/scrape_community_cards.py

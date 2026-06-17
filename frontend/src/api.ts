@@ -58,6 +58,22 @@ export async function fetchBuilds(): Promise<string[]> {
   return data;
 }
 
+export interface CommunityCard {
+  id: string;
+  name: string;
+  pickRate: number;
+  winRateDelta: number;
+  timesPicked: number;
+  powerScore: number;
+  powerTier: string;
+  eloRating: number;
+}
+
+export async function fetchCommunityCards(): Promise<CommunityCard[]> {
+  const { data } = await api.get<CommunityCard[]>('/stats/community-cards');
+  return data;
+}
+
 export async function fetchRuns(filters: {
   character?: string;
   buildId?: string;
