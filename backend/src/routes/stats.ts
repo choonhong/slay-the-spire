@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 const COMMUNITY_CARDS_PATH = path.join(__dirname, '../../../data/community_cards.json');
+const CARD_TEXT_PATH = path.join(__dirname, '../../../data/card_text.json');
 
 const router = Router();
 
@@ -35,6 +36,15 @@ router.get('/builds', (_req: Request, res: Response) => {
 router.get('/community-cards', (_req: Request, res: Response) => {
   try {
     const data = fs.readFileSync(COMMUNITY_CARDS_PATH, 'utf-8');
+    res.json(JSON.parse(data));
+  } catch {
+    res.json([]);
+  }
+});
+
+router.get('/card-text', (_req: Request, res: Response) => {
+  try {
+    const data = fs.readFileSync(CARD_TEXT_PATH, 'utf-8');
     res.json(JSON.parse(data));
   } catch {
     res.json([]);

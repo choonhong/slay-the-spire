@@ -74,6 +74,26 @@ export async function fetchCommunityCards(): Promise<CommunityCard[]> {
   return data;
 }
 
+export interface CardText {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  description_raw: string;
+  upgrade_description: string;
+  cost: string;
+  type: string;
+  rarity: string;
+  color: string;
+  keywords: string[];
+  image_url: string;
+}
+
+export async function fetchCardText(): Promise<CardText[]> {
+  const { data } = await api.get<CardText[]>('/stats/card-text');
+  return data;
+}
+
 export async function fetchRuns(filters: {
   character?: string;
   buildId?: string;

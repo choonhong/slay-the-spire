@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,11 +9,12 @@ import {
   createColumnHelper,
   type SortingState,
 } from '@tanstack/react-table';
-import { fetchCardStats, fetchCharacters, fetchBuilds, fetchCommunityCards, type CardStat, type CommunityCard } from '../api';
+import { fetchCardStats, fetchCharacters, fetchBuilds, fetchCommunityCards, fetchCardText, type CardStat, type CommunityCard, type CardText } from '../api';
 import TopCardsChart from './Charts';
 import { formatCardId, formatCharacter } from '../utils';
 
-const col = createColumnHelper<CardStat>();
+type CardRow = CardStat & { community_score: number; community_tier: string };
+const col = createColumnHelper<CardRow>();
 
 const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
   IRONCLAD:    { bg: 'bg-red-950/40',    border: 'border-red-800/60',    text: 'text-red-300',    activeBg: 'bg-red-800' },
@@ -64,6 +66,70 @@ const TIER_COLOR: Record<string, string> = {
   D: 'bg-red-900 text-gray-300',
 };
 
+const ENERGY_COLOR: Record<string, string> = {
+  '0': 'bg-green-700 text-green-100',
+  '1': 'bg-blue-700 text-blue-100',
+  '2': 'bg-yellow-700 text-yellow-100',
+  '3': 'bg-red-800 text-red-100',
+  'X': 'bg-purple-700 text-purple-100',
+  'N/A': 'bg-gray-700 text-gray-300',
+};
+
+function CardTooltip({ cardText, anchorRect }: { cardText: CardText; anchorRect: DOMRect }) {
+  const energyStyle = ENERGY_COLOR[cardText.cost] ?? 'bg-gray-700 text-gray-300';
+  const TOOLTIP_WIDTH = 224; // w-56
+
+  // Position above the anchor, centred horizontally, clamped to viewport
+  const left = Math.min(
+    Math.max(8, anchorRect.left + anchorRect.width / 2 - TOOLTIP_WIDTH / 2),
+    window.innerWidth - TOOLTIP_WIDTH - 8,
+  );
+  const top = anchorRect.top - 8; // fixed = viewport-relative; translateY(-100%) moves it above
+
+  return createPortal(
+    <div
+      className="fixed z-[9999] w-56 rounded-lg border border-gray-600 bg-gray-900 shadow-xl p-3 pointer-events-none"
+      style={{ left, top, transform: 'translateY(-100%)' }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold ${energyStyle}`}>
+          {cardText.cost}
+        </span>
+        <span className="text-xs text-gray-400 uppercase tracking-wide">{cardText.type} · {cardText.rarity}</span>
+      </div>
+      <p className="text-sm text-gray-200 leading-snug">
+        {cardText.description || <span className="text-gray-500 italic">No description</span>}
+      </p>
+      {cardText.keywords.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {cardText.keywords.map(kw => (
+            <span key={kw} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-700 text-gray-300">{kw}</span>
+          ))}
+        </div>
+      )}
+    </div>,
+    document.body,
+  );
+}
+
+function CardNameCell({ id, cardTextMap }: { id: string; cardTextMap: Map<string, CardText> }) {
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  const ref = useRef<HTMLSpanElement>(null);
+  const ct = cardTextMap.get(id);
+
+  return (
+    <span
+      ref={ref}
+      className="font-medium text-gray-100 cursor-default border-b border-dotted border-gray-600"
+      onMouseEnter={() => ref.current && setAnchorRect(ref.current.getBoundingClientRect())}
+      onMouseLeave={() => setAnchorRect(null)}
+    >
+      {formatCardId(id)}
+      {ct && anchorRect && <CardTooltip cardText={ct} anchorRect={anchorRect} />}
+    </span>
+  );
+}
+
 function TierBadge({ tier, score }: { tier: string; score: number }) {
   return (
     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-bold ${TIER_COLOR[tier] ?? 'bg-gray-700 text-gray-300'}`}>
@@ -73,8 +139,9 @@ function TierBadge({ tier, score }: { tier: string; score: number }) {
 }
 
 export default function CardStatsTable() {
-  const [data, setData] = useState<CardStat[]>([]);
+  const [data, setData] = useState<CardRow[]>([]);
   const [communityMap, setCommunityMap] = useState<Map<string, CommunityCard>>(new Map());
+  const [cardTextMap, setCardTextMap] = useState<Map<string, CardText>>(new Map());
   const [characters, setCharacters] = useState<string[]>([]);
   const [builds, setBuilds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +157,7 @@ export default function CardStatsTable() {
     setLoading(true);
     setError(null);
     try {
-      const [stats, chars, buildList, communityCards] = await Promise.all([
+      const [stats, chars, buildList, communityCards, cardTexts] = await Promise.all([
         fetchCardStats({
           character: selectedChar || undefined,
           buildId: selectedBuild || undefined,
@@ -99,11 +166,19 @@ export default function CardStatsTable() {
         fetchCharacters(),
         fetchBuilds(),
         fetchCommunityCards(),
+        fetchCardText(),
       ]);
-      setData(stats);
+      const cMap = new Map(communityCards.map(c => [c.id, c]));
+      const tMap = new Map(cardTexts.map(c => [c.id, c]));
+      setData(stats.map(s => ({
+        ...s,
+        community_score: cMap.get(s.card_id)?.powerScore ?? -1,
+        community_tier: cMap.get(s.card_id)?.powerTier ?? '',
+      })));
       setCharacters(chars);
       setBuilds(buildList);
-      setCommunityMap(new Map(communityCards.map(c => [c.id, c])));
+      setCommunityMap(cMap);
+      setCardTextMap(tMap);
     } catch {
       setError('Could not reach the backend. Make sure the server is running on port 3001.');
     } finally {
@@ -121,17 +196,15 @@ export default function CardStatsTable() {
   const columns = useMemo(() => [
     col.accessor('card_id', {
       header: 'Card',
-      cell: info => (
-        <span className="font-medium text-gray-100">{formatCardId(info.getValue())}</span>
-      ),
+      cell: info => <CardNameCell id={info.getValue()} cardTextMap={cardTextMap} />,
     }),
-    col.display({
-      id: 'community_score',
+    col.accessor('community_score', {
       header: 'Score',
       cell: info => {
-        const community = communityMap.get(info.row.original.card_id);
-        if (!community) return <span className="text-gray-600">—</span>;
-        return <TierBadge tier={community.powerTier} score={community.powerScore} />;
+        const score = info.getValue();
+        const tier = info.row.original.community_tier;
+        if (score < 0) return <span className="text-gray-600">—</span>;
+        return <TierBadge tier={tier} score={score} />;
       },
     }),
     col.accessor('pick_rate', {
@@ -177,7 +250,7 @@ export default function CardStatsTable() {
       header: 'Win Rate',
       cell: info => <WinRateBadge value={info.getValue()} />,
     }),
-  ], [communityMap]);
+  ], [communityMap, cardTextMap]);
 
   const table = useReactTable({
     data: filtered,
@@ -317,8 +390,12 @@ export default function CardStatsTable() {
                   >
                     <span className="flex items-center gap-1">
                       {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getIsSorted() === 'asc' && ' ↑'}
-                      {header.column.getIsSorted() === 'desc' && ' ↓'}
+                      {header.column.getCanSort() && (
+                        <span className="inline-flex flex-col gap-px leading-none ml-0.5">
+                          <span className={`text-[8px] leading-none ${header.column.getIsSorted() === 'asc' ? 'text-gray-200' : 'text-gray-600'}`}>▲</span>
+                          <span className={`text-[8px] leading-none ${header.column.getIsSorted() === 'desc' ? 'text-gray-200' : 'text-gray-600'}`}>▼</span>
+                        </span>
+                      )}
                     </span>
                   </th>
                 ))}
