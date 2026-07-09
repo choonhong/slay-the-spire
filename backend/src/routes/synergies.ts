@@ -1,6 +1,18 @@
 import { Router, Request, Response } from 'express';
 import { DatabaseSync } from 'node:sqlite';
+import fs from 'fs';
+import path from 'path';
 import { getDb } from '../db';
+
+const DATA_DIR = path.join(__dirname, '../../../data');
+
+function loadCardText(): { id: string; color: string }[] {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'card_text.json'), 'utf-8'));
+  } catch { return []; }
+}
+
+const CURSE_IDS = new Set(loadCardText().filter(c => c.color === 'curse').map(c => c.id));
 
 const router = Router();
 
@@ -21,16 +33,28 @@ router.get('/', (req: Request, res: Response) => {
   const db = getDb();
   const { character, buildId, minRuns } = req.query;
 
+  const STARTER_CARDS = [
+    'CARD.STRIKE_IRONCLAD','CARD.STRIKE_SILENT','CARD.STRIKE_DEFECT',
+    'CARD.STRIKE_WATCHER','CARD.STRIKE_REGENT','CARD.STRIKE_NECROBINDER',
+    'CARD.DEFEND_IRONCLAD','CARD.DEFEND_SILENT','CARD.DEFEND_DEFECT',
+    'CARD.DEFEND_WATCHER','CARD.DEFEND_REGENT','CARD.DEFEND_NECROBINDER',
+    // Starter non-Strike/Defend cards
+    'CARD.BASH',
+    'CARD.ZAP','CARD.DUALCAST',
+    'CARD.ERUPTION','CARD.VIGILANCE',
+    ...CURSE_IDS,
+  ];
+  const starterPlaceholders = STARTER_CARDS.map(() => '?').join(',');
+
   const conditions: string[] = [
     "a.offer_index = -1",   // final deck rows only
     "b.offer_index = -1",
-    "a.card_id NOT LIKE '%STRIKE%'",
-    "a.card_id NOT LIKE '%DEFEND%'",
-    "b.card_id NOT LIKE '%STRIKE%'",
-    "b.card_id NOT LIKE '%DEFEND%'",
+    `a.card_id NOT IN (${starterPlaceholders})`,
+    `b.card_id NOT IN (${starterPlaceholders})`,
     "a.card_id < b.card_id",
   ];
-  const params: (string | number)[] = [];
+  // Two sets of starter placeholders (for card_a and card_b NOT IN)
+  const params: (string | number)[] = [...STARTER_CARDS, ...STARTER_CARDS];
 
   if (typeof character === 'string' && character) {
     conditions.push('r.character = ?');
@@ -90,12 +114,23 @@ function getIndividualWinRates(
   character?: string,
   buildId?: string
 ): Map<string, number> {
-  const conditions = [
-    "cc.offer_index = -1",   // final deck rows only
-    "cc.card_id NOT LIKE '%STRIKE%'",
-    "cc.card_id NOT LIKE '%DEFEND%'",
+  const STARTER_CARDS = [
+    'CARD.STRIKE_IRONCLAD','CARD.STRIKE_SILENT','CARD.STRIKE_DEFECT',
+    'CARD.STRIKE_WATCHER','CARD.STRIKE_REGENT','CARD.STRIKE_NECROBINDER',
+    'CARD.DEFEND_IRONCLAD','CARD.DEFEND_SILENT','CARD.DEFEND_DEFECT',
+    'CARD.DEFEND_WATCHER','CARD.DEFEND_REGENT','CARD.DEFEND_NECROBINDER',
+    // Starter non-Strike/Defend cards
+    'CARD.BASH',
+    'CARD.ZAP','CARD.DUALCAST',
+    'CARD.ERUPTION','CARD.VIGILANCE',
+    ...CURSE_IDS,
   ];
-  const params: (string | number)[] = [];
+  const starterPlaceholders = STARTER_CARDS.map(() => '?').join(',');
+  const conditions = [
+    "cc.offer_index = -1",
+    `cc.card_id NOT IN (${starterPlaceholders})`,
+  ];
+  const params: (string | number)[] = [...STARTER_CARDS];
   if (character) { conditions.push('r.character = ?'); params.push(character); }
   if (buildId)   { conditions.push('r.build_id = ?');  params.push(buildId); }
 

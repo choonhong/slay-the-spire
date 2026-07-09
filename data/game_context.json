@@ -1,0 +1,407 @@
+{
+  "_comment": "Human-editable game knowledge base. Edit freely to improve recommendation quality. The engine reads this on every request — no restart needed.",
+  "version": "2.0",
+  "last_updated": "2026-07-07",
+
+  "characters": {
+
+    "CHARACTER.IRONCLAD": {
+      "archetypes": ["strength", "exhaust", "block", "strike"],
+      "win_conditions": [
+        "Strength scaling: Limit Break + Inflame → heavy Whirlwind or Heavy Blade finisher",
+        "Exhaust loop: Corruption → feel free to exhaust everything, Dark Embrace/Dead Branch as draw",
+        "Barricade block stacking: Barricade + Entrench (event card — doubles Block) → unreduced block snowball"
+      ],
+      "best_cards": [
+        "CARD.LIMIT_BREAK", "CARD.BARRICADE", "CARD.CORRUPTION",
+        "CARD.DARK_EMBRACE", "CARD.FEEL_NO_PAIN", "CARD.INFLAME",
+        "CARD.WHIRLWIND", "CARD.REAPER", "CARD.FEED", "CARD.HEAVY_BLADE"
+      ],
+      "good_keywords": ["Exhaust", "Strength", "Block", "Retain"],
+      "key_synergy_cards": [
+        "CARD.LIMIT_BREAK", "CARD.BARRICADE", "CARD.CORRUPTION"
+      ],
+      "meta_builds": {
+        "hellraiser_strike": {
+          "tier": "S",
+          "description": "Aggressive combo using upgraded Strikes for massive output",
+          "core": ["CARD.PERFECTED_STRIKE", "CARD.POMMEL_STRIKE", "CARD.TWIN_STRIKE", "CARD.WILD_STRIKE"]
+        },
+        "corruption_exhaust": {
+          "tier": "A+",
+          "description": "Corruption makes all skills cost 0 + Exhaust, enabling explosive turns",
+          "core": ["CARD.CORRUPTION", "CARD.FEEL_NO_PAIN", "CARD.DARK_EMBRACE", "CARD.DEAD_BRANCH"]
+        }
+      },
+      "avoid_cards": ["CARD.CLUMSY", "CARD.REGRET", "CARD.CLASH"],
+      "deck_thinning_targets": ["CARD.STRIKE_IRONCLAD", "CARD.DEFEND_IRONCLAD"],
+      "starter_deck": [
+        "CARD.STRIKE_IRONCLAD","CARD.STRIKE_IRONCLAD","CARD.STRIKE_IRONCLAD",
+        "CARD.STRIKE_IRONCLAD","CARD.STRIKE_IRONCLAD",
+        "CARD.DEFEND_IRONCLAD","CARD.DEFEND_IRONCLAD","CARD.DEFEND_IRONCLAD",
+        "CARD.DEFEND_IRONCLAD","CARD.BASH"
+      ]
+    },
+
+    "CHARACTER.SILENT": {
+      "archetypes": ["poison", "shiv", "discard", "draw", "sly"],
+      "win_conditions": [
+        "Speedster Draw Loop (S+): infinite cycle with Acrobatics/Footwork, output via Flick-Flack/Ricochet",
+        "Sly Discard (S): Flick-Flack, Ricochet, Untouchable — discard to burst",
+        "Poison stack: Noxious Fumes + Catalyst + Bouncing Flask for multi-enemy poison"
+      ],
+      "best_cards": [
+        "CARD.CATALYST", "CARD.NOXIOUS_FUMES", "CARD.BLADE_DANCE",
+        "CARD.ACCURACY", "CARD.ACROBATICS", "CARD.FOOTWORK",
+        "CARD.FLICK_FLACK", "CARD.RICOCHET", "CARD.UNTOUCHABLE",
+        "CARD.DAGGER_THROW", "CARD.A_THOUSAND_CUTS", "CARD.AFTER_IMAGE"
+      ],
+      "good_keywords": ["Poison", "Shiv", "Retain", "Innate", "Discard"],
+      "key_synergy_cards": [
+        "CARD.CATALYST", "CARD.ACCURACY", "CARD.NOXIOUS_FUMES"
+      ],
+      "meta_builds": {
+        "speedster_draw_loop": {
+          "tier": "S+",
+          "description": "Cycle infinitely through deck with draw cards, burst with Flick-Flack/Ricochet",
+          "core": ["CARD.FLICK_FLACK", "CARD.RICOCHET", "CARD.ACROBATICS", "CARD.DAGGER_THROW", "CARD.UNTOUCHABLE"]
+        },
+        "poison": {
+          "tier": "A",
+          "description": "Stack Poison stacks via Noxious Fumes, multiply with Catalyst",
+          "core": ["CARD.NOXIOUS_FUMES", "CARD.CATALYST", "CARD.BOUNCING_FLASK", "CARD.DEADLY_POISON"]
+        }
+      },
+      "avoid_cards": ["CARD.CLUMSY", "CARD.DOUBT"],
+      "deck_thinning_targets": ["CARD.STRIKE_SILENT", "CARD.DEFEND_SILENT"],
+      "starter_deck": [
+        "CARD.STRIKE_SILENT","CARD.STRIKE_SILENT","CARD.STRIKE_SILENT",
+        "CARD.STRIKE_SILENT","CARD.STRIKE_SILENT",
+        "CARD.DEFEND_SILENT","CARD.DEFEND_SILENT","CARD.DEFEND_SILENT",
+        "CARD.DEFEND_SILENT","CARD.DEFEND_SILENT"
+      ]
+    },
+
+    "CHARACTER.DEFECT": {
+      "archetypes": ["orb", "focus", "lightning", "frost", "dark"],
+      "win_conditions": [
+        "Frost Focus Burst (A): stack Focus, channel Frost orbs for massive block",
+        "Lightning Storm (A): Electrodynamics + passive AoE on every orb evoke",
+        "Dark accumulation: channel Dark orbs, evoke for 99+ damage"
+      ],
+      "best_cards": [
+        "CARD.BIASED_COGNITION", "CARD.ELECTRODYNAMICS", "CARD.ECHO_FORM",
+        "CARD.CONSUME", "CARD.DEFRAGMENT", "CARD.COOLHEADED",
+        "CARD.GLACIER", "CARD.BLIZZARD", "CARD.SEEK", "CARD.DARKNESS"
+      ],
+      "good_keywords": ["Channel", "Focus", "Evoke", "Orb"],
+      "key_synergy_cards": [
+        "CARD.BIASED_COGNITION", "CARD.ELECTRODYNAMICS", "CARD.ECHO_FORM"
+      ],
+      "meta_builds": {
+        "frost_focus": {
+          "tier": "A",
+          "description": "Stack Focus with Biased Cognition/Defragment, channel Frost for scaling block",
+          "core": ["CARD.BIASED_COGNITION", "CARD.DEFRAGMENT", "CARD.GLACIER", "CARD.COOLHEADED"]
+        },
+        "lightning_storm": {
+          "tier": "A",
+          "description": "Electrodynamics makes all orbs deal passive AoE — simple and consistent",
+          "core": ["CARD.ELECTRODYNAMICS", "CARD.BALL_LIGHTNING", "CARD.THUNDER_STRIKE"]
+        }
+      },
+      "avoid_cards": ["CARD.CLUMSY", "CARD.STATIC_DISCHARGE"],
+      "deck_thinning_targets": ["CARD.STRIKE_DEFECT", "CARD.DEFEND_DEFECT"],
+      "starter_deck": [
+        "CARD.STRIKE_DEFECT","CARD.STRIKE_DEFECT","CARD.STRIKE_DEFECT","CARD.STRIKE_DEFECT",
+        "CARD.DEFEND_DEFECT","CARD.DEFEND_DEFECT","CARD.DEFEND_DEFECT","CARD.DEFEND_DEFECT",
+        "CARD.ZAP","CARD.DUALCAST"
+      ]
+    },
+
+    "CHARACTER.NECROBINDER": {
+      "archetypes": ["osty", "doom", "soul", "ethereal"],
+      "win_conditions": [
+        "Osty Summon (S+): stack Osty Max HP via Summon cards, then hit for massive damage with Unleash/Protector/Squeeze",
+        "Doom Burst (S): apply Doom stacks to enemies, execute at threshold — control/pressure playstyle",
+        "Soul Engine: cycle deck with Soul cards (draw), finish with Haunt+Soulstorm or Graveblast"
+      ],
+      "best_cards": [
+        "CARD.GRAVEBLAST", "CARD.BORROWED_TIME", "CARD.DIRGE", "CARD.CLEANSE",
+        "CARD.DREDGE", "CARD.HAUNT", "CARD.SOUL_STORM", "CARD.SQUEEZE",
+        "CARD.SEANCE", "CARD.NEUROSURGE", "CARD.DEVOUR_LIFE", "CARD.SPIRIT_OF_ASH",
+        "CARD.PROTECTOR", "CARD.REANIMATE", "CARD.NECRO_MASTERY"
+      ],
+      "good_keywords": ["Soul", "Doom", "Summon", "Osty", "Ethereal"],
+      "key_synergy_cards": [
+        "CARD.SQUEEZE", "CARD.PROTECTOR", "CARD.NECRO_MASTERY",
+        "CARD.REANIMATE", "CARD.HAUNT", "CARD.SOUL_STORM"
+      ],
+      "meta_builds": {
+        "osty_summon": {
+          "tier": "S+",
+          "description": "Reanimate + Bodyguard to stack Osty HP, then Unleash/Protector/Squeeze for huge hits. Osty tanks hits — keep him alive at all costs.",
+          "core": ["CARD.REANIMATE", "CARD.NECRO_MASTERY", "CARD.SQUEEZE", "CARD.PROTECTOR", "CARD.UNLEASH"]
+        },
+        "doom_burst": {
+          "tier": "S",
+          "description": "Apply Doom stacks via Scourge/Doom Spike, execute enemies at threshold. Good vs high-HP bosses.",
+          "core": ["CARD.SCOURGE", "CARD.DOOM_SPIKE", "CARD.OBLIVION", "CARD.BANSHEE_CRY"]
+        },
+        "soul_engine": {
+          "tier": "A+",
+          "description": "Soul cards as draw engine. Haunt depletes HP, finish with Soulstorm. Combos with any archetype.",
+          "core": ["CARD.HAUNT", "CARD.SOUL_STORM", "CARD.DREDGE", "CARD.CLEANSE", "CARD.GRAVEBLAST"]
+        }
+      },
+      "important_notes": [
+        "Osty is your primary defense — losing him early can lose the run",
+        "Soul cards are universal draw — include a few even in non-Soul builds",
+        "Doom and Osty can coexist but avoid diluting too much",
+        "Cheap Osty attacks (Poke, Fetch, Right Hand Hand) set up Squeeze/Rattle payoffs",
+        "Reanimate is the single best Max-HP spike — near-instant A/S tier pick"
+      ],
+      "avoid_cards": ["CARD.CLUMSY", "CARD.DANSE_MACABRE"],
+      "deck_thinning_targets": ["CARD.STRIKE_NECROBINDER", "CARD.DEFEND_NECROBINDER"],
+      "starter_deck": [
+        "CARD.STRIKE_NECROBINDER","CARD.STRIKE_NECROBINDER","CARD.STRIKE_NECROBINDER","CARD.STRIKE_NECROBINDER",
+        "CARD.DEFEND_NECROBINDER","CARD.DEFEND_NECROBINDER","CARD.DEFEND_NECROBINDER","CARD.DEFEND_NECROBINDER",
+        "CARD.UNLEASH", "CARD.POKE"
+      ]
+    },
+
+    "CHARACTER.REGENT": {
+      "archetypes": ["stars", "forge", "card_copy"],
+      "win_conditions": [
+        "Stars Engine (S): generate Stars every turn → spend with Alignment/Seven Stars/Big Bang. COMMIT by end of Act 1.",
+        "Sovereign Blade Forge (B+): Retain + Forge stack the Blade for huge single-target. Lean deck (<20 cards) required.",
+        "Card-Copying: Quasar/Arsenal duplicate key cards, Confluence retains duplicates — requires Quasar early"
+      ],
+      "best_cards": [
+        "CARD.REFLECT", "CARD.BOMBARDMENT", "CARD.BIG_BANG",
+        "CARD.VOID_FORM", "CARD.METEOR_SHOWER", "CARD.ALIGNMENT",
+        "CARD.SEVEN_STARS", "CARD.ASTRAL_PULSE", "CARD.PHOTON_CUT",
+        "CARD.GAMMA_BLAST", "CARD.STARDUST", "CARD.ROYAL_GAMBLE",
+        "CARD.CONVERGENCE", "CARD.COMET", "CARD.DECISIONS_DECISIONS",
+        "CARD.FOREGONE_CONCLUSION", "CARD.SEEKING_EDGE", "CARD.CHILD_OF_THE_STARS"
+      ],
+      "good_keywords": ["Star", "Forge", "Retain", "Exhaust", "Innate"],
+      "key_synergy_cards": [
+        "CARD.BIG_BANG", "CARD.ALIGNMENT", "CARD.SEVEN_STARS",
+        "CARD.REFLECT", "CARD.CONVERGENCE"
+      ],
+      "meta_builds": {
+        "stars_alignment": {
+          "tier": "S",
+          "description": "Generate 7+ Stars/turn, cash with Alignment (Stars→Energy), Seven Stars (AoE), or Big Bang (mass refund). Works with decks up to 25 cards.",
+          "core": ["CARD.ALIGNMENT", "CARD.BIG_BANG", "CARD.SEVEN_STARS", "CARD.REFLECT", "CARD.CONVERGENCE"],
+          "curve": "Star generator Act 1 → Alignment by end of Act 1 → Big Bang or Seven Stars in Act 2"
+        },
+        "sovereign_blade_forge": {
+          "tier": "B+",
+          "description": "Stack Forge on the Sovereign Blade (a Retained colorless). Lean deck to cycle into Blade reliably. Forge events like 'Decisions, Decisions' give exclusive Forge rewards.",
+          "core": ["CARD.SUMMON_FORTH", "CARD.CONQUEROR", "CARD.FURNACE", "CARD.BULWARK"],
+          "warning": "Undertuned vs Stars in most scenarios. Only commit if first 3 rewards are Forge-specific."
+        }
+      },
+      "critical_rules": [
+        "NEVER mix Stars and Forge — a 50/50 split loses to both specialized builds consistently",
+        "Default to Stars if you cannot identify your path by end of Act 1",
+        "Stars scales with deck size; Forge stalls once Blade one-shots everything",
+        "Use Charge and Begone to remove starter Strikes/Defends and cycle faster",
+        "Regent is weak at defense — prioritize Particle Wall and rest sites"
+      ],
+      "avoid_cards": [
+        "CARD.CLUMSY", "CARD.REGRET",
+        "CARD.COLLISION_COURSE", "CARD.LARGESSE", "CARD.MONOLOGUE",
+        "CARD.PROPHESIZE", "CARD.PALE_BLUE_DOT"
+      ],
+      "tier_list_s": ["CARD.REFLECT", "CARD.BOMBARDMENT", "CARD.BIG_BANG", "CARD.VOID_FORM", "CARD.METEOR_SHOWER"],
+      "tier_list_d": ["CARD.COLLISION_COURSE", "CARD.LARGESSE", "CARD.MONOLOGUE", "CARD.PROPHESIZE"],
+      "deck_thinning_targets": ["CARD.STRIKE_REGENT", "CARD.DEFEND_REGENT"],
+      "starter_deck": [
+        "CARD.STRIKE_REGENT","CARD.STRIKE_REGENT","CARD.STRIKE_REGENT","CARD.STRIKE_REGENT",
+        "CARD.DEFEND_REGENT","CARD.DEFEND_REGENT","CARD.DEFEND_REGENT","CARD.DEFEND_REGENT"
+      ]
+    },
+
+    "CHARACTER.WATCHER": {
+      "archetypes": ["stance", "wrath", "calm", "divinity", "scry"],
+      "win_conditions": [
+        "Wrath/Calm cycling: Eruption → Wrath (2x damage) → Reach Heaven → Calm (reduce cost), repeat for infinite value",
+        "Divinity burst: enter Divinity every 3 turns for 3x damage spike",
+        "Scry engine: Foresight/Weave → see top cards → pick perfect hands"
+      ],
+      "best_cards": [
+        "CARD.RUSHDOWN", "CARD.MENTAL_FORTRESS", "CARD.TALK_TO_THE_HAND",
+        "CARD.DEVA_FORM", "CARD.ESTABLISHMENT", "CARD.DEVOTION",
+        "CARD.REACH_HEAVEN", "CARD.SCRAWL", "CARD.JUDGMENT", "CARD.WREATH_OF_FLAME"
+      ],
+      "good_keywords": ["Stance", "Scry", "Retain", "Exhaust"],
+      "key_synergy_cards": [
+        "CARD.RUSHDOWN", "CARD.MENTAL_FORTRESS", "CARD.TALK_TO_THE_HAND"
+      ],
+      "meta_builds": {
+        "wrath_calm_loop": {
+          "tier": "A+",
+          "description": "Cycle between Wrath (2x damage) and Calm (energy refund) for infinite burst turns",
+          "core": ["CARD.ERUPTION", "CARD.REACH_HEAVEN", "CARD.RUSHDOWN", "CARD.MENTAL_FORTRESS"]
+        }
+      },
+      "avoid_cards": ["CARD.CLUMSY", "CARD.DOUBT"],
+      "deck_thinning_targets": ["CARD.STRIKE_WATCHER", "CARD.DEFEND_WATCHER"],
+      "starter_deck": [
+        "CARD.STRIKE_WATCHER","CARD.STRIKE_WATCHER","CARD.STRIKE_WATCHER","CARD.STRIKE_WATCHER",
+        "CARD.DEFEND_WATCHER","CARD.DEFEND_WATCHER","CARD.DEFEND_WATCHER","CARD.DEFEND_WATCHER",
+        "CARD.ERUPTION","CARD.VIGILANCE"
+      ]
+    }
+
+  },
+
+  "mechanic_synergies": {
+    "_comment": "Cards that enable specific mechanics. 'enablers' are cards in the deck that boost offered cards matching 'filter'.",
+    "zero_cost_attack": {
+      "enablers": ["CARD.FERAL"],
+      "filter": { "cost": "0", "type": "Attack" },
+      "bonus": 8,
+      "reason": "Feral in deck — 0-cost attacks get returned to hand each turn"
+    },
+    "zero_cost_any": {
+      "enablers": ["CARD.PANACHE"],
+      "filter": { "cost": "0" },
+      "bonus": 4,
+      "reason": "Panache in deck — more 0-cost cards trigger its AoE faster"
+    }
+  },
+
+  "keyword_synergies": {
+    "Exhaust": ["Feel No Pain", "Dark Embrace", "Corruption", "Dead Branch", "Evolve", "Sentinel"],
+    "Poison": ["Catalyst", "Noxious Fumes", "Bouncing Flask", "Deadly Poison", "A Thousand Cuts"],
+    "Shiv": ["Accuracy", "Blade Dance", "Cloak And Dagger", "Well Laid Plans", "Finisher"],
+    "Orb": ["Electrodynamics", "Biased Cognition", "Echo Form", "Defragment", "Consume", "Blizzard"],
+    "Focus": ["Biased Cognition", "Defragment", "Consume", "Glacier"],
+    "Strength": ["Limit Break", "Heavy Blade", "Feed", "Whirlwind", "Inflame", "Juggernaut"],
+    "Retain": ["Well Laid Plans", "Equilibrium", "Nightmare", "Establishment"],
+    "Scry": ["Wish", "Foresight", "Weave", "Devotion"],
+    "Stance": ["Rushdown", "Mental Fortress", "Talk To The Hand", "Establishment"],
+    "Forge": ["Big Bang", "Hidden Cache", "Convergence", "Decisions Decisions"],
+    "Star": ["Big Bang", "Seven Stars", "Alignment", "Convergence", "Stardust"],
+    "Soul": ["Soul Storm", "Haunt", "Graveblast", "Dredge"],
+    "Doom": ["Scourge", "Doom Spike", "Oblivion", "Banshee's Cry"],
+    "Osty": ["Squeeze", "Rattle", "Protector", "Unleash", "Necro Mastery", "Reanimate"],
+    "Summon": ["Squeeze", "Reanimate", "Protector", "Unleash", "Necro Mastery"]
+  },
+
+  "universal_trap_cards": [
+    "CARD.CURSE_OF_THE_BELL",
+    "CARD.NORMALITY",
+    "CARD.CLUMSY",
+    "CARD.REGRET",
+    "CARD.DOUBT",
+    "CARD.SHAME",
+    "CARD.PAIN",
+    "CARD.DECAY",
+    "CARD.DAZED",
+    "CARD.BURN",
+    "CARD.VOID",
+    "CARD.WRITHE",
+    "CARD.PRIDE",
+    "CARD.PARASITE"
+  ],
+
+  "act_principles": {
+    "1": {
+      "summary": "Build consistency. Prefer 1-cost cards. Identify your archetype by floor 10. Avoid 3-cost without payoff.",
+      "cost_weights": { "0": 1.0, "1": 1.0, "2": 0.65, "3": 0.15, "X": 0.5, "N/A": 0.0 },
+      "rarity_matters": false,
+      "notes": [
+        "1-cost cards are almost always correct — cheap = consistent",
+        "3-cost before energy scaling is often a mistake",
+        "Draw and cycle cards are most valuable here — find your engine pieces faster",
+        "Block matters more early — you don't know the deck yet, you'll take hits",
+        "Identify Stars vs Forge (Regent) or Osty vs Doom (Necrobinder) by Act 1 end",
+        "Use Charge/Begone (Regent) or deck thinning to remove weak starters"
+      ]
+    },
+    "2": {
+      "summary": "Lock in your archetype. Take key synergy pieces. Skip cards that don't fit the plan.",
+      "cost_weights": { "0": 0.8, "1": 0.9, "2": 0.9, "3": 0.55, "X": 0.75, "N/A": 0.0 },
+      "rarity_matters": false,
+      "notes": [
+        "By Act 2 you should know your win condition — don't take cards that contradict it",
+        "Key archetype payoffs (Catalyst, Limit Break, Alignment, Squeeze) are top priority",
+        "Consider whether the card makes your deck more consistent OR more explosive",
+        "3-cost can be correct if it's a key win-condition piece",
+        "Avoid random Commons that don't advance the plan — they dilute cycling"
+      ]
+    },
+    "3": {
+      "summary": "Only take genuine upgrades. Rare > Uncommon > skip a Common. Think: does this beat the final boss?",
+      "cost_weights": { "0": 0.7, "1": 0.75, "2": 0.85, "3": 0.9, "X": 0.9, "N/A": 0.0 },
+      "rarity_matters": true,
+      "notes": [
+        "Your deck is set by Act 3 — adding filler kills consistency",
+        "A Common that doesn't directly synergise is almost always a skip",
+        "Rare cards have high ceilings — almost always worth evaluating seriously",
+        "Ask: if I draw this in the boss fight, does it actively help or sit dead?",
+        "Upgrades matter most here — prioritise cards you can upgrade at rest sites"
+      ]
+    }
+  },
+
+  "colorless_good_cards": [
+    "CARD.HIDDEN_GEM", "CARD.SCRAWL", "CARD.RALLY", "CARD.JACKPOT",
+    "CARD.ALCHEMIZE", "CARD.SPLASH", "CARD.FASTEN", "CARD.DARK_SHACKLES",
+    "CARD.HUDDLE_UP", "CARD.SHOCKWAVE",
+    "CARD.MASTER_OF_STRATEGY", "CARD.SECRET_TECHNIQUE", "CARD.CALAMITY",
+    "CARD.HAND_OF_GREED", "CARD.KNOCKDOWN", "CARD.NOSTALGIA",
+    "CARD.PANIC_BUTTON", "CARD.PROWESS", "CARD.FISTICUFFS",
+    "CARD.LIFT", "CARD.ULTIMATE_DEFEND", "CARD.EQUILIBRIUM",
+    "CARD.ULTIMATE_STRIKE", "CARD.DISCOVERY", "CARD.PRODUCTION",
+    "CARD.BELIEVE_IN_YOU", "CARD.PROLONG", "CARD.GANG_UP", "CARD.TAG_TEAM"
+  ],
+
+  "_baalorlord_comment": "Tier lists scraped from sts2.untapped.gg/en/tier-list (Baalorlord, last updated Jun 2026). Used as an independent signal alongside our own context — higher weight = higher confidence from pro play.",
+  "baalorlord_tiers": {
+    "CHARACTER.IRONCLAD": {
+      "S": ["Offering","Unmovable","Break","Colossus","Evil Eye","Dominate","Dark Embrace","Vicious","Bloodletting","Fiend Fire","Stoke","Thrash","Pillage","Cruelty","Pommel Strike","Impervious","Rage","Flash of Steel","Finesse","Fisticuffs","Prolong","Panic Button","Shockwave","Calamity"],
+      "A": ["Aggression","Crimson Mantle","Corruption","Juggernaut","Not Yet","Pacts End","Pyre","Battle Trance","Feed","One-Two Punch","Anger","Stomp","Uppercut","Ashen Strike","Bully","Cascade","Flame Barrier","Taunt","Shrug It Off","Feel No Pain","Bludgeon","Expect a Fight","Burning Pact","Headbutt","Body Slam","Hemokinesis","Whirlwind","Demonic Shield","Thrumming Hatchet","Discovery","Hand of Greed"],
+      "B": ["Brand","Conflagration","Dismantle","Tear Asunder","Primal Force","Forgotten Ritual","Spite","Infernal Blade","Second Wind","Rupture","Breakthrough","Armaments","Blood Wall","True Grit","Stone Armor","Barricade","Stampede","Juggling","Iron Wave","Unrelenting","Tremble","Molten Fist","Perfected Strike","The Gambit","Dual Wield","Entrench"],
+      "C": ["Hellraiser","Inferno","Inflame","Cinder","Twin Strike","Rampage","Thunderclap","Setup Strike","Sword Boomerang","Mangle","Howl from Beyond","Drum of Battle","Strike","Defend","Bash","Clash"],
+      "D": ["Havoc","Tank","Demon Form"],
+      "F": []
+    },
+    "CHARACTER.DEFECT": {
+      "S": ["Echo Form","Hologram","Voltaic","Supercritical","Chill","TURBO","Glacier","Defragment","Modded","Skim","All for One","Compile Driver","Go for the Eyes","White Noise","Overclock","Quadcast"],
+      "A": ["Biased Cognition","Beam Cell","Feral","Subroutine","Spinner","Buffer","Shatter","Ice Lance","Null","Shadow Shield","Glasswork","Ball Lightning","Cold Snap","Machine Learning","Bulk Up","Sunder","Darkness","Genetic Algorithm","Coolant","Tesla Coil","Boost Away","Boot Sequence","Lightning Rod","Charge Battery","Barrage","Refract","Gunk Up","Focused Strike","Hotfix","Synchronize","Trash to Treasure","Rocket Punch","Energy Surge"],
+      "B": ["Signal Boost","Iteration","Smokestack","Meteor Strike","Creative AI","Multi-Cast","Capacitor","Claw","Adaptive Strike","Rainbow","FTL","Thunder","Compact","Fight Through","Coolheaded","Scrape","Tempest","Storm","Fusion","Scavenge","Double Energy","Flak Cannon","Zap","Dualcast","Ignition","Rebound","Stack"],
+      "C": ["Hyperbeam","Hailstorm","Chaos","Hello World","Rip and Tear","Sweeping Beam","Leap","Momentum Strike","Helix Drill","Synthesis","Defend"],
+      "D": ["Loop","Consuming Shadow","Reboot","Uproar"],
+      "F": ["Strike"]
+    },
+    "CHARACTER.REGENT": {
+      "S": ["The Sealed Throne","Reflect","Void Form","Bulwark","Big Bang","Tyranny","Particle Wall","Bombardment","Arsenal","Comet","Decisions Decisions","Discovery","Splash","Calamity","Entropy"],
+      "A": ["Meteor Shower","Crash Landing","Astral Pulse","Royal Gamble","Hidden Cache","Gamma Blast","Orbit","Pale Blue Dot","The Smith","Kingly Kick","Kingly Punch","Spectrum Shift","Pillar of Creation","Child of the Stars","Glitterstream","Quasar","Manifest Authority","Convergence","Glow","Know Thy Place","Supermassive","Foregone Conclusion","Heavenly Drill","Guiding Star","Largesse","Jack of All Trades","Prep Time"],
+      "B": ["Black Hole","Royalties","Sword Sage","Hammer Time","Dying Star","I Am Invincible","Make It So","Bundle of Joy","Collision Course","Shining Strike","Summon Forth","Photon Cut","Gather Light","Cloak of Stars","Patter","Radiate","Alignment","Stardust","Refine Blade","Celestial Might","Conqueror","Furnace","Parry","Crush Under","Hegemony","Prophesize","Terraforming","Falling Star"],
+      "C": ["Genesis","Seeking Edge","Heirloom Hammer","Cosmic Indifference","Knockout Blow","Devastate","Wrought in War","Solar Strike","Glimmer","Monologue","Spoils of Battle","Monarchs Gaze","Beat into Shape","Venerate","Defend"],
+      "D": ["Neutron Aegis","Seven Stars","Crescent Spear","Lunar Blast"],
+      "F": ["Strike","Resonance"]
+    },
+    "colorless": {
+      "S": ["Hidden Gem","Scrawl","Rally","Jackpot","Alchemize","Shockwave","Splash","Fasten","Dark Shackles","Huddle Up"],
+      "A": ["Master of Strategy","Secret Technique","Calamity","Hand of Greed","Knockdown","Nostalgia","Panic Button","Prowess","Fisticuffs","Lift","Ultimate Defend","Equilibrium","Ultimate Strike","Discovery","Production","Believe in You","Prolong","Gang Up","Tag Team"],
+      "B": ["Finesse","Flash of Steel","Omnislice","Dramatic Entrance","Automation","Stratagem","Panache","Entropy","Mayhem","Rend","Salvo","Rolling Boulder","Gold Axe","Beacon of Hope","Thrumming Hatchet","Mind Blast","Seeker Strike"],
+      "C": ["Eternal Armor","Bolas","Anointed","Secret Weapon","Mimic","Restlessness","Purity","Prep Time","Volley","Impatience","Intercept","Jack of All Trades","The Bomb","Catastrophe"],
+      "D": ["The Gambit","Beat Down","Thinking Ahead","Coordinate"],
+      "F": []
+    }
+  },
+
+  "general_advice": {
+    "deck_size": "Smaller decks are more consistent — remove starters when possible. 10-15 is ideal, 20+ starts to feel clunky unless you have good draw.",
+    "draw_always_good": "A card that draws more cards is almost always worth considering — finding your engine pieces faster is foundational.",
+    "avoid_win_more": "Cards that are great when you're already winning but useless when behind are low priority. Prefer cards that are good when things go wrong.",
+    "upgrade_priority": "Cards you plan to play every turn deserve upgrades first. Upgrade costs 0-cost cards last."
+  }
+}

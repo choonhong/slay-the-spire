@@ -3,9 +3,10 @@ import CardStatsTable from './components/CardStatsTable';
 import RunHistory from './components/RunHistory';
 import Synergies from './components/Synergies';
 import Ancients from './components/Ancients';
+import Advisor from './components/Advisor';
 import Settings from './components/Settings';
 
-type Tab = 'stats' | 'runs' | 'synergies' | 'ancients' | 'settings';
+type Tab = 'stats' | 'runs' | 'synergies' | 'ancients' | 'advisor' | 'settings';
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('stats');
@@ -22,7 +23,7 @@ export default function App() {
             </span>
           </div>
           <nav className="flex gap-1 ml-4">
-            {(['stats', 'runs', 'synergies', 'ancients', 'settings'] as Tab[]).map((t) => (
+            {(['stats', 'runs', 'synergies', 'ancients', 'advisor', 'settings'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -36,6 +37,7 @@ export default function App() {
                   : t === 'runs' ? 'Run History'
                   : t === 'synergies' ? 'Synergies'
                   : t === 'ancients' ? 'Ancients'
+                  : t === 'advisor' ? '⚔ Advisor'
                   : 'Settings'}
               </button>
             ))}
@@ -49,6 +51,7 @@ export default function App() {
         {tab === 'runs' && <RunHistory />}
         {tab === 'synergies' && <Synergies />}
         {tab === 'ancients' && <Ancients />}
+        <div className={tab === 'advisor' ? '' : 'hidden'}><Advisor /></div>
         {tab === 'settings' && <Settings />}
       </main>
     </div>

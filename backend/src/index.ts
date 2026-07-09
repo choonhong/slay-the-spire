@@ -5,6 +5,8 @@ import runsRouter from './routes/runs';
 import configRouter from './routes/config';
 import synergiesRouter from './routes/synergies';
 import ancientsRouter from './routes/ancients';
+import recommendRouter from './routes/recommend';
+import currentRunRouter from './routes/currentRun';
 import { startWatcher } from './watcher';
 
 const app = express();
@@ -18,6 +20,8 @@ app.use('/api/runs', runsRouter);
 app.use('/api/config', configRouter);
 app.use('/api/synergies', synergiesRouter);
 app.use('/api/ancients', ancientsRouter);
+app.use('/api/recommend', recommendRouter);
+app.use('/api/current-run', currentRunRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

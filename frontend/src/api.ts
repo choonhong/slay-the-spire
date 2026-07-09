@@ -200,3 +200,42 @@ export async function saveConfig(savesPath: string): Promise<AppConfig> {
   const { data } = await api.post<AppConfig>('/config', { savesPath });
   return data;
 }
+
+export interface ScoreFactors {
+  strength: number;
+  synergy: number;
+  deck_needs: number;
+  act_context: number;
+  rarity: number;
+}
+
+export interface CardScore {
+  card_id: string;
+  name: string;
+  score: number;
+  factors: ScoreFactors;
+  reasons: string[];
+  recommendation: 'strong' | 'consider' | 'skip';
+}
+
+export async function fetchRecommendations(payload: {
+  deck: string[];
+  offered: string[];
+  character: string;
+  floor: number;
+}): Promise<CardScore[]> {
+  const { data } = await api.post<CardScore[]>('/recommend', payload);
+  return data;
+}
+
+export interface CurrentRun {
+  character: string | null;
+  floor: number;
+  deck: string[];
+  relics: string[];
+}
+
+export async function fetchCurrentRun(): Promise<CurrentRun> {
+  const { data } = await api.get<CurrentRun>('/current-run');
+  return data;
+}
