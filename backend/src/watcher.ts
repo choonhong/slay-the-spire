@@ -93,6 +93,52 @@ async function parseExistingRuns(savesPath: string): Promise<void> {
 
   const after = getRunCount(db);
   console.log(`[watcher] Startup complete: ${parsed} new, ${skipped} cached, ${after} total runs in DB`);
+
+  // Backfill: repair runs that have raw_json but no card_choices (parser failure)
+  backfillMissingChoices(db);
+}
+
+function backfillMissingChoices(db: DatabaseSync): void {
+  const { insertCardChoices } = require('./db');
+
+  const orphaned = (db.prepare(`
+    SELECT r.id, r.raw_json
+    FROM runs r
+    LEFT JOIN card_choices cc ON cc.run_id = r.id
+    WHERE cc.id IS NULL AND r.raw_json IS NOT NULL
+  `) as { all: () => Array<{ id: number; raw_json: string }> }).all();
+
+  if (orphaned.length === 0) return;
+  console.log(`[watcher] Backfilling card_choices for ${orphaned.length} run(s) missing data...`);
+
+  for (const row of orphaned) {
+    try {
+      const data = JSON.parse(row.raw_json);
+      const offerEvents: Array<Array<{ card: { id: string }; was_picked: boolean }>> = [];
+      for (const act of data.map_point_history ?? []) {
+        for (const point of act) {
+          for (const ps of point.player_stats ?? []) {
+            if (ps.card_choices?.length > 0) offerEvents.push(ps.card_choices);
+          }
+        }
+      }
+      const choices: Array<{ card_id: string; was_picked: boolean; offer_index: number; upgrade_level?: number }> = [];
+      offerEvents.forEach((offer, offerIndex) => {
+        for (const entry of offer) {
+          if (!entry.card?.id) continue;
+          choices.push({ card_id: entry.card.id, was_picked: entry.was_picked === true, offer_index: offerIndex });
+        }
+      });
+      for (const card of (data.players?.[0]?.deck ?? [])) {
+        if (!card.id) continue;
+        choices.push({ card_id: card.id, was_picked: true, offer_index: -1, upgrade_level: card.current_upgrade_level ?? 0 });
+      }
+      insertCardChoices(db, row.id, choices);
+      console.log(`[watcher] Backfilled run ${row.id}: ${choices.length} choices`);
+    } catch (e) {
+      console.error(`[watcher] Backfill failed for run ${row.id}:`, e);
+    }
+  }
 }
 
 function findRunFiles(dir: string): string[] {

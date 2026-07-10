@@ -4,12 +4,10 @@ const api = axios.create({ baseURL: '/api' });
 
 export interface CardStat {
   card_id: string;
-  times_offered: number;
-  times_picked: number;
-  pick_rate: number;
   runs_with_card: number;
   runs_won_with_card: number;
   win_rate: number;
+  weighted_win_rate?: number;
 }
 
 export interface RunRow {
@@ -37,6 +35,7 @@ export async function fetchCardStats(filters: {
   gameMode?: string;
   buildId?: string;
   colorless?: boolean;
+  weighted?: boolean;
 } = {}): Promise<CardStat[]> {
   const params = new URLSearchParams();
   if (filters.character) params.set('character', filters.character);
@@ -44,6 +43,7 @@ export async function fetchCardStats(filters: {
   if (filters.gameMode) params.set('gameMode', filters.gameMode);
   if (filters.buildId) params.set('buildId', filters.buildId);
   if (filters.colorless) params.set('colorless', 'true');
+  if (filters.weighted) params.set('weighted', 'true');
   const { data } = await api.get<CardStat[]>(`/stats/cards?${params}`);
   return data;
 }
@@ -94,6 +94,11 @@ export async function fetchCardText(): Promise<CardText[]> {
   return data;
 }
 
+export async function fetchRelics(): Promise<string[]> {
+  const { data } = await api.get<string[]>('/stats/relics');
+  return data;
+}
+
 export async function fetchRuns(filters: {
   character?: string;
   buildId?: string;
@@ -130,7 +135,7 @@ export interface RunDetails {
   card_offers: number;
   cards_picked: number;
   final_deck_size: number;
-  final_deck: string[];
+  final_deck: { id: string; upgraded: boolean }[];
   relics: string[];
   acts: string[];
   build_id: string | null;
@@ -221,8 +226,12 @@ export interface CardScore {
 export async function fetchRecommendations(payload: {
   deck: string[];
   offered: string[];
+  offeredUpgrades?: boolean[];
+  deckUpgrades?: string[];
   character: string;
   floor: number;
+  relics?: string[];
+  currentBoss?: string | null;
 }): Promise<CardScore[]> {
   const { data } = await api.post<CardScore[]>('/recommend', payload);
   return data;
@@ -233,6 +242,9 @@ export interface CurrentRun {
   floor: number;
   deck: string[];
   relics: string[];
+  upgrades: string[];
+  actIndex: number;
+  currentBoss: string | null;
 }
 
 export async function fetchCurrentRun(): Promise<CurrentRun> {

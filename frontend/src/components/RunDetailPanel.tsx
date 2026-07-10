@@ -1,28 +1,24 @@
 import { useState } from 'react';
-import { fetchRunDetails, fetchAiInsight, type RunDetails } from '../api';
+import { fetchRunDetails, fetchAiInsight, fetchCardText, type RunDetails, type CardText } from '../api';
+import { formatCardId } from '../utils';
+import { CardNameCell } from './CardNameCell';
+
+const RARITY_COLOR: Record<string, string> = {
+  Rare:     'text-yellow-400',
+  Uncommon: 'text-blue-400',
+  Common:   'text-gray-200',
+  Starter:  'text-red-400',
+  Special:  'text-purple-400',
+  Curse:    'text-red-500',
+};
 
 interface Props {
   runId: number;
 }
 
-function groupCards(deck: string[]): { name: string; count: number; isBasic: boolean }[] {
-  const counts = new Map<string, number>();
-  for (const card of deck) counts.set(card, (counts.get(card) ?? 0) + 1);
-  return Array.from(counts.entries())
-    .map(([name, count]) => ({
-      name,
-      count,
-      isBasic: /^strike|^defend/i.test(name),
-    }))
-    .sort((a, b) => {
-      // Basic cards first, then alphabetical
-      if (a.isBasic !== b.isBasic) return a.isBasic ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
-}
-
 export default function RunDetailPanel({ runId }: Props) {
   const [details, setDetails] = useState<RunDetails | null>(null);
+  const [cardTextMap, setCardTextMap] = useState<Map<string, CardText>>(new Map());
   const [loading, setLoading] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -33,8 +29,12 @@ export default function RunDetailPanel({ runId }: Props) {
   if (!loaded && !loading) {
     setLoading(true);
     setLoaded(true);
-    fetchRunDetails(runId).then(d => {
+    Promise.all([
+      fetchRunDetails(runId),
+      fetchCardText(),
+    ]).then(([d, cardTexts]) => {
       setDetails(d);
+      setCardTextMap(new Map(cardTexts.map(c => [c.id, c])));
       setLoading(false);
     }).catch(() => setLoading(false));
   }
@@ -71,7 +71,7 @@ export default function RunDetailPanel({ runId }: Props) {
         <Stat label="Floor reached" value={String(details.floor_reached)} />
         <Stat label="Final deck" value={`${details.final_deck_size} cards`} />
         <Stat
-          label="Total damage"
+          label="Total damage taken"
           value={String(details.total_damage_taken)}
           sub={details.damage_per_act.map((a, i) => `Act ${i + 1}: ${a.damage}`).join(' / ')}
         />
@@ -92,45 +92,64 @@ export default function RunDetailPanel({ runId }: Props) {
       )}
 
       {/* Final deck */}
-      {details.final_deck.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
-            Final Deck <span className="text-gray-600 font-normal normal-case">({details.final_deck.length} cards)</span>
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {groupCards(details.final_deck).map(({ name, count, isBasic }, i) => (
-              <span
-                key={i}
-                className={`flex items-center gap-1 px-2 py-0.5 border rounded text-xs ${
-                  isBasic
-                    ? 'bg-red-950/40 border-red-800/50 text-red-300'
-                    : 'bg-gray-800/70 border-gray-700/60 text-gray-200'
-                }`}
-              >
-                {name}
-                {count > 1 && (
-                  <span className={`font-bold ${isBasic ? 'text-red-400' : 'text-gray-400'}`}>
-                    ×{count}
+      {details.final_deck.length > 0 && (() => {
+        // Group by id+upgraded key, preserving rarity order
+        const grouped = new Map<string, { id: string; upgraded: boolean; count: number }>();
+        for (const card of details.final_deck) {
+          const key = `${card.id}__${card.upgraded ? '+' : ''}`;
+          if (grouped.has(key)) grouped.get(key)!.count++;
+          else grouped.set(key, { id: card.id, upgraded: card.upgraded, count: 1 });
+        }
+        const rarityOrder = ['Rare', 'Uncommon', 'Common', 'Starter', 'Special', 'Curse', 'Unknown'];
+        const entries = [...grouped.values()].sort((a, b) => {
+          const ra = rarityOrder.indexOf(cardTextMap.get(a.id)?.rarity ?? 'Unknown');
+          const rb = rarityOrder.indexOf(cardTextMap.get(b.id)?.rarity ?? 'Unknown');
+          return ra - rb;
+        });
+        const rarityCounts: Record<string, number> = {};
+        for (const { id, count } of entries) {
+          const r = cardTextMap.get(id)?.rarity ?? 'Unknown';
+          rarityCounts[r] = (rarityCounts[r] ?? 0) + count;
+        }
+        const rarityParts = ['Rare','Uncommon','Common','Starter','Special','Curse']
+          .filter(r => rarityCounts[r])
+          .map(r => ({ rarity: r, count: rarityCounts[r] }));
+        return (
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+              Final Deck <span className="text-gray-600 font-normal normal-case">({details.final_deck.length} cards)</span>
+            </p>
+            <div className="p-2 bg-gray-900/50 border border-gray-800 rounded-lg">
+              {/* Rarity summary */}
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 mb-2 text-xs">
+                {rarityParts.map(({ rarity, count }) => (
+                  <span key={rarity} className={RARITY_COLOR[rarity] ?? 'text-gray-400'}>
+                    {count} {rarity}
                   </span>
-                )}
-              </span>
-            ))}
+                ))}
+              </div>
+              <div className="grid grid-cols-5 gap-x-2 gap-y-0.5">
+                {entries.map(({ id, upgraded, count }) => {
+                  const ct = cardTextMap.get(id);
+                  const colorClass = RARITY_COLOR[ct?.rarity ?? ''] ?? 'text-gray-300';
+                  return (
+                    <div key={`${id}-${upgraded}`} className="flex items-baseline gap-0.5 min-w-0">
+                      <CardNameCell
+                        id={id}
+                        cardTextMap={cardTextMap}
+                        className={`text-sm truncate ${colorClass}`}
+                      />
+                      {upgraded && <span className="text-cyan-400 text-xs font-bold shrink-0">+</span>}
+                      {count > 1 && <span className="text-gray-500 text-xs shrink-0">×{count}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
-      {/* Rule-based insights */}
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Insights</p>
-        <ul className="space-y-1">
-          {details.insights.map((ins, i) => (
-            <li key={i} className="flex gap-2 text-sm text-gray-300">
-              <span className="text-spire-400 mt-0.5">•</span>
-              <span>{ins}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
 
       {/* Patch version (hidden here) */}
       {details.build_id && (

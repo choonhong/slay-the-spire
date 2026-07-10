@@ -144,7 +144,7 @@ export interface RunDetails {
   card_offers: number;
   cards_picked: number;
   final_deck_size: number;
-  final_deck: string[];
+  final_deck: { id: string; upgraded: boolean }[];
   relics: string[];
   acts: string[];
   build_id: string | null;
@@ -232,14 +232,19 @@ function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
 
   const player = data.players?.[0];
   const finalDeckSize = player?.deck?.length ?? 0;
-  const finalDeck = (player?.deck ?? []).map(c => formatId(c.id, 'CARD'));
+  const finalDeck: { id: string; upgraded: boolean }[] = (player?.deck ?? []).map((c: { id?: string; current_upgrade_level?: number }) => {
+    const raw = c.id ?? '';
+    const id = raw.startsWith('CARD.') ? raw : `CARD.${raw}`;
+    return { id, upgraded: (c.current_upgrade_level ?? 0) >= 1 };
+  });
   const relics = (player?.relics ?? []).map(r =>
     formatId(typeof r === 'string' ? r : r.id, 'RELIC')
   );
 
   const insights = buildInsights({
     win, killed_by, floorReached, totalDamage,
-    actStats, cardOffers, cardsPicked, finalDeckSize, finalDeck, relics, ascension, acts,
+    actStats, cardOffers, cardsPicked, finalDeckSize,
+    finalDeck: finalDeck.map(c => c.id), relics, ascension, acts,
   });
 
   return {
@@ -296,16 +301,6 @@ function buildInsights(p: {
       list.push(`No rest sites used in ${lastAct.act}.`);
   }
 
-  // Strike / Defend count
-  const basicCards = p.finalDeck.filter(c => /^strike|^defend/i.test(c));
-  if (basicCards.length > 0) {
-    const counts = new Map<string, number>();
-    for (const c of basicCards) counts.set(c, (counts.get(c) ?? 0) + 1);
-    const summary = Array.from(counts.entries())
-      .map(([name, n]) => `${name}${n > 1 ? ` ×${n}` : ''}`)
-      .join(', ');
-    list.push(`Still has basic cards: ${summary} — consider removing them.`);
-  }
 
   return list;
 }

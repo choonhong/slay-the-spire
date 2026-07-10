@@ -81,8 +81,7 @@ router.get('/', (req: Request, res: Response) => {
     ${where}
     GROUP BY a.card_id, b.card_id
     HAVING COUNT(DISTINCT r.id) >= ?
-    ORDER BY win_rate_together DESC, runs_together DESC
-    LIMIT 100
+    ORDER BY runs_together DESC
   `).all(...params, minR) as {
     card_a: string; card_b: string;
     runs_together: number; wins_together: number; win_rate_together: number;

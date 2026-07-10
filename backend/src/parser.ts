@@ -42,7 +42,7 @@ interface RunFile {
   build_id?: string;
   killed_by_encounter?: string;
   killed_by_event?: string;
-  players?: Array<{ character?: string; deck?: Array<{ id: string }> }>;
+  players?: Array<{ character?: string; deck?: Array<{ id: string; current_upgrade_level?: number }> }>;
   map_point_history?: MapPoint[][];
 }
 
@@ -139,14 +139,17 @@ export function parseRunFile(filePath: string): ParseResult | null {
     }
   });
 
-  // Final deck (offer_index = -1): one row per unique card in players[0].deck.
-  // win rate is computed from these rows — cards you ended the run with,
-  // regardless of how they entered the deck (fight reward, event, shop, choice screen).
-  const finalDeckIds = new Set(
-    (data.players?.[0]?.deck ?? []).map(c => c.id).filter(Boolean)
-  );
-  for (const cardId of finalDeckIds) {
-    flatChoices.push({ card_id: cardId, was_picked: true, offer_index: -1 });
+  // Final deck (offer_index = -1): one row per card copy in players[0].deck,
+  // preserving upgrade_level. Win rate queries use COUNT(DISTINCT run_id) so
+  // multiple copies of the same card in a run are handled correctly.
+  for (const card of (data.players?.[0]?.deck ?? [])) {
+    if (!card.id) continue;
+    flatChoices.push({
+      card_id: card.id,
+      was_picked: true,
+      offer_index: -1,
+      upgrade_level: card.current_upgrade_level ?? 0,
+    });
   }
 
   insertCardChoices(db, runId, flatChoices);

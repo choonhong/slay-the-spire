@@ -31,8 +31,24 @@
           "tier": "A+",
           "description": "Corruption makes all skills cost 0 + Exhaust, enabling explosive turns",
           "core": ["CARD.CORRUPTION", "CARD.FEEL_NO_PAIN", "CARD.DARK_EMBRACE", "CARD.DEAD_BRANCH"]
+        },
+        "vulnerable_vicious": {
+          "tier": "A+",
+          "description": "Vicious draws a card on every Vulnerable applied — Taunt/Bash/Tremble fuel constant card draw and 50% damage amp for Whirlwind",
+          "core": ["CARD.VICIOUS", "CARD.TAUNT", "CARD.WHIRLWIND", "CARD.INFLAME"]
+        },
+        "exhaust_fiend_fire": {
+          "tier": "A+",
+          "description": "Fill hand with 0-cost cards, exhaust everything with Fiend Fire for massive burst damage",
+          "core": ["CARD.FIEND_FIRE", "CARD.BATTLE_TRANCE", "CARD.OFFERING", "CARD.DARK_EMBRACE"]
+        },
+        "strength_scaling": {
+          "tier": "S",
+          "description": "Stack Strength via Inflame + Limit Break, then unleash with Whirlwind or Heavy Blade",
+          "core": ["CARD.LIMIT_BREAK", "CARD.INFLAME", "CARD.WHIRLWIND", "CARD.HEAVY_BLADE"]
         }
       },
+      "tier_list_s": ["CARD.COLOSSUS", "CARD.BATTLE_TRANCE", "CARD.INFLAME", "CARD.TAUNT", "CARD.LIMIT_BREAK", "CARD.BARRICADE", "CARD.CORRUPTION", "CARD.REAPER", "CARD.FEED"],
       "avoid_cards": ["CARD.CLUMSY", "CARD.REGRET", "CARD.CLASH"],
       "deck_thinning_targets": ["CARD.STRIKE_IRONCLAD", "CARD.DEFEND_IRONCLAD"],
       "starter_deck": [
@@ -92,11 +108,13 @@
       "best_cards": [
         "CARD.BIASED_COGNITION", "CARD.ELECTRODYNAMICS", "CARD.ECHO_FORM",
         "CARD.CONSUME", "CARD.DEFRAGMENT", "CARD.COOLHEADED",
-        "CARD.GLACIER", "CARD.BLIZZARD", "CARD.SEEK", "CARD.DARKNESS"
+        "CARD.GLACIER", "CARD.BLIZZARD", "CARD.SEEK", "CARD.DARKNESS",
+        "CARD.COMPILE_DRIVER"
       ],
-      "good_keywords": ["Channel", "Focus", "Evoke", "Orb"],
+      "good_keywords": ["Channel", "Focus", "Evoke", "Orb", "Draw"],
       "key_synergy_cards": [
-        "CARD.BIASED_COGNITION", "CARD.ELECTRODYNAMICS", "CARD.ECHO_FORM"
+        "CARD.BIASED_COGNITION", "CARD.ELECTRODYNAMICS", "CARD.ECHO_FORM",
+        "CARD.COMPILE_DRIVER"
       ],
       "meta_builds": {
         "frost_focus": {
@@ -272,7 +290,134 @@
       "filter": { "cost": "0" },
       "bonus": 4,
       "reason": "Panache in deck — more 0-cost cards trigger its AoE faster"
+    },
+    "all_for_one_zero_cost": {
+      "enablers": ["CARD.ALL_FOR_ONE"],
+      "filter": { "cost": "0" },
+      "bonus": 7,
+      "reason": "All for One in deck — retrieves all 0-cost cards from discard, replaying them for free"
+    },
+    "zero_cost_enabler_for_all_for_one": {
+      "enabler_filter": { "cost": "0" },
+      "filter": { "id": "CARD.ALL_FOR_ONE" },
+      "bonus": 4,
+      "scale_with_count": true,
+      "max_bonus": 20,
+      "reason": "0-cost cards in deck — All for One recovers them all from discard"
+    },
+    "compile_driver_zero_cost_synergy": {
+      "enabler_filter": { "cost": "0" },
+      "filter": { "id": "CARD.COMPILE_DRIVER" },
+      "bonus": 3,
+      "scale_with_count": true,
+      "max_bonus": 12,
+      "reason": "0-cost cards in deck — Compile Driver draws more, cycling into them faster"
+    },
+    "battle_trance_fiend_fire": {
+      "enablers": ["CARD.BATTLE_TRANCE"],
+      "filter": { "id": "CARD.FIEND_FIRE" },
+      "bonus": 10,
+      "reason": "Battle Trance in deck — draw 3 free cards before Fiend Fire exhausts hand for massive damage"
+    },
+    "fiend_fire_battle_trance": {
+      "enablers": ["CARD.FIEND_FIRE"],
+      "filter": { "id": "CARD.BATTLE_TRANCE" },
+      "bonus": 10,
+      "reason": "Fiend Fire in deck — Battle Trance (0-cost, draw 3) fills hand before the exhaust finisher"
+    },
+    "battle_trance_byrd_swoop": {
+      "enablers": ["CARD.BATTLE_TRANCE"],
+      "filter": { "id": "CARD.BYRD_SWOOP" },
+      "bonus": 6,
+      "reason": "Battle Trance in deck — free draw refills hand with 0-cost Byrd Swoops for burst turns"
+    },
+    "byrd_swoop_battle_trance": {
+      "enablers": ["CARD.BYRD_SWOOP"],
+      "filter": { "id": "CARD.BATTLE_TRANCE" },
+      "bonus": 6,
+      "reason": "Byrd Swoop (0-cost) in deck — Battle Trance draws into more free attacks, perfect burst setup"
+    },
+    "inflame_whirlwind": {
+      "enablers": ["CARD.INFLAME"],
+      "filter": { "id": "CARD.WHIRLWIND" },
+      "bonus": 10,
+      "reason": "Inflame in deck — every point of Strength adds to all Whirlwind hits, multiplicative scaling"
+    },
+    "whirlwind_inflame": {
+      "enablers": ["CARD.WHIRLWIND"],
+      "filter": { "id": "CARD.INFLAME" },
+      "bonus": 10,
+      "reason": "Whirlwind in deck — Inflame's Strength multiplies across every hit, must-pick"
+    },
+    "inflame_limit_break": {
+      "enablers": ["CARD.INFLAME"],
+      "filter": { "id": "CARD.LIMIT_BREAK" },
+      "bonus": 8,
+      "reason": "Inflame in deck — Limit Break doubles accumulated Strength, explosive combo"
+    },
+    "limit_break_inflame": {
+      "enablers": ["CARD.LIMIT_BREAK"],
+      "filter": { "id": "CARD.INFLAME" },
+      "bonus": 8,
+      "reason": "Limit Break in deck — Inflame front-loads Strength for Limit Break to double"
+    },
+    "inflame_heavy_blade": {
+      "enablers": ["CARD.INFLAME"],
+      "filter": { "id": "CARD.HEAVY_BLADE" },
+      "bonus": 7,
+      "reason": "Inflame in deck — Heavy Blade multiplies Strength 5×, Inflame greatly increases its damage"
+    },
+    "heavy_blade_inflame": {
+      "enablers": ["CARD.HEAVY_BLADE"],
+      "filter": { "id": "CARD.INFLAME" },
+      "bonus": 7,
+      "reason": "Heavy Blade in deck — Inflame's Strength is multiplied 5× by Heavy Blade, must-pick"
+    },
+    "dark_embrace_exhaust_synergy": {
+      "enabler_filter": { "keyword": "Exhaust" },
+      "filter": { "id": "CARD.DARK_EMBRACE" },
+      "bonus": 8,
+      "scale_with_count": true,
+      "max_bonus": 30,
+      "reason": "Exhaust cards in deck — Dark Embrace draws a card each time you exhaust, massive card draw engine"
+    },
+    "feel_no_pain_exhaust_synergy": {
+      "enabler_filter": { "keyword": "Exhaust" },
+      "filter": { "id": "CARD.FEEL_NO_PAIN" },
+      "bonus": 5,
+      "scale_with_count": true,
+      "max_bonus": 20,
+      "reason": "Exhaust cards in deck — Feel No Pain gains Block each time you exhaust"
+    },
+    "hellraiser_strike_requirement": {
+      "enablers": ["CARD.STRIKE_IRONCLAD","CARD.PERFECTED_STRIKE","CARD.POMMEL_STRIKE","CARD.SETUP_STRIKE","CARD.TWIN_STRIKE","CARD.ASHEN_STRIKE","CARD.WILD_STRIKE","CARD.INFERNAL_BLADE"],
+      "filter": { "id": "CARD.HELLRAISER" },
+      "bonus": 18,
+      "penalty_if_below": 3,
+      "reason": "Needs 3+ Strike-named cards to trigger consistently"
+    },
+    "vicious_taunt_synergy": {
+      "enablers": ["CARD.VICIOUS"],
+      "filter": { "id": "CARD.TAUNT" },
+      "bonus": 12,
+      "reason": "Vicious in deck — Taunt applies Vulnerable, drawing a free card each time"
+    },
+    "taunt_vicious_synergy": {
+      "enablers": ["CARD.TAUNT"],
+      "filter": { "id": "CARD.VICIOUS" },
+      "bonus": 12,
+      "reason": "Taunt in deck — Vicious draws a card every time Taunt applies Vulnerable"
     }
+  },
+
+  "relic_synergies": {
+    "_comment": "Keys are unique IDs (use relic_id field when one relic needs multiple rules). Add new relics as you obtain them.",
+    "RELIC.CRACKED_CORE.focus": { "relic_id": "RELIC.CRACKED_CORE", "filter": { "keyword": "Focus" }, "bonus": 5, "reason": "Cracked Core channels Lightning — Focus cards increase its damage" },
+    "RELIC.CRACKED_CORE.orb":   { "relic_id": "RELIC.CRACKED_CORE", "filter": { "keyword": "Orb" },   "bonus": 4, "reason": "Cracked Core channels Lightning — Orb synergy cards amplify it" },
+    "RELIC.NEOWS_TORMENT":            { "filter": { "cost": "0" },                                           "bonus": 7, "reason": "Neow's Torment — boosts all 0-cost cards, making them trigger its effect" },
+    "RELIC.BAG_OF_MARBLES":       { "filter": { "type": "Attack" },                                       "bonus": 5, "reason": "Bag of Marbles applies Vulnerable — attacks deal 50% more damage" },
+    "RELIC.ORNAMENTAL_FAN":       { "filter": { "cost": "0", "type": "Attack" },                           "bonus": 6, "reason": "Ornamental Fan — 0-cost attacks trigger Block every 3rd hit faster" },
+    "RELIC.RED_MASK.go_for_eyes": { "relic_id": "RELIC.RED_MASK", "filter": { "card_id": "CARD.GO_FOR_THE_EYES" }, "bonus": -12, "reason": "↓ Red Mask already applies Weak at combat start — Go for the Eyes' effect is redundant" }
   },
 
   "keyword_synergies": {
@@ -395,6 +540,65 @@
       "C": ["Eternal Armor","Bolas","Anointed","Secret Weapon","Mimic","Restlessness","Purity","Prep Time","Volley","Impatience","Intercept","Jack of All Trades","The Bomb","Catastrophe"],
       "D": ["The Gambit","Beat Down","Thinking Ahead","Coordinate"],
       "F": []
+    }
+  },
+
+  "boss_context": {
+    "ENCOUNTER.CEREMONIAL_BEAST_BOSS": {
+      "act": 1,
+      "name": "Ceremonial Beast",
+      "summary": "Act 1 boss. High damage output in later turns; needs enough block generation to survive. Strength scaling or burn damage is effective.",
+      "preferred_card_keywords": ["block", "strength", "vulnerable"],
+      "preferred_card_types": ["Skill", "Attack"],
+      "boost_keywords": ["block", "strength"],
+      "tip": "Build block generation before this fight. Vulnerability + big attacks ends it quickly."
+    },
+    "ENCOUNTER.KAISER_CRAB_BOSS": {
+      "act": 2,
+      "name": "Kaiser Crab",
+      "summary": "Two-target fight (Crusher 199 HP, Rocket 189 HP). You are Surrounded — attacks from behind deal 50% more damage. End your turn facing the biggest threat. Kill Rocket first (turn 4 nuke deals ~33–49 dmg). When a claw dies, the other gains 6 Strength + 99 Block for 1 turn (do not waste attacks that turn). AoE hits both claws and is extremely efficient here.",
+      "preferred_card_keywords": ["aoe", "poison", "multi-hit", "strength", "block"],
+      "boost_aoe": true,
+      "boost_poison": true,
+      "tip": "AoE cards hit both claws — extremely efficient. Poison bypasses Crusher block stacking. Plan turns so your final targeted attack faces the highest-damage claw. Kill Rocket by turn 4 or tank a massive nuke."
+    },
+    "ENCOUNTER.QUEEN_BOSS": {
+      "act": 3,
+      "name": "The Queen",
+      "summary": "Act 3 final boss. Prepare a well-rounded deck with strong damage and block.",
+      "preferred_card_keywords": ["damage", "block", "draw"],
+      "tip": "Focus on deck consistency and high damage output for the final push."
+    }
+  },
+
+  "non_stackable_cards": [
+    "CARD.GO_FOR_THE_EYES",
+    "CARD.GO_FOR_THE_EYES_DEFECT",
+    "CARD.BLIND",
+    "CARD.LEG_SWEEP"
+  ],
+
+  "debuff_caps": {
+    "Weak": {
+      "detect_keyword": "weak",
+      "max_useful_turns": 5,
+      "relic_turns": { "RELIC.RED_MASK": 1 },
+      "penalty_per_excess_turn": 4,
+      "reason": "Weak is a duration debuff — Red Mask (1t) + 2× upgraded Go for the Eyes (2t each) = 5 turns is the optimised cap"
+    },
+    "Vulnerable": {
+      "detect_keyword": "vulnerable",
+      "max_useful_turns": 4,
+      "relic_turns": { "RELIC.BAG_OF_MARBLES": 1 },
+      "penalty_per_excess_turn": 3,
+      "reason": "Vulnerable is a duration debuff — ~4 turns is the useful cap"
+    },
+    "Frail": {
+      "detect_keyword": "frail",
+      "max_useful_turns": 3,
+      "relic_turns": {},
+      "penalty_per_excess_turn": 3,
+      "reason": "Frail is a duration debuff — ~3 turns is the useful cap"
     }
   },
 

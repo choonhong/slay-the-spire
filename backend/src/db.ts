@@ -5,7 +5,7 @@ import fs from 'fs';
 const DB_PATH = path.join(__dirname, '../../data/sts2.db');
 
 // Bump this whenever the schema changes — DB will be wiped and rebuilt from .run files
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 
 let _db: DatabaseSync | null = null;
 
@@ -63,11 +63,12 @@ function ensureSchema(db: DatabaseSync): void {
     );
 
     CREATE TABLE IF NOT EXISTS card_choices (
-      id          INTEGER PRIMARY KEY AUTOINCREMENT,
-      run_id      INTEGER NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
-      card_id     TEXT NOT NULL,
-      was_picked  INTEGER NOT NULL DEFAULT 0,
-      offer_index INTEGER NOT NULL DEFAULT 0
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      run_id        INTEGER NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+      card_id       TEXT NOT NULL,
+      was_picked    INTEGER NOT NULL DEFAULT 0,
+      offer_index   INTEGER NOT NULL DEFAULT 0,
+      upgrade_level INTEGER NOT NULL DEFAULT 0
     );
 
     CREATE INDEX IF NOT EXISTS idx_card_choices_run_id ON card_choices(run_id);
@@ -102,9 +103,6 @@ export interface RunRow {
 
 export interface CardStat {
   card_id: string;
-  times_offered: number;
-  times_picked: number;
-  pick_rate: number;
   runs_with_card: number;
   runs_won_with_card: number;
   win_rate: number;
@@ -157,15 +155,15 @@ export function upsertRun(
 export function insertCardChoices(
   db: DatabaseSync,
   runId: number,
-  choices: Array<{ card_id: string; was_picked: boolean; offer_index: number }>
+  choices: Array<{ card_id: string; was_picked: boolean; offer_index: number; upgrade_level?: number }>
 ): void {
   const stmt = db.prepare(
-    'INSERT INTO card_choices (run_id, card_id, was_picked, offer_index) VALUES (?, ?, ?, ?)'
+    'INSERT INTO card_choices (run_id, card_id, was_picked, offer_index, upgrade_level) VALUES (?, ?, ?, ?, ?)'
   );
   db.exec('BEGIN');
   try {
     for (const c of choices) {
-      stmt.run(runId, c.card_id, c.was_picked ? 1 : 0, c.offer_index);
+      stmt.run(runId, c.card_id, c.was_picked ? 1 : 0, c.offer_index, c.upgrade_level ?? 0);
     }
     db.exec('COMMIT');
   } catch (err) {
@@ -186,9 +184,12 @@ export function getColorlessCardIds(db: DatabaseSync): string[] {
   return rows.map(r => r.card_id);
 }
 
+// reliability weight: asc 0 → 0.3, asc 7+ → 1.0 (linear, +0.1 per level)
+const ASC_WEIGHT_EXPR = `CASE WHEN r.ascension >= 7 THEN 1.0 ELSE 0.3 + r.ascension * 0.1 END`;
+
 export function getCardStats(
   db: DatabaseSync,
-  filters: { character?: string; ascension?: number; gameMode?: string; buildId?: string; colorless?: boolean } = {}
+  filters: { character?: string; ascension?: number; gameMode?: string; buildId?: string; colorless?: boolean; weighted?: boolean } = {}
 ): CardStat[] {
   const conditions: string[] = [];
   const params: (string | number)[] = [];
@@ -221,36 +222,39 @@ export function getCardStats(
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
+  // Weighted mode: ascension-adjusted win rate (asc 0 = 50% weight, asc 7+ = 100% weight)
+  const winRateCols = filters.weighted
+    ? `
+      -- weighted win rate: each run's win is weighted by ascension reliability
+      ROUND(
+        SUM(CASE WHEN cc.offer_index = -1 AND r.win = 1 THEN (${ASC_WEIGHT_EXPR}) ELSE 0 END) * 100.0 /
+        NULLIF(SUM(CASE WHEN cc.offer_index = -1 THEN (${ASC_WEIGHT_EXPR}) ELSE 0 END), 0), 1
+      )                                                                                         AS weighted_win_rate,
+      COUNT(DISTINCT CASE WHEN cc.offer_index = -1 THEN cc.run_id END)                        AS runs_with_card,
+      COUNT(DISTINCT CASE WHEN cc.offer_index = -1 AND r.win = 1 THEN cc.run_id END)          AS runs_won_with_card`
+    : `
+      COUNT(DISTINCT CASE WHEN cc.offer_index = -1 THEN cc.run_id END)                        AS runs_with_card,
+      COUNT(DISTINCT CASE WHEN cc.offer_index = -1 AND r.win = 1 THEN cc.run_id END)          AS runs_won_with_card`;
+
   const rows = db.prepare(`
     SELECT
       cc.card_id,
-      -- pick rate counts only cards that appeared on a choice screen (offer_index >= 0)
-      COUNT(CASE WHEN cc.offer_index >= 0 THEN 1 END)                                          AS times_offered,
-      SUM(CASE WHEN cc.offer_index >= 0 THEN cc.was_picked ELSE 0 END)                        AS times_picked,
-      ROUND(
-        SUM(CASE WHEN cc.offer_index >= 0 THEN cc.was_picked ELSE 0 END) * 100.0 /
-        NULLIF(COUNT(CASE WHEN cc.offer_index >= 0 THEN 1 END), 0), 1
-      )                                                                                         AS pick_rate,
-      -- win rate counts runs where card was in the final deck (offer_index = -1)
-      COUNT(DISTINCT CASE WHEN cc.offer_index = -1 THEN cc.run_id END)                        AS runs_with_card,
-      COUNT(DISTINCT CASE WHEN cc.offer_index = -1 AND r.win = 1 THEN cc.run_id END)          AS runs_won_with_card
+      ${winRateCols}
     FROM card_choices cc
     JOIN runs r ON r.id = cc.run_id
     ${where}
     ${colorlessSubquery}
     GROUP BY cc.card_id
-    ORDER BY times_offered DESC
-  `).all(...params) as Omit<CardStat, 'win_rate'>[];
+    ORDER BY runs_with_card DESC
+  `).all(...params) as (Omit<CardStat, 'win_rate'> & { weighted_win_rate?: number })[];
 
   return rows.map(row => ({
     ...row,
-    times_offered: Number(row.times_offered),
-    times_picked: Number(row.times_picked),
-    pick_rate: Number(row.pick_rate),
     runs_with_card: Number(row.runs_with_card),
     runs_won_with_card: Number(row.runs_won_with_card),
-    win_rate:
-      Number(row.runs_with_card) > 0
+    win_rate: filters.weighted && row.weighted_win_rate != null
+      ? Number(row.weighted_win_rate)
+      : Number(row.runs_with_card) > 0
         ? Math.round((Number(row.runs_won_with_card) / Number(row.runs_with_card)) * 1000) / 10
         : 0,
   }));

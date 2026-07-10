@@ -1,6 +1,20 @@
-import { useEffect, useState } from 'react';
-import { fetchSynergies, fetchCharacters, fetchBuilds, type SynergyPair } from '../api';
-import { formatCardId, formatCharacter } from '../utils';
+import { useEffect, useState, useMemo } from 'react';
+import { fetchSynergies, fetchCharacters, fetchBuilds, fetchCardText, type SynergyPair, type CardText } from '../api';
+import { formatCharacter } from '../utils';
+import { CardNameCell } from './CardNameCell';
+
+const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
+const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
+  IRONCLAD:    { bg: 'bg-red-950/40',    border: 'border-red-800/60',    text: 'text-red-300',    activeBg: 'bg-red-800' },
+  SILENT:      { bg: 'bg-green-950/40',  border: 'border-green-800/60',  text: 'text-green-300',  activeBg: 'bg-green-800' },
+  NECROBINDER: { bg: 'bg-pink-950/40',   border: 'border-pink-800/60',   text: 'text-pink-300',   activeBg: 'bg-pink-800' },
+  REGENT:      { bg: 'bg-yellow-950/40', border: 'border-yellow-800/60', text: 'text-yellow-300', activeBg: 'bg-yellow-800' },
+  DEFECT:      { bg: 'bg-blue-950/40',   border: 'border-blue-800/60',   text: 'text-blue-300',   activeBg: 'bg-blue-800' },
+  WATCHER:     { bg: 'bg-purple-950/40', border: 'border-purple-800/60', text: 'text-purple-300', activeBg: 'bg-purple-800' },
+};
+const CHARACTER_ICON: Record<string, string> = {
+  IRONCLAD: '🗡️', SILENT: '🗡️', DEFECT: '🤖', WATCHER: '👁️', NECROBINDER: '💀', REGENT: '👑',
+};
 
 function LiftBadge({ value }: { value: number }) {
   if (value >= 15) return <span className="text-green-400 font-semibold">+{value}%</span>;
@@ -29,8 +43,13 @@ export default function Synergies() {
   const [error, setError] = useState<string | null>(null);
   const [selectedChar, setSelectedChar] = useState('');
   const [selectedBuild, setSelectedBuild] = useState('');
-  const [minRuns, setMinRuns] = useState(2);
+  const [minRuns, setMinRuns] = useState(3);
   const [sortBy, setSortBy] = useState<'win_rate' | 'lift' | 'runs'>('lift');
+  const [cardSearch, setCardSearch] = useState('');
+  const [cardTexts, setCardTexts] = useState<CardText[]>([]);
+  const cardTextMap = useMemo(() => new Map(cardTexts.map(c => [c.id, c])), [cardTexts]);
+
+  useEffect(() => { fetchCardText().then(setCardTexts).catch(() => {}); }, []);
 
   const load = async () => {
     setLoading(true);
@@ -57,11 +76,20 @@ export default function Synergies() {
 
   useEffect(() => { load(); }, [selectedChar, selectedBuild, minRuns]);
 
-  const sorted = [...pairs].sort((a, b) => {
-    if (sortBy === 'lift') return b.synergy_lift - a.synergy_lift;
-    if (sortBy === 'win_rate') return b.win_rate_together - a.win_rate_together;
-    return b.runs_together - a.runs_together;
-  });
+  const cardName = (id: string) =>
+    (cardTextMap.get(id)?.name ?? id.replace(/^CARD\./, '').replace(/_/g, ' ')).toLowerCase();
+
+  const sorted = useMemo(() => {
+    const q = cardSearch.trim().toLowerCase();
+    const filtered = q
+      ? pairs.filter(p => cardName(p.card_a).includes(q) || cardName(p.card_b).includes(q))
+      : pairs;
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'lift') return b.synergy_lift - a.synergy_lift;
+      if (sortBy === 'win_rate') return b.win_rate_together - a.win_rate_together;
+      return b.runs_together - a.runs_together;
+    });
+  }, [pairs, sortBy, cardSearch, cardTextMap]);
 
   return (
     <div className="space-y-5">
@@ -73,18 +101,55 @@ export default function Synergies() {
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-center">
-        <select
-          value={selectedChar}
-          onChange={e => setSelectedChar(e.target.value)}
-          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
+      {/* Character filter */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setSelectedChar('')}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+            !selectedChar
+              ? 'bg-gray-600 border-gray-500 text-white'
+              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
+          }`}
         >
-          <option value="">All Characters</option>
-          {characters.map(c => (
-            <option key={c} value={c}>{formatCharacter(c)}</option>
-          ))}
-        </select>
+          All
+        </button>
+        {[...characters].sort((a, b) => {
+          const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
+          const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
+          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        }).map(c => {
+          const key = c.replace(/^CHARACTER\./, '');
+          const style = CHARACTER_STYLE[key] ?? {
+            bg: 'bg-gray-900/40', border: 'border-gray-700',
+            text: 'text-gray-300', activeBg: 'bg-gray-700',
+          };
+          const isActive = selectedChar === c;
+          return (
+            <button
+              key={c}
+              onClick={() => setSelectedChar(isActive ? '' : c)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                isActive
+                  ? `${style.activeBg} border-transparent text-white shadow-lg`
+                  : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
+              }`}
+            >
+              <span>{CHARACTER_ICON[key] ?? '⚔️'}</span>
+              {formatCharacter(c)}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Secondary filters */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <input
+          type="text"
+          placeholder="Search card…"
+          value={cardSearch}
+          onChange={e => setCardSearch(e.target.value)}
+          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-spire-500 w-44"
+        />
         <select
           value={selectedBuild}
           onChange={e => setSelectedBuild(e.target.value)}
@@ -154,8 +219,18 @@ export default function Synergies() {
                   key={`${p.card_a}-${p.card_b}`}
                   className={`border-t border-gray-800/50 hover:bg-gray-800/40 transition-colors ${i % 2 === 0 ? 'bg-gray-900/20' : ''}`}
                 >
-                  <td className="px-4 py-2.5 font-medium text-gray-100">{formatCardId(p.card_a)}</td>
-                  <td className="px-4 py-2.5 font-medium text-gray-100">{formatCardId(p.card_b)}</td>
+                  <td className="px-4 py-2.5">
+                    <CardNameCell id={p.card_a} cardTextMap={cardTextMap}
+                      colorByRarity={!(cardSearch && cardName(p.card_a).includes(cardSearch.toLowerCase()))}
+                      className={cardSearch && cardName(p.card_a).includes(cardSearch.toLowerCase()) ? 'font-semibold text-spire-400' : undefined}
+                    />
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <CardNameCell id={p.card_b} cardTextMap={cardTextMap}
+                      colorByRarity={!(cardSearch && cardName(p.card_b).includes(cardSearch.toLowerCase()))}
+                      className={cardSearch && cardName(p.card_b).includes(cardSearch.toLowerCase()) ? 'font-semibold text-spire-400' : undefined}
+                    />
+                  </td>
                   <td className="px-4 py-2.5 text-gray-400 tabular-nums">
                     {p.wins_together}/{p.runs_together}
                   </td>

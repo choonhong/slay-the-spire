@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useState, useMemo } from 'react';
+import { CardNameCell } from './CardNameCell';
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,7 +10,6 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { fetchCardStats, fetchCharacters, fetchBuilds, fetchCommunityCards, fetchCardText, type CardStat, type CommunityCard, type CardText } from '../api';
-import TopCardsChart from './Charts';
 import { formatCardId, formatCharacter } from '../utils';
 
 type CardRow = CardStat & { community_score: number; community_tier: string };
@@ -75,60 +74,6 @@ const ENERGY_COLOR: Record<string, string> = {
   'N/A': 'bg-gray-700 text-gray-300',
 };
 
-function CardTooltip({ cardText, anchorRect }: { cardText: CardText; anchorRect: DOMRect }) {
-  const energyStyle = ENERGY_COLOR[cardText.cost] ?? 'bg-gray-700 text-gray-300';
-  const TOOLTIP_WIDTH = 224; // w-56
-
-  // Position above the anchor, centred horizontally, clamped to viewport
-  const left = Math.min(
-    Math.max(8, anchorRect.left + anchorRect.width / 2 - TOOLTIP_WIDTH / 2),
-    window.innerWidth - TOOLTIP_WIDTH - 8,
-  );
-  const top = anchorRect.top - 8; // fixed = viewport-relative; translateY(-100%) moves it above
-
-  return createPortal(
-    <div
-      className="fixed z-[9999] w-56 rounded-lg border border-gray-600 bg-gray-900 shadow-xl p-3 pointer-events-none"
-      style={{ left, top, transform: 'translateY(-100%)' }}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <span className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold ${energyStyle}`}>
-          {cardText.cost}
-        </span>
-        <span className="text-xs text-gray-400 uppercase tracking-wide">{cardText.type} · {cardText.rarity}</span>
-      </div>
-      <p className="text-sm text-gray-200 leading-snug">
-        {cardText.description || <span className="text-gray-500 italic">No description</span>}
-      </p>
-      {cardText.keywords.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {cardText.keywords.map(kw => (
-            <span key={kw} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-700 text-gray-300">{kw}</span>
-          ))}
-        </div>
-      )}
-    </div>,
-    document.body,
-  );
-}
-
-function CardNameCell({ id, cardTextMap }: { id: string; cardTextMap: Map<string, CardText> }) {
-  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const ref = useRef<HTMLSpanElement>(null);
-  const ct = cardTextMap.get(id);
-
-  return (
-    <span
-      ref={ref}
-      className="font-medium text-gray-100 cursor-default border-b border-dotted border-gray-600"
-      onMouseEnter={() => ref.current && setAnchorRect(ref.current.getBoundingClientRect())}
-      onMouseLeave={() => setAnchorRect(null)}
-    >
-      {formatCardId(id)}
-      {ct && anchorRect && <CardTooltip cardText={ct} anchorRect={anchorRect} />}
-    </span>
-  );
-}
 
 function TierBadge({ tier, score }: { tier: string; score: number }) {
   return (
@@ -146,22 +91,29 @@ export default function CardStatsTable() {
   const [builds, setBuilds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'win_rate', desc: true }]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'win_rate', desc: true },
+    { id: 'runs_with_card', desc: true },
+  ]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [selectedChar, setSelectedChar] = useState('');
   const [colorlessOnly, setColorlessOnly] = useState(false);
   const [selectedBuild, setSelectedBuild] = useState('');
-  const [minWins, setMinWins] = useState(1);
+  const [minRuns, setMinRuns] = useState(3);
 
   const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [stats, chars, buildList, communityCards, cardTexts] = await Promise.all([
+      const [stats, weightedStats, chars, buildList, communityCards, cardTexts] = await Promise.all([
         fetchCardStats({
           character: selectedChar || undefined,
           buildId: selectedBuild || undefined,
-          colorless: colorlessOnly || undefined,
+        }),
+        fetchCardStats({
+          character: selectedChar || undefined,
+          buildId: selectedBuild || undefined,
+          weighted: true,
         }),
         fetchCharacters(),
         fetchBuilds(),
@@ -170,8 +122,10 @@ export default function CardStatsTable() {
       ]);
       const cMap = new Map(communityCards.map(c => [c.id, c]));
       const tMap = new Map(cardTexts.map(c => [c.id, c]));
+      const weightedMap = new Map(weightedStats.map(s => [s.card_id, s.win_rate]));
       setData(stats.map(s => ({
         ...s,
+        weighted_win_rate: weightedMap.get(s.card_id),
         community_score: cMap.get(s.card_id)?.powerScore ?? -1,
         community_tier: cMap.get(s.card_id)?.powerTier ?? '',
       })));
@@ -189,14 +143,19 @@ export default function CardStatsTable() {
   useEffect(() => { loadData(); }, [selectedChar, selectedBuild, colorlessOnly]);
 
   const filtered = useMemo(
-    () => data.filter(d => d.runs_won_with_card >= minWins),
-    [data, minWins]
+    () => data.filter(d => {
+      if (d.runs_with_card < minRuns) return false;
+      if (cardTextMap.get(d.card_id)?.type === 'Curse') return false;
+      if (colorlessOnly && cardTextMap.get(d.card_id)?.color !== 'colorless') return false;
+      return true;
+    }),
+    [data, minRuns, cardTextMap, colorlessOnly]
   );
 
   const columns = useMemo(() => [
     col.accessor('card_id', {
       header: 'Card',
-      cell: info => <CardNameCell id={info.getValue()} cardTextMap={cardTextMap} />,
+      cell: info => <CardNameCell id={info.getValue()} cardTextMap={cardTextMap} colorByRarity />,
     }),
     col.accessor('community_score', {
       header: 'Score',
@@ -205,25 +164,6 @@ export default function CardStatsTable() {
         const tier = info.row.original.community_tier;
         if (score < 0) return <span className="text-gray-600">—</span>;
         return <TierBadge tier={tier} score={score} />;
-      },
-    }),
-    col.accessor('pick_rate', {
-      header: 'Pick Rate',
-      cell: info => {
-        const picked = info.row.original.times_picked;
-        const offered = info.row.original.times_offered;
-        return (
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-spire-500 rounded-full transition-all"
-                style={{ width: `${Math.min(info.getValue(), 100)}%` }}
-              />
-            </div>
-            <span className="text-xs text-gray-300 w-10 text-right">{info.getValue().toFixed(1)}%</span>
-            <span className="text-xs text-gray-600 tabular-nums">{picked}/{offered}</span>
-          </div>
-        );
       },
     }),
     col.accessor('runs_with_card', {
@@ -249,6 +189,13 @@ export default function CardStatsTable() {
     col.accessor('win_rate', {
       header: 'Win Rate',
       cell: info => <WinRateBadge value={info.getValue()} />,
+    }),
+    col.accessor('weighted_win_rate', {
+      header: 'Weighted WR',
+      cell: info => {
+        const v = info.getValue();
+        return v != null ? <WinRateBadge value={v} /> : <span className="text-gray-600">—</span>;
+      },
     }),
   ], [communityMap, cardTextMap]);
 
@@ -322,12 +269,7 @@ export default function CardStatsTable() {
         </button>
       </div>
 
-      {/* Chart section */}
-      {!loading && !error && filtered.length > 0 && (
-        <TopCardsChart data={filtered} character={activeCharKey || null} />
-      )}
-
-      {/* Secondary filters */}
+{/* Secondary filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <input
           type="text"
@@ -347,12 +289,12 @@ export default function CardStatsTable() {
           ))}
         </select>
         <div className="flex items-center gap-2 text-sm text-gray-400">
-          <span>Min. wins:</span>
+          <span>Min. runs:</span>
           <input
             type="number"
             min={0}
-            value={minWins}
-            onChange={e => setMinWins(Math.max(0, Number(e.target.value)))}
+            value={minRuns}
+            onChange={e => setMinRuns(Math.max(0, Number(e.target.value)))}
             className="w-14 px-2 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-gray-100 focus:outline-none focus:border-spire-500"
           />
         </div>

@@ -3,12 +3,16 @@ import { fetchAncients, fetchCharacters, fetchBuilds, type AncientStat } from '.
 import { formatRelicId, formatEventName, formatCharacter } from '../utils';
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT'];
-const CHARACTER_STYLE: Record<string, string> = {
-  IRONCLAD: 'bg-red-900/60 border-red-700 text-red-300 hover:bg-red-800/60',
-  SILENT: 'bg-green-900/60 border-green-700 text-green-300 hover:bg-green-800/60',
-  NECROBINDER: 'bg-pink-900/60 border-pink-700 text-pink-300 hover:bg-pink-800/60',
-  REGENT: 'bg-yellow-900/60 border-yellow-700 text-yellow-300 hover:bg-yellow-800/60',
-  DEFECT: 'bg-blue-900/60 border-blue-700 text-blue-300 hover:bg-blue-800/60',
+const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
+  IRONCLAD:    { bg: 'bg-red-950/40',    border: 'border-red-800/60',    text: 'text-red-300',    activeBg: 'bg-red-800' },
+  SILENT:      { bg: 'bg-green-950/40',  border: 'border-green-800/60',  text: 'text-green-300',  activeBg: 'bg-green-800' },
+  NECROBINDER: { bg: 'bg-pink-950/40',   border: 'border-pink-800/60',   text: 'text-pink-300',   activeBg: 'bg-pink-800' },
+  REGENT:      { bg: 'bg-yellow-950/40', border: 'border-yellow-800/60', text: 'text-yellow-300', activeBg: 'bg-yellow-800' },
+  DEFECT:      { bg: 'bg-blue-950/40',   border: 'border-blue-800/60',   text: 'text-blue-300',   activeBg: 'bg-blue-800' },
+  WATCHER:     { bg: 'bg-purple-950/40', border: 'border-purple-800/60', text: 'text-purple-300', activeBg: 'bg-purple-800' },
+};
+const CHARACTER_ICON: Record<string, string> = {
+  IRONCLAD: '🗡️', SILENT: '🗡️', DEFECT: '🤖', WATCHER: '👁️', NECROBINDER: '💀', REGENT: '👑',
 };
 
 function WinRateBar({ value, runs }: { value: number; runs: number }) {
@@ -108,40 +112,50 @@ export default function Ancients() {
 
   const eventNames = useMemo(() => Array.from(ancientEvents.keys()).sort(), [ancientEvents]);
 
-  const orderedChars = [
-    ...CHARACTER_ORDER.filter(c => characters.includes(c)),
-    ...characters.filter(c => !CHARACTER_ORDER.includes(c)),
-  ];
+  const orderedChars = [...characters].sort((a, b) => {
+    const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
+    const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
 
   return (
     <div className="space-y-6">
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Character filter */}
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedChar('')}
-            className={`px-3 py-1 rounded-md border text-xs font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
               !selectedChar
-                ? 'bg-spire-600 border-spire-500 text-white'
-                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
+                ? 'bg-gray-600 border-gray-500 text-white'
+                : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
             }`}
           >
             All
           </button>
-          {orderedChars.map(c => (
-            <button
-              key={c}
-              onClick={() => setSelectedChar(selectedChar === c ? '' : c)}
-              className={`px-3 py-1 rounded-md border text-xs font-medium transition-colors ${
-                selectedChar === c
-                  ? CHARACTER_STYLE[c] ?? 'bg-gray-700 border-gray-600 text-white'
-                  : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              {formatCharacter(c)}
-            </button>
-          ))}
+          {orderedChars.map(c => {
+            const key = c.replace(/^CHARACTER\./, '');
+            const style = CHARACTER_STYLE[key] ?? {
+              bg: 'bg-gray-900/40', border: 'border-gray-700',
+              text: 'text-gray-300', activeBg: 'bg-gray-700',
+            };
+            const isActive = selectedChar === c;
+            return (
+              <button
+                key={c}
+                onClick={() => setSelectedChar(isActive ? '' : c)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                  isActive
+                    ? `${style.activeBg} border-transparent text-white shadow-lg`
+                    : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
+                }`}
+              >
+                <span>{CHARACTER_ICON[key] ?? '⚔️'}</span>
+                {formatCharacter(c)}
+              </button>
+            );
+          })}
         </div>
 
         {/* Build filter */}

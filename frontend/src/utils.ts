@@ -34,3 +34,12 @@ export function formatCharacter(id: string): string {
   const name = id.replace(/^CHARACTER\./, '');
   return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 }
+
+export function formatEncounterId(id: string): string {
+  return id
+    .replace(/^ENCOUNTER\./, '')
+    .replace(/_BOSS$/, '')
+    .split('_')
+    .map(w => UPPERCASE_WORDS.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}

@@ -49,7 +49,7 @@ export default function App() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         {tab === 'stats' && <CardStatsTable />}
         {tab === 'runs' && <RunHistory />}
-        {tab === 'synergies' && <Synergies />}
+        <div className={tab === 'synergies' ? '' : 'hidden'}><Synergies /></div>
         {tab === 'ancients' && <Ancients />}
         <div className={tab === 'advisor' ? '' : 'hidden'}><Advisor /></div>
         {tab === 'settings' && <Settings />}

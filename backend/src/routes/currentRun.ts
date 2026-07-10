@@ -39,25 +39,60 @@ function findCurrentRunSave(dir: string): string | null {
   return null;
 }
 
+function bracketBlock(text: string, keyPattern: RegExp): string {
+  const keyIdx = text.search(keyPattern);
+  if (keyIdx < 0) return '';
+  const start = text.indexOf('[', keyIdx);
+  if (start < 0) return '';
+  let depth = 0, end = start;
+  for (let i = start; i < text.length; i++) {
+    if (text[i] === '[') depth++;
+    else if (text[i] === ']') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  return text.slice(start, end + 1);
+}
+
 function parseSaveFile(filePath: string) {
   const raw = fs.readFileSync(filePath);
   const text = raw.toString('latin1');
 
-  // ── Deck: extract only IDs that appear inside the "deck" array block ─────
-  // Find the start of the deck array and extract cards up to the closing ]
-  const deckArrayMatch = text.match(/"deck"\s*:\s*\[([\s\S]*?)\]/);
-  const deckBlock = deckArrayMatch?.[1] ?? '';
-  const deck = [...deckBlock.matchAll(/"id"\s*:\s*"(CARD\.[^"]+)"/g)].map(m => m[1]);
+  // ── Deck: bracket-aware extraction, then parse each card object ──────────
+  const deckBlock = bracketBlock(text, /"deck"\s*:\s*\[/);
+  const deck: string[] = [];
+  const upgrades: string[] = [];  // card IDs that have current_upgrade_level >= 1
 
-  // ── Relics ────────────────────────────────────────────────────────────────
-  const relicIds = [...new Set(text.match(/RELIC\.[A-Z0-9_]+/g) ?? [])];
+  // Walk card objects inside the deck block
+  let brace = -1, braceDepth = 0;
+  for (let i = 0; i < deckBlock.length; i++) {
+    if (deckBlock[i] === '{') {
+      if (braceDepth === 0) brace = i;
+      braceDepth++;
+    } else if (deckBlock[i] === '}') {
+      braceDepth--;
+      if (braceDepth === 0 && brace >= 0) {
+        const obj = deckBlock.slice(brace, i + 1);
+        const idM  = obj.match(/"id"\s*:\s*"(CARD\.[^"]+)"/);
+        const lvlM = obj.match(/"current_upgrade_level"\s*:\s*(\d+)/);
+        if (idM) {
+          deck.push(idM[1]);
+          if (lvlM && parseInt(lvlM[1]) >= 1) upgrades.push(idM[1]);
+        }
+        brace = -1;
+      }
+    }
+  }
+
+  // ── Relics: bracket-aware extraction ─────────────────────────────────────
+  const relicBlock = bracketBlock(text, /"relics"\s*:\s*\[/);
+  const relicIds = [...relicBlock.matchAll(/"id"\s*:\s*"(RELIC\.[^"]+)"/g)].map(m => m[1]);
 
   // ── Floor ─────────────────────────────────────────────────────────────────
-  const floorMatch = text.match(/"floor(?:_num)?"\s*[=:]\s*(\d+)/);
-  let floor = floorMatch ? parseInt(floorMatch[1]) : 0;
+  // Best proxy: highest floor_added_to_deck value across all deck cards
+  const deckFloors = [...text.matchAll(/"floor_added_to_deck"\s*:\s*(\d+)/g)].map(m => parseInt(m[1]));
+  let floor = deckFloors.length > 0 ? Math.max(...deckFloors) : 0;
 
   // Fallback: estimate from encounter counters
-  if (!floor || floor > 60) {
+  if (!floor) {
     const normalVisited = parseInt(text.match(/"normal_encounters_visited"\s*:\s*(\d+)/)?.[1] ?? '0');
     const eliteVisited  = parseInt(text.match(/"elite_encounters_visited"\s*:\s*(\d+)/)?.[1] ?? '0');
     const eventsVisited = parseInt(text.match(/"events_visited"\s*:\s*(\d+)/)?.[1] ?? '0');
@@ -67,7 +102,12 @@ function parseSaveFile(filePath: string) {
 
   const character = detectCharacter(deck);
 
-  return { character, floor, deck, relics: relicIds };
+  // ── Act index & upcoming boss ─────────────────────────────────────────────
+  const actIndex = parseInt(text.match(/"current_act_index"\s*:\s*(\d+)/)?.[1] ?? '0');
+  const allBossIds = [...text.matchAll(/"boss_id"\s*:\s*"([^"]+)"/g)].map(m => m[1]);
+  const currentBoss = allBossIds[actIndex] ?? null;
+
+  return { character, floor, deck, relics: relicIds, upgrades, actIndex, currentBoss };
 }
 
 router.get('/', (_req: Request, res: Response) => {
