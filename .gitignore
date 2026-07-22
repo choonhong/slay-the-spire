@@ -1,6 +1,6 @@
 node_modules/
 dist/
-data/*.db
+# Persist data/sts2.db in git; ignore SQLite sidecars only
 data/*.db-shm
 data/*.db-wal
 *.db-shm
@@ -10,3 +10,4 @@ data/*.db-wal
 frontend/dist/
 data/community_cards.json
 data/card_text.json
+data/config.json
