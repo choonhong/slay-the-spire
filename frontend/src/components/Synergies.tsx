@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { fetchSynergies, fetchCharacters, fetchBuilds, fetchCardText, type SynergyPair, type CardText } from '../api';
 import { formatCharacter } from '../utils';
 import { CardNameCell } from './CardNameCell';
+import ClearableInput from './ClearableInput';
 import PageHeader from './PageHeader';
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
@@ -147,11 +148,10 @@ export default function Synergies({ active = true }: { active?: boolean }) {
 
       {/* Secondary filters */}
       <div className="flex flex-wrap gap-3 items-center">
-        <input
-          type="text"
+        <ClearableInput
           placeholder="Search card…"
           value={cardSearch}
-          onChange={e => setCardSearch(e.target.value)}
+          onChange={setCardSearch}
           className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-spire-500 w-44"
         />
         <select

@@ -18,12 +18,21 @@ export async function fetchMe(): Promise<AuthUser> {
   return data;
 }
 
+export interface CopyWinRate {
+  copies: number;
+  label: string;
+  runs: number;
+  wins: number;
+  win_rate: number;
+}
+
 export interface CardStat {
   card_id: string;
   runs_with_card: number;
   runs_won_with_card: number;
   win_rate: number;
   weighted_win_rate?: number;
+  by_copies?: CopyWinRate[];
 }
 
 export interface RunRow {

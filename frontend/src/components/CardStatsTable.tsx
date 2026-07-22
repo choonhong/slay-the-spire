@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { CardNameCell } from './CardNameCell';
+import ClearableInput from './ClearableInput';
 import PageHeader from './PageHeader';
 import {
   useReactTable,
@@ -10,8 +12,8 @@ import {
   createColumnHelper,
   type SortingState,
 } from '@tanstack/react-table';
-import { fetchCardStats, fetchCharacters, fetchBuilds, fetchCommunityCards, fetchCardText, type CardStat, type CommunityCard, type CardText } from '../api';
-import { formatCardId, formatCharacter } from '../utils';
+import { fetchCardStats, fetchCharacters, fetchBuilds, fetchCommunityCards, fetchCardText, type CardStat, type CommunityCard, type CardText, type CopyWinRate } from '../api';
+import { formatCharacter } from '../utils';
 
 type CardRow = CardStat & { community_score: number; community_tier: string };
 const col = createColumnHelper<CardRow>();
@@ -27,12 +29,61 @@ const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
 
-function WinRateBadge({ value }: { value: number }) {
-  const color =
-    value >= 70 ? 'text-green-400' :
+function winRateColor(value: number) {
+  return value >= 70 ? 'text-green-400' :
     value >= 50 ? 'text-yellow-400' :
     'text-red-400';
-  return <span className={`font-semibold ${color}`}>{value.toFixed(1)}%</span>;
+}
+
+function WinRateBadge({ value, byCopies }: { value: number; byCopies?: CopyWinRate[] }) {
+  const rows = byCopies?.filter(b => b.runs > 0) ?? [];
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  const show = () => {
+    const el = triggerRef.current;
+    if (!el || rows.length === 0) return;
+    const r = el.getBoundingClientRect();
+    setPos({ top: r.top - 8, left: r.left + r.width / 2 });
+  };
+  const hide = () => setPos(null);
+
+  return (
+    <>
+      <span
+        ref={triggerRef}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        className={`inline-block font-semibold ${winRateColor(value)} ${rows.length ? 'cursor-help' : ''}`}
+      >
+        {value.toFixed(1)}%
+      </span>
+      {pos && createPortal(
+        <div
+          className="fixed z-[9999] -translate-x-1/2 -translate-y-full pointer-events-none"
+          style={{ top: pos.top, left: pos.left }}
+        >
+          <div className="min-w-[180px] rounded-lg border border-gray-600 bg-gray-950 px-3.5 py-3 shadow-2xl">
+            <div className="text-[10px] font-medium uppercase tracking-wider text-gray-400 mb-2.5">
+              By copies in deck
+            </div>
+            <div className="grid gap-1.5">
+              {rows.map(b => (
+                <div key={b.copies} className="flex items-center justify-between gap-5 text-xs tabular-nums">
+                  <span className="text-gray-400">{b.label}</span>
+                  <span>
+                    <span className={`font-semibold ${winRateColor(b.win_rate)}`}>{b.win_rate.toFixed(1)}%</span>
+                    <span className="text-gray-600 ml-1.5">{b.wins}/{b.runs}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+    </>
+  );
 }
 
 function PickRateBar({ value }: { value: number }) {
@@ -188,13 +239,15 @@ export default function CardStatsTable() {
     }),
     col.accessor('win_rate', {
       header: 'Win Rate',
-      cell: info => <WinRateBadge value={info.getValue()} />,
+      cell: info => <WinRateBadge value={info.getValue()} byCopies={info.row.original.by_copies} />,
     }),
     col.accessor('weighted_win_rate', {
       header: 'Weighted WR',
       cell: info => {
         const v = info.getValue();
-        return v != null ? <WinRateBadge value={v} /> : <span className="text-gray-600">—</span>;
+        return v != null
+          ? <WinRateBadge value={v} byCopies={info.row.original.by_copies} />
+          : <span className="text-gray-600">—</span>;
       },
     }),
   ], [communityMap, cardTextMap]);
@@ -291,11 +344,10 @@ export default function CardStatsTable() {
 
 {/* Secondary filters */}
       <div className="flex flex-wrap gap-3 items-center">
-        <input
-          type="text"
+        <ClearableInput
           placeholder="Search cards..."
           value={globalFilter}
-          onChange={e => setGlobalFilter(e.target.value)}
+          onChange={setGlobalFilter}
           className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-spire-500 w-48"
         />
         <select
@@ -329,7 +381,7 @@ export default function CardStatsTable() {
 
       {/* Table — keep previous rows while refetching; only blank on first load */}
       <div
-        className={`rounded-lg border border-gray-800 overflow-hidden transition-opacity duration-200 ${
+        className={`rounded-lg border border-gray-800 overflow-visible transition-opacity duration-200 ${
           refreshing ? 'opacity-55' : 'opacity-100'
         }`}
       >

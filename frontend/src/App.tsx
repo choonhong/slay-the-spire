@@ -58,9 +58,9 @@ function AppInner() {
 
       {/* Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-8 py-6">
-        {tab === 'stats' && <CardStatsTable />}
+        <div className={tab === 'stats' ? '' : 'hidden'}><CardStatsTable /></div>
         <div className={tab === 'synergies' ? '' : 'hidden'}><Synergies active={tab === 'synergies'} /></div>
-        {tab === 'ancients' && <Ancients />}
+        <div className={tab === 'ancients' ? '' : 'hidden'}><Ancients /></div>
         {tab === 'runs' && <RunHistory />}
         <div className={tab === 'advisor' ? '' : 'hidden'}><Advisor /></div>
         {tab === 'settings' && <Settings />}

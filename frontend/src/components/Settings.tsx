@@ -252,6 +252,16 @@ export default function Settings() {
               className="flex-1 min-w-0 bg-transparent text-sm text-gray-200 font-mono focus:outline-none"
               placeholder={DEFAULT_HISTORY_PATH}
             />
+            {(chosenPath ?? '').length > 0 && (
+              <button
+                type="button"
+                aria-label="Clear"
+                onClick={() => savePath('')}
+                className="text-gray-500 hover:text-gray-200 text-lg leading-none shrink-0"
+              >
+                ×
+              </button>
+            )}
           </div>
           <p className="text-[10px] text-gray-600 mt-1">
             Browsers cannot read the absolute path from the folder picker — this is filled from your known Steam saves location and is editable.

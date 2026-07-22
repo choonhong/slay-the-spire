@@ -161,11 +161,20 @@ export interface RunRow {
   parsed_at: string;
 }
 
+export interface CopyWinRate {
+  copies: number; // 1–4, or 5 meaning 5+
+  label: string;
+  runs: number;
+  wins: number;
+  win_rate: number;
+}
+
 export interface CardStat {
   card_id: string;
   runs_with_card: number;
   runs_won_with_card: number;
   win_rate: number;
+  by_copies: CopyWinRate[];
 }
 
 export function upsertRun(
@@ -312,18 +321,71 @@ export function getCardStats(
     ${colorlessSubquery}
     GROUP BY cc.card_id
     ORDER BY runs_with_card DESC
-  `).all(...params) as (Omit<CardStat, 'win_rate'> & { weighted_win_rate?: number })[];
+  `).all(...params) as (Omit<CardStat, 'win_rate' | 'by_copies'> & { weighted_win_rate?: number })[];
 
-  return rows.map(row => ({
-    ...row,
-    runs_with_card: Number(row.runs_with_card),
-    runs_won_with_card: Number(row.runs_won_with_card),
-    win_rate: filters.weighted && row.weighted_win_rate != null
-      ? Number(row.weighted_win_rate)
-      : Number(row.runs_with_card) > 0
-        ? Math.round((Number(row.runs_won_with_card) / Number(row.runs_with_card)) * 1000) / 10
-        : 0,
-  }));
+  // Win rate broken down by how many copies were in the final deck
+  const copyRows = db.prepare(`
+    SELECT
+      card_id,
+      CASE WHEN copies >= 5 THEN 5 ELSE copies END AS copy_bucket,
+      COUNT(*) AS runs,
+      SUM(win) AS wins
+    FROM (
+      SELECT cc.run_id, cc.card_id, COUNT(*) AS copies, MAX(r.win) AS win
+      FROM card_choices cc
+      JOIN runs r ON r.id = cc.run_id
+      ${where}
+      ${where ? 'AND' : 'WHERE'} cc.offer_index = -1
+      ${colorlessSubquery}
+      GROUP BY cc.run_id, cc.card_id
+    )
+    GROUP BY card_id, copy_bucket
+  `).all(...params) as Array<{ card_id: string; copy_bucket: number; runs: number; wins: number }>;
+
+  const byCopiesMap = new Map<string, Map<number, { runs: number; wins: number }>>();
+  for (const row of copyRows) {
+    let m = byCopiesMap.get(row.card_id);
+    if (!m) {
+      m = new Map();
+      byCopiesMap.set(row.card_id, m);
+    }
+    m.set(Number(row.copy_bucket), { runs: Number(row.runs), wins: Number(row.wins) });
+  }
+
+  const emptyBuckets = (): CopyWinRate[] =>
+    [1, 2, 3, 4, 5].map(n => ({
+      copies: n,
+      label: n === 5 ? '×5+' : `×${n}`,
+      runs: 0,
+      wins: 0,
+      win_rate: 0,
+    }));
+
+  return rows.map(row => {
+    const bucketMap = byCopiesMap.get(row.card_id);
+    const by_copies = emptyBuckets().map(b => {
+      const hit = bucketMap?.get(b.copies);
+      if (!hit || hit.runs === 0) return b;
+      return {
+        ...b,
+        runs: hit.runs,
+        wins: hit.wins,
+        win_rate: Math.round((hit.wins / hit.runs) * 1000) / 10,
+      };
+    });
+
+    return {
+      ...row,
+      runs_with_card: Number(row.runs_with_card),
+      runs_won_with_card: Number(row.runs_won_with_card),
+      win_rate: filters.weighted && row.weighted_win_rate != null
+        ? Number(row.weighted_win_rate)
+        : Number(row.runs_with_card) > 0
+          ? Math.round((Number(row.runs_won_with_card) / Number(row.runs_with_card)) * 1000) / 10
+          : 0,
+      by_copies,
+    };
+  });
 }
 
 export function getRuns(
