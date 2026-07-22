@@ -17,14 +17,6 @@ interface CardText {
   keywords: string[];
 }
 
-interface CommunityCard {
-  id: string;
-  powerScore: number;
-  powerTier: string;
-  eloRating: number;
-  winRateDelta: number;
-}
-
 interface CharacterContext {
   archetypes: string[];
   win_conditions: string[];
@@ -50,8 +42,20 @@ interface TierList { S: string[]; A: string[]; B: string[]; C: string[]; D: stri
 
 interface MechanicSynergy {
   enablers?: string[];
-  enabler_filter?: { cost?: string; type?: string; keyword?: string };
-  filter: { id?: string; cost?: string; type?: string };
+  enabler_filter?: {
+    cost?: string;
+    type?: string;
+    keyword?: string;
+    /** True = card adds cards into hand (generation). */
+    generates_cards?: boolean;
+  };
+  filter: {
+    id?: string;
+    cost?: string;
+    type?: string;
+    keyword?: string;
+    generates_cards?: boolean;
+  };
   bonus: number;
   scale_with_count?: boolean;
   max_bonus?: number;
@@ -60,9 +64,36 @@ interface MechanicSynergy {
 
 interface RelicSynergy {
   relic_id?: string;
-  filter: { cost?: string; type?: string; keyword?: string; card_id?: string };
+  filter: {
+    cost?: string;
+    type?: string;
+    keyword?: string;
+    card_id?: string;
+    /** True = card grants numeric Block on play (not Powers / "unblocked" text). */
+    gains_block?: boolean;
+  };
   bonus: number;
   reason: string;
+}
+
+/** Fresnel Lens / Nimble-style: Skills & Attacks that Gain N Block when played. */
+function cardGainsNumericBlock(ct: CardText | undefined): boolean {
+  if (!ct || ct.type === 'Power') return false;
+  const desc = (ct.description ?? '').toLowerCase().replace(/unblocked/g, '');
+  return /gain\s+\d+\s+block/.test(desc);
+}
+
+/** Poison enabler (Apply N Poison) vs payoff (Outbreak, Mirage, Accelerant). */
+function cardAppliesPoison(ct: CardText | undefined): boolean {
+  if (!ct) return false;
+  return /apply\s+\d+\s+poison/i.test(ct.description ?? '');
+}
+
+/** Puts new cards into hand (Splash, Blade Dance, Discovery, …) — another Afterimage Block each. */
+function cardGeneratesHandCards(ct: CardText | undefined): boolean {
+  if (!ct) return false;
+  const desc = (ct.description ?? '').toLowerCase();
+  return /add .+ into your hand|add .+ to your hand|shivs? into your hand/.test(desc);
 }
 
 interface BossContext {
@@ -93,6 +124,8 @@ interface GameContext {
   debuff_caps?: Record<string, DebuffCap>;
   non_stackable_cards?: string[];
   universal_trap_cards: string[];
+  /** Colorless / cross-character S-tier picks (e.g. Splash). */
+  universal_s_tier_cards?: string[];
   act_principles: Record<string, ActPrinciple>;
   baalorlord_tiers?: Record<string, TierList>;
 }
@@ -112,7 +145,7 @@ export interface RecommendRequest {
 export interface ScoreFactors {
   strength: number;    // 0–30  card baseline power
   synergy: number;     // 0–25  fit with current deck
-  deck_needs: number;  // 0–20  fills a gap in the deck
+  deck_needs: number;  // 0–40  fills a gap in the deck
   win_con: number;     // 0–20  advances/completes a win condition
   act_context?: number; // removed — kept optional for backward compat
   rarity: number;      // 0–10  inherent ceiling
@@ -148,24 +181,20 @@ function actFromFloor(floor: number): number {
   return 3;
 }
 
-// ─── Cards excluded from synergy (basics + curses) ───────────────────────────
-const _curseIds = new Set(
-  (loadJson<CardText[]>('card_text.json') ?? [])
-    .filter(c => c.color === 'curse')
-    .map(c => c.id)
-);
+// ─── Cards excluded from synergy (starter deck + Basic rarity + curses) ──────
+function loadStarterExcludeIds(): Set<string> {
+  const ids = new Set<string>();
+  for (const c of loadJson<CardText[]>('card_text.json') ?? []) {
+    if (c.rarity === 'Basic' || c.color === 'curse') ids.add(c.id);
+  }
+  const ctx = loadJson<{ characters?: Record<string, { starter_deck?: string[] }> }>('game_context.json');
+  for (const ch of Object.values(ctx?.characters ?? {})) {
+    for (const id of ch.starter_deck ?? []) ids.add(id);
+  }
+  return ids;
+}
 
-const BASIC_CARDS = new Set([
-  'CARD.STRIKE_IRONCLAD','CARD.STRIKE_SILENT','CARD.STRIKE_DEFECT',
-  'CARD.STRIKE_WATCHER','CARD.STRIKE_REGENT','CARD.STRIKE_NECROBINDER',
-  'CARD.DEFEND_IRONCLAD','CARD.DEFEND_SILENT','CARD.DEFEND_DEFECT',
-  'CARD.DEFEND_WATCHER','CARD.DEFEND_REGENT','CARD.DEFEND_NECROBINDER',
-  // Starter non-Strike/Defend cards
-  'CARD.BASH',                        // Ironclad
-  'CARD.ZAP','CARD.DUALCAST',         // Defect
-  'CARD.ERUPTION','CARD.VIGILANCE',   // Watcher
-  ..._curseIds,
-]);
+const BASIC_CARDS = loadStarterExcludeIds();
 
 // ─── DB queries ──────────────────────────────────────────────────────────────
 interface WinRateRow { card_id: string; win_rate: number; runs: number }
@@ -202,7 +231,10 @@ function getUpgradedWinRate(
   const row = db.prepare(`
     SELECT
       COUNT(DISTINCT r.id) AS runs,
-      ROUND(SUM(r.win) * 100.0 / COUNT(DISTINCT r.id), 1) AS win_rate
+      ROUND(
+        COUNT(DISTINCT CASE WHEN r.win = 1 THEN r.id END) * 100.0
+        / NULLIF(COUNT(DISTINCT r.id), 0), 1
+      ) AS win_rate
     FROM card_choices cc
     JOIN runs r ON r.id = cc.run_id
     WHERE cc.card_id = ? AND cc.offer_index = -1 AND cc.upgrade_level >= 1
@@ -268,7 +300,10 @@ function getSynergiesForDeck(
       a.card_id AS card_a,
       b.card_id AS card_b,
       COUNT(DISTINCT r.id) AS runs_together,
-      ROUND(SUM(r.win) * 100.0 / COUNT(DISTINCT r.id), 1) AS win_rate_together
+      ROUND(
+        COUNT(DISTINCT CASE WHEN r.win = 1 THEN r.id END) * 100.0
+        / NULLIF(COUNT(DISTINCT r.id), 0), 1
+      ) AS win_rate_together
     FROM card_choices a
     JOIN card_choices b ON b.run_id = a.run_id AND a.card_id < b.card_id
     JOIN runs r ON r.id = a.run_id
@@ -335,7 +370,6 @@ function scoreCard(
   winRates: Map<string, WinRateRow>,
   allWinRates: Map<string, WinRateRow>,
   synergyMap: Map<string, SynergyRow[]>,
-  communityMap: Map<string, CommunityCard>,
   cardTextMap: Map<string, CardText>,
   ctx: GameContext,
   db: DatabaseSync,
@@ -345,49 +379,41 @@ function scoreCard(
   const charCtx = ctx.characters[character];
   const actCtx = ctx.act_principles[String(act)];
   const ct = cardTextMap.get(cardId);
-  const community = communityMap.get(cardId);
   const reasons: string[] = [];
-  const lowPriorityReasons: string[] = [];
 
   // ── Factor 1: Card Strength (0–30) ─────────────────────────────────────────
   let strength = 0;
 
   // Source A: our per-character win rate
   // If the offered card is upgraded, prefer the upgraded win rate
+  // Always surface a win-rate line (even with 0–1 runs); strength still needs ≥2 runs.
   const wrRow = winRates.get(cardId) ?? allWinRates.get(cardId);
   if (isUpgraded) {
     const upgWr = getUpgradedWinRate(db, cardId, character);
-    const baseWr = wrRow && wrRow.runs >= 2 ? wrRow : null;
+    const baseWr = wrRow && wrRow.runs >= 1 ? wrRow : null;
     // Use max(upgraded wr, base wr) — take the stronger signal
     if (upgWr && baseWr) {
       if (upgWr.win_rate >= baseWr.win_rate) {
-        strength = clamp((upgWr.win_rate / 100) * 30, 0, 30);
+        if (upgWr.runs >= 2) strength = clamp((upgWr.win_rate / 100) * 30, 0, 30);
         reasons.push(`${upgWr.win_rate.toFixed(0)}% win rate upgraded (${upgWr.runs} runs)`);
       } else {
-        strength = clamp((baseWr.win_rate / 100) * 30, 0, 30);
+        if (baseWr.runs >= 2) strength = clamp((baseWr.win_rate / 100) * 30, 0, 30);
         reasons.push(`${baseWr.win_rate.toFixed(0)}% win rate in ${baseWr.runs} runs (base › upgraded)`);
       }
     } else if (upgWr) {
-      strength = clamp((upgWr.win_rate / 100) * 30, 0, 30);
+      if (upgWr.runs >= 2) strength = clamp((upgWr.win_rate / 100) * 30, 0, 30);
       reasons.push(`${upgWr.win_rate.toFixed(0)}% win rate upgraded (${upgWr.runs} runs)`);
     } else if (baseWr) {
-      strength = clamp((baseWr.win_rate / 100) * 30, 0, 30);
+      if (baseWr.runs >= 2) strength = clamp((baseWr.win_rate / 100) * 30, 0, 30);
       reasons.push(`${baseWr.win_rate.toFixed(0)}% win rate in ${baseWr.runs} runs (no upgraded data yet)`);
+    } else {
+      reasons.push('No win rate data yet');
     }
-  } else if (wrRow && wrRow.runs >= 2) {
-    strength = clamp((wrRow.win_rate / 100) * 30, 0, 30);
+  } else if (wrRow && wrRow.runs >= 1) {
+    if (wrRow.runs >= 2) strength = clamp((wrRow.win_rate / 100) * 30, 0, 30);
     reasons.push(`${wrRow.win_rate.toFixed(0)}% win rate in ${wrRow.runs} runs`);
-  }
-
-  // Source B: community ELO (1000 = neutral, 1800 = exceptional)
-  if (community) {
-    const eloScore = clamp(((community.eloRating - 900) / 900) * 30, 0, 30);
-    if (eloScore > strength) {
-      strength = eloScore;
-    }
-    if (community.powerTier && community.powerScore > 0) {
-      lowPriorityReasons.push(`Community tier ${community.powerTier} (${community.powerScore.toFixed(0)} score)`);
-    }
+  } else {
+    reasons.push('No win rate data yet');
   }
 
   // Trap card hard-cap
@@ -396,9 +422,11 @@ function scoreCard(
     reasons.push('⚠ Trap card — generally harmful');
   }
 
-  // Character S-tier boost
+  // Character / universal S-tier boost
   const isCharSTier = charCtx?.tier_list_s?.includes(cardId) ?? false;
-  if (isCharSTier) {
+  const isUniversalSTier = ctx.universal_s_tier_cards?.includes(cardId) ?? false;
+  const isSTier = isCharSTier || isUniversalSTier;
+  if (isSTier) {
     strength = Math.min(30, strength + 6);
   }
   // D-tier penalty
@@ -406,7 +434,7 @@ function scoreCard(
     strength = Math.max(0, strength - 10);
   }
   // best_cards bonus
-  if (charCtx?.best_cards?.includes(cardId) && !isCharSTier) {
+  if (charCtx?.best_cards?.includes(cardId) && !isSTier) {
     strength = Math.min(30, strength + 3);
   }
 
@@ -420,7 +448,7 @@ function scoreCard(
   {
     const charName = character.replace('CHARACTER.', '');
     const parts: string[] = [];
-    if (isCharSTier) parts.push('S-tier pick');
+    if (isSTier) parts.push('S-tier pick');
     else if (charCtx?.tier_list_d?.includes(cardId)) parts.push('↓ D-tier for this character');
     if (baalordTier === 'S') parts.push(`Baalorlord S (${charName})`);
     else if (baalordTier === 'A') parts.push('Baalorlord A-tier');
@@ -458,8 +486,9 @@ function scoreCard(
   }
 
   // Duplicate card — diminishing returns penalty, partially offset by win rate data
+  // Afterimage / Footwork stack (+Block / +Dex per copy) — don't punish 2nd copy
   const alreadyInDeck = deck.filter(id => id === cardId).length;
-  if (alreadyInDeck >= 1) {
+  if (alreadyInDeck >= 1 && cardId !== 'CARD.AFTERIMAGE' && cardId !== 'CARD.FOOTWORK') {
     // Penalty scales with how many copies already exist
     const BASE_PENALTY = alreadyInDeck === 1 ? 10   // 2nd copy
                        : alreadyInDeck === 2 ? 18   // 3rd copy
@@ -518,8 +547,19 @@ function scoreCard(
     if (typeof ms !== 'object' || ms === null) continue;
     const { enablers, enabler_filter, filter, bonus, scale_with_count, max_bonus, penalty_if_below, reason } = ms as {
       enablers?: string[];
-      enabler_filter?: { cost?: string; type?: string; keyword?: string };
-      filter: { id?: string; cost?: string; type?: string };
+      enabler_filter?: {
+        cost?: string;
+        type?: string;
+        keyword?: string;
+        generates_cards?: boolean;
+      };
+      filter: {
+        id?: string;
+        cost?: string;
+        type?: string;
+        keyword?: string;
+        generates_cards?: boolean;
+      };
       bonus: number;
       scale_with_count?: boolean;
       max_bonus?: number;
@@ -529,7 +569,11 @@ function scoreCard(
     const idMatch   = filter.id   === undefined || cardId === filter.id;
     const costMatch = filter.cost === undefined || ct?.cost === filter.cost;
     const typeMatch = filter.type === undefined || ct?.type?.toLowerCase() === filter.type.toLowerCase();
-    if (!idMatch || !costMatch || !typeMatch) continue;
+    const kwMatch   = filter.keyword === undefined
+      || (ct?.keywords ?? []).some(k => k.toLowerCase() === filter.keyword!.toLowerCase())
+      || (ct?.description ?? '').toLowerCase().includes(filter.keyword.toLowerCase());
+    const genMatch  = filter.generates_cards === undefined || filter.generates_cards === cardGeneratesHandCards(ct);
+    if (!idMatch || !costMatch || !typeMatch || !kwMatch || !genMatch) continue;
 
     let enablerCount = 0;
     if (enabler_filter) {
@@ -539,7 +583,8 @@ function scoreCard(
         const costOk    = enabler_filter.cost    === undefined || dct?.cost === enabler_filter.cost;
         const typeOk    = enabler_filter.type    === undefined || dct?.type?.toLowerCase() === enabler_filter.type.toLowerCase();
         const keywordOk = enabler_filter.keyword === undefined || (dct?.keywords ?? []).includes(enabler_filter.keyword) || dct?.description?.toLowerCase().includes(enabler_filter.keyword.toLowerCase());
-        return costOk && typeOk && keywordOk;
+        const genOk     = enabler_filter.generates_cards === undefined || enabler_filter.generates_cards === cardGeneratesHandCards(dct);
+        return costOk && typeOk && keywordOk && genOk;
       }).length;
     } else if (enablers) {
       enablerCount = enablers.filter(e => deckSet.has(e)).length;
@@ -560,7 +605,8 @@ function scoreCard(
     reasons.push(scale_with_count ? `${reason} (×${enablerCount})` : reason);
   }
 
-  // Relic synergies from game_context
+  // Relic synergies from game_context (applied outside the ±25 synergy clamp)
+  let relicBonus = 0;
   const relicSet = new Set(relics);
   const relicSynergies = ctx.relic_synergies ?? {};
   for (const [key, rs] of Object.entries(relicSynergies)) {
@@ -568,18 +614,15 @@ function scoreCard(
     // Support optional relic_id override (for multi-rule relics)
     const effectiveRelicId = (rs as { relic_id?: string }).relic_id ?? key;
     if (!relicSet.has(effectiveRelicId)) continue;
-    const { filter, bonus: rBonus, reason: rReason } = rs as {
-      filter: { cost?: string; type?: string; keyword?: string; card_id?: string };
-      bonus: number;
-      reason: string;
-    };
+    const { filter, bonus: rBonus, reason: rReason } = rs as RelicSynergy;
     const costMatch   = filter.cost    === undefined || ct?.cost === filter.cost;
     const typeMatch   = filter.type    === undefined || ct?.type?.toLowerCase() === filter.type.toLowerCase();
     const kwMatch     = filter.keyword === undefined || (ct?.keywords ?? []).some(k => k.toLowerCase() === filter.keyword!.toLowerCase())
                           || (ct?.description ?? '').toLowerCase().includes((filter.keyword ?? '').toLowerCase());
     const cardMatch   = filter.card_id === undefined || cardId === filter.card_id;
-    if (costMatch && typeMatch && kwMatch && cardMatch) {
-      synergy += rBonus;
+    const blockMatch  = filter.gains_block === undefined || filter.gains_block === cardGainsNumericBlock(ct);
+    if (costMatch && typeMatch && kwMatch && cardMatch && blockMatch) {
+      relicBonus += rBonus;
       reasons.push(rReason);
     }
   }
@@ -626,15 +669,25 @@ function scoreCard(
         const excessTurns = afterTurns - cap.max_useful_turns;
         const penalty = Math.min(excessTurns * cap.penalty_per_excess_turn, 20);
         synergy -= penalty;
-        reasons.push(`↓ ${cap.reason} (${totalTurns}t in deck + ${offeredTurns}t offered = ${afterTurns}t, cap ${cap.max_useful_turns}t)`);
+        reasons.push(cap.reason.startsWith('↓') ? cap.reason : `↓ ${cap.reason}`);
       }
     }
   }
 
   // Archetype match
+  const deckHasPoison = deck.some(id => {
+    const c = cardTextMap.get(id);
+    if (!c) return false;
+    return /poison/i.test(`${c.description ?? ''} ${(c.keywords ?? []).join(' ')}`);
+  });
   if (charCtx) {
     const cardText = `${ct?.name ?? ''} ${ct?.description ?? ''} ${cardKeywords.join(' ')}`.toLowerCase();
-    const archetypeHits = charCtx.archetypes.filter(a => cardText.includes(a.toLowerCase()));
+    const cardMentionsPoison = cardText.includes('poison');
+    const archetypeHits = charCtx.archetypes.filter(a => {
+      // Don't credit Poison archetype when the deck has no Poison yet
+      if (a.toLowerCase() === 'poison' && !deckHasPoison) return false;
+      return cardText.includes(a.toLowerCase());
+    });
     if (archetypeHits.length > 0) {
       synergy += archetypeHits.length * 2;
     }
@@ -644,18 +697,37 @@ function scoreCard(
     }
     // Good keywords bonus — fires when card description mentions a priority keyword
     if (charCtx.good_keywords) {
-      const goodKwHits = charCtx.good_keywords.filter(k => cardText.includes(k.toLowerCase()));
+      const goodKwHits = charCtx.good_keywords.filter(k => {
+        if (k.toLowerCase() === 'poison' && !deckHasPoison) return false;
+        return cardText.includes(k.toLowerCase());
+      });
       if (goodKwHits.length > 0) {
         const kwBonus = Math.min(goodKwHits.length * 3, 6);
         synergy += kwBonus;
         reasons.push(`Synergises with ${goodKwHits.slice(0, 2).join('/')} engine for this character`);
       }
     }
+
+    // Act 1: Innate 0-cost damage solves early damage turns (Backstab)
+    const earlyDmg = parseInt(cardText.match(/deal (\d+) damage/)?.[1] ?? '0', 10);
+    const earlyCost = parseInt(ct?.cost ?? '1');
+    const isInnateCard = cardKeywords.some(k => k.toLowerCase() === 'innate');
+    if (act === 1 && isInnateCard && earlyCost === 0 && earlyDmg >= 8) {
+      synergy += 10;
+      reasons.push('Act 1 Innate opener — free damage when the deck needs it');
+    }
+
+    // Payoffs only — enablers (Apply N Poison) start the engine
+    if (cardMentionsPoison && !deckHasPoison && !cardAppliesPoison(ct)) {
+      synergy -= 3;
+    }
   }
 
   synergy = Math.round(clamp(synergy, -20, 25));
+  // Relic bonuses sit outside the deck-synergy clamp so strong relic picks aren't muted
+  synergy = Math.round(clamp(synergy + relicBonus, -20, 40));
 
-  // ── Factor 3: Deck Needs (0–20) ────────────────────────────────────────────
+  // ── Factor 3: Deck Needs (0–40) ────────────────────────────────────────────
   let deckNeeds = 10; // neutral baseline
 
   const deckTexts = deck.map(id => cardTextMap.get(id)).filter(Boolean) as CardText[];
@@ -674,8 +746,100 @@ function scoreCard(
     reasons.push('Deck is expensive — cheap card improves curve');
   }
 
-  // Power gap: bonus for first few power cards
-  if (ct?.type === 'Power' && powerCount < 2) {
+  // Afterimage: must-take — 1 energy Power that turns every card into Block (stacks)
+  if (cardId === 'CARD.AFTERIMAGE') {
+    if (alreadyInDeck === 0) {
+      strength = Math.min(30, strength + 10);
+      synergy += 12;
+      deckNeeds += 28;
+      reasons.push('Must-take Power — 1 energy for Block on every card played');
+    } else if (alreadyInDeck === 1) {
+      strength = Math.min(30, strength + 6);
+      synergy += 10;
+      deckNeeds += 22;
+      reasons.push('2nd Afterimage still stacks — +1 Block per card played');
+    }
+  }
+
+  // Footwork: Dex Power — scaling Block on every Block card (stacks)
+  if (cardId === 'CARD.FOOTWORK' && alreadyInDeck < 2) {
+    strength = Math.min(30, strength + (alreadyInDeck === 0 ? 4 : 2));
+    synergy += alreadyInDeck === 0 ? 6 : 4;
+    deckNeeds += alreadyInDeck === 0 ? 30 : 24;
+    reasons.push(
+      alreadyInDeck === 0
+        ? 'Scaling Block Power — Dexterity multiplies every Block card'
+        : '2nd Footwork still stacks — more Dex on every Block card',
+    );
+  }
+
+  // Piercing Wail: first copy — answer big Strength / multi-hit turns
+  if (cardId === 'CARD.PIERCING_WAIL' && alreadyInDeck === 0) {
+    deckNeeds += 18;
+    reasons.push('First Piercing Wail — shuts down big attack turns');
+  }
+
+  // Fan of Knives: Shiv scaling — all Shivs hit ALL enemies
+  if (cardId === 'CARD.FAN_OF_KNIVES' && alreadyInDeck === 0) {
+    const shivEngine = deck.some(id => {
+      const d = cardTextMap.get(id);
+      if (!d) return false;
+      const text = `${d.name} ${d.description}`.toLowerCase();
+      return text.includes('shiv') || id === 'CARD.ACCURACY' || id === 'CARD.BLADE_DANCE';
+    });
+    strength = Math.min(30, strength + 6);
+    synergy += shivEngine ? 10 : 4;
+    deckNeeds += shivEngine ? 24 : 14;
+    reasons.push(
+      shivEngine
+        ? 'Shiv scaling Power — Shivs hit ALL enemies'
+        : 'Scaling Power — enables Shiv AoE (better with Shivs in deck)',
+    );
+  }
+
+  // Deck lacks damage scaling — block solved or no Accuracy/poison/Strength/Tracking output
+  const hasDamageScaling = deck.some(id => {
+    if (['CARD.ACCURACY', 'CARD.NOXIOUS_FUMES', 'CARD.CATALYST', 'CARD.A_THOUSAND_CUTS', 'CARD.ENVENOM', 'CARD.OUTBREAK', 'CARD.ACCELERANT', 'CARD.TRACKING'].includes(id)) {
+      return true;
+    }
+    const d = cardTextMap.get(id);
+    return d ? /gain \d+ strength/i.test(d.description ?? '') : false;
+  });
+  const blockSolved = deck.includes('CARD.AFTERIMAGE') || deck.includes('CARD.FOOTWORK');
+  const nonStrikeDmg = deckTexts.filter(
+    c => c.type === 'Attack' && !/strike/i.test(c.id) && !/strike/i.test(c.name),
+  ).length;
+  const deckLacksDamage = !hasDamageScaling && (blockSolved || nonStrikeDmg < 4 || act >= 2);
+  const deckHasWeak = relics.includes('RELIC.RED_MASK') || deckTexts.some(c =>
+    /apply\s+\d+\s+weak/i.test(c.description ?? ''),
+  );
+
+  // Echoing Slash: rare AoE that chains on kills — high priority when damage is the gap
+  if (cardId === 'CARD.ECHOING_SLASH' && alreadyInDeck === 0 && deckLacksDamage) {
+    strength = Math.min(30, strength + 8);
+    synergy += 8;
+    deckNeeds += 32;
+    reasons.push('Deck lacks damage — Echoing Slash is strong AoE output');
+  }
+
+  // Tracking: +50% Attack damage vs Weak — top damage scaler when the deck needs output
+  if (cardId === 'CARD.TRACKING' && alreadyInDeck === 0 && deckLacksDamage) {
+    strength = Math.min(30, strength + 6);
+    synergy += deckHasWeak ? 12 : 6;
+    deckNeeds += deckHasWeak ? 30 : 22;
+    reasons.push(
+      deckHasWeak
+        ? 'Deck lacks damage — Tracking is +50% Attack damage vs Weak'
+        : 'Deck lacks damage — Tracking is strong damage scaling',
+    );
+  }
+
+  // Power gap: bonus for first few power cards (not poison payoffs with no Poison yet)
+  const offeredMentionsPoison = /poison/i.test(
+    `${ct?.description ?? ''} ${(ct?.keywords ?? []).join(' ')}`,
+  );
+  const offeredIsPoisonPayoff = offeredMentionsPoison && !cardAppliesPoison(ct);
+  if (ct?.type === 'Power' && powerCount < 2 && !(offeredIsPoisonPayoff && !deckHasPoison)) {
     deckNeeds += 4;
     reasons.push(`Only ${powerCount} power(s) in deck — scaling needed`);
   }
@@ -694,12 +858,86 @@ function scoreCard(
     reasons.push('No skills in deck — improves versatility');
   }
 
-  // Draw / cycle cards are almost always needed early
-  const isDrawCard = (ct?.description ?? '').toLowerCase().includes('draw');
+  // Draw / cycle: early prefer 0-cost filter (Prepared) over paid pure-draw (Acrobatics)
+  const cardDescLower = (ct?.description ?? '').toLowerCase();
+  const isDrawCard = cardDescLower.includes('draw');
   const deckHasDraw = deckTexts.some(c => c.description?.toLowerCase().includes('draw'));
-  if (isDrawCard && !deckHasDraw && deckSize < 20) {
-    deckNeeds += 4;
-    reasons.push('No draw in deck — this fills a critical gap');
+  const isBlockAndDraw = cardGainsNumericBlock(ct) && isDrawCard;
+
+  // Young decks love free Block+Draw (Finesse, etc.) — tempo + consistency
+  if (act === 1 && deckSize <= 20 && cardCost === 0 && isBlockAndDraw) {
+    deckNeeds += 10;
+    reasons.push('Early 0-cost Block+Draw — excellent tempo for a young deck');
+  } else if (isDrawCard && !deckHasDraw && deckSize < 20) {
+    const isPureDrawCycle = !/(deal \d+|gain \d+ block|gain \d+ energy|channel|apply )/i.test(cardDescLower);
+    const baseDraw = parseInt(cardDescLower.match(/draw (\d+)/)?.[1] ?? '0', 10);
+    const upgDraw = parseInt((ct?.upgrade_description ?? '').toLowerCase().match(/draw (\d+)/)?.[1] ?? '0', 10);
+    const upgradeBoostsDraw = !isUpgraded && upgDraw > baseDraw;
+
+    if (act === 1 && isPureDrawCycle && !isNaN(cardCost) && cardCost >= 1) {
+      // Still some value, but energy is tight before Footwork / energy relics
+      deckNeeds += 1;
+      reasons.push('Early paid draw is pricey — prefer 0-cost cycle first (upgrade soon)');
+    } else if (act === 1 && isPureDrawCycle && cardCost === 0) {
+      deckNeeds += 6;
+      reasons.push(
+        upgradeBoostsDraw
+          ? 'Early 0-cost cycle — take now, prioritize the upgrade'
+          : 'Early 0-cost draw/cycle — efficient consistency',
+      );
+    } else {
+      deckNeeds += 4;
+      reasons.push('No draw in deck — this fills a critical gap');
+    }
+  }
+
+  // Act 1 energy efficiency — prefer >6 damage or >5 Block per energy (0-cost = free)
+  // Powers skipped — conditional payoffs (e.g. Outbreak) are not "efficient attacks"
+  if (act === 1 && deckSize <= 22 && ct && ct.type !== 'Power') {
+    const dmg = parseInt(cardDescLower.match(/deal (\d+) damage/)?.[1] ?? '0', 10);
+    const blockAmt = parseInt(
+      cardDescLower.replace(/unblocked/g, '').match(/gain (\d+) block/)?.[1] ?? '0',
+      10,
+    );
+    const isInnate = (ct.keywords ?? []).some(k => k.toLowerCase() === 'innate');
+    const energy = isNaN(cardCost) ? 99 : cardCost;
+    const nonStrikeAttacks = deckTexts.filter(
+      c => c.type === 'Attack' && !/strike/i.test(c.id) && !/strike/i.test(c.name),
+    ).length;
+
+    if (energy === 0 && dmg >= 8) {
+      // Backstab-tier free upfront damage — premium Act 1 deck fit
+      let bonus = dmg >= 11 ? 20 : 16;
+      if (isInnate) bonus += 8;
+      if (nonStrikeAttacks < 2) {
+        bonus += 10;
+        reasons.push('Act 1 deck needs upfront damage beyond Strikes');
+      }
+      deckNeeds += bonus;
+      reasons.push(
+        isInnate
+          ? `Early free Innate damage (${dmg}) — high energy-efficiency opener`
+          : `Early 0-cost damage (${dmg}) — high energy efficiency`,
+      );
+    } else if (energy > 0 && energy <= 2 && dmg / energy > 6) {
+      let bonus = 8;
+      if (nonStrikeAttacks < 2) bonus += 4;
+      deckNeeds += bonus;
+      reasons.push(`Efficient damage (${dmg} for ${energy} energy) — beats Act 1 6 dmg/energy bar`);
+    } else if (energy === 0 && blockAmt >= 5 && !isBlockAndDraw) {
+      deckNeeds += 10;
+      reasons.push(`Early 0-cost Block (${blockAmt}) — efficient defense`);
+    } else if (energy > 0 && energy <= 2 && blockAmt / energy > 5 && !isBlockAndDraw) {
+      deckNeeds += 6;
+      reasons.push(`Efficient Block (${blockAmt} for ${energy} energy) — beats Act 1 5 Block/energy bar`);
+    }
+  }
+
+  // Poison payoff with no Poison sources — downrank (Outbreak, Mirage, etc.)
+  // Skip enablers like Deadly Poison / Noxious Fumes that apply Poison themselves.
+  if (offeredMentionsPoison && !deckHasPoison && !cardAppliesPoison(ct)) {
+    deckNeeds = Math.min(deckNeeds, 10);
+    reasons.push('↓ No Poison in deck — poison payoff is premature');
   }
 
   // Vulnerable gap: bonus for adding a Vulnerable source when deck has very few
@@ -737,7 +975,7 @@ function scoreCard(
     }
   }
 
-  deckNeeds = Math.round(clamp(deckNeeds, 0, 20));
+  deckNeeds = Math.round(clamp(deckNeeds, 0, 40));
 
   // ── Factor 4: Win Condition (0–20) ─────────────────────────────────────────
   // Scores how well the offered card advances or completes the deck's win conditions
@@ -835,7 +1073,7 @@ function scoreCard(
     name: ct?.name ?? cardId.replace('CARD.', '').replace(/_/g, ' '),
     score: total,
     factors: { strength, synergy, deck_needs: deckNeeds, win_con: winCon, rarity },
-    reasons: [...reasons, ...lowPriorityReasons].slice(0, 4),
+    reasons: reasons.slice(0, 4),
     recommendation,
   };
 }
@@ -843,13 +1081,11 @@ function scoreCard(
 // ─── Main export ──────────────────────────────────────────────────────────────
 export function recommend(db: DatabaseSync, req: RecommendRequest): CardScore[] {
   const cardTexts = loadJson<CardText[]>('card_text.json') ?? [];
-  const community = loadJson<CommunityCard[]>('community_cards.json') ?? [];
   const ctx = loadJson<GameContext>('game_context.json');
 
   if (!ctx) throw new Error('game_context.json not found');
 
   const cardTextMap = new Map(cardTexts.map(c => [c.id, c]));
-  const communityMap = new Map(community.map(c => [c.id, c]));
 
   // Win rates filtered by character + global fallback
   const charWinRates = getWinRates(db, req.character);
@@ -875,7 +1111,6 @@ export function recommend(db: DatabaseSync, req: RecommendRequest): CardScore[] 
       charWinRates,
       allWinRates,
       synergyMap,
-      communityMap,
       cardTextMap,
       ctx,
       db,

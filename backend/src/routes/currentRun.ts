@@ -1,12 +1,13 @@
 import { Router, Response } from 'express';
+import fs from 'fs';
 import { type AuthRequest } from '../middleware/auth';
+import { findCurrentRunSavePath, getSavesPath } from '../watcher';
 
-// In-memory cache: userId → parsed current run data (pushed from browser)
+// Optional in-memory cache (browser push) — used when disk save is unavailable (e.g. remote deploy)
 const currentRunCache = new Map<number, { data: ReturnType<typeof parseSaveText>; updatedAt: number }>();
 
 const router = Router();
 
-// Character detection from card ID prefixes
 const CARD_CHAR_MAP: Record<string, string> = {
   ironclad:    'CHARACTER.IRONCLAD',
   silent:      'CHARACTER.SILENT',
@@ -26,7 +27,6 @@ function detectCharacter(cardIds: string[]): string | null {
   return null;
 }
 
-
 function bracketBlock(text: string, keyPattern: RegExp): string {
   const keyIdx = text.search(keyPattern);
   if (keyIdx < 0) return '';
@@ -41,13 +41,10 @@ function bracketBlock(text: string, keyPattern: RegExp): string {
 }
 
 function parseSaveText(text: string) {
-
-  // ── Deck: bracket-aware extraction, then parse each card object ──────────
   const deckBlock = bracketBlock(text, /"deck"\s*:\s*\[/);
   const deck: string[] = [];
-  const upgrades: string[] = [];  // card IDs that have current_upgrade_level >= 1
+  const upgrades: string[] = [];
 
-  // Walk card objects inside the deck block
   let brace = -1, braceDepth = 0;
   for (let i = 0; i < deckBlock.length; i++) {
     if (deckBlock[i] === '{') {
@@ -68,16 +65,12 @@ function parseSaveText(text: string) {
     }
   }
 
-  // ── Relics: bracket-aware extraction ─────────────────────────────────────
   const relicBlock = bracketBlock(text, /"relics"\s*:\s*\[/);
   const relicIds = [...relicBlock.matchAll(/"id"\s*:\s*"(RELIC\.[^"]+)"/g)].map(m => m[1]);
 
-  // ── Floor ─────────────────────────────────────────────────────────────────
-  // Best proxy: highest floor_added_to_deck value across all deck cards
   const deckFloors = [...text.matchAll(/"floor_added_to_deck"\s*:\s*(\d+)/g)].map(m => parseInt(m[1]));
   let floor = deckFloors.length > 0 ? Math.max(...deckFloors) : 0;
 
-  // Fallback: estimate from encounter counters
   if (!floor) {
     const normalVisited = parseInt(text.match(/"normal_encounters_visited"\s*:\s*(\d+)/)?.[1] ?? '0');
     const eliteVisited  = parseInt(text.match(/"elite_encounters_visited"\s*:\s*(\d+)/)?.[1] ?? '0');
@@ -87,8 +80,6 @@ function parseSaveText(text: string) {
   }
 
   const character = detectCharacter(deck);
-
-  // ── Act index & upcoming boss ─────────────────────────────────────────────
   const actIndex = parseInt(text.match(/"current_act_index"\s*:\s*(\d+)/)?.[1] ?? '0');
   const allBossIds = [...text.matchAll(/"boss_id"\s*:\s*"([^"]+)"/g)].map(m => m[1]);
   const currentBoss = allBossIds[actIndex] ?? null;
@@ -96,7 +87,15 @@ function parseSaveText(text: string) {
   return { character, floor, deck, relics: relicIds, upgrades, actIndex, currentBoss };
 }
 
-// POST /api/current-run/push — browser pushes raw save file text
+function readLiveSaveFromDisk() {
+  const saveFile = findCurrentRunSavePath(getSavesPath());
+  if (!saveFile) return null;
+  const buf = fs.readFileSync(saveFile);
+  const text = buf.toString('latin1');
+  return parseSaveText(text);
+}
+
+// POST /api/current-run/push — optional browser push (remote/fallback)
 router.post('/push', (req: AuthRequest, res: Response) => {
   const { text } = req.body as { text?: string };
   if (!text || typeof text !== 'string') {
@@ -112,14 +111,28 @@ router.post('/push', (req: AuthRequest, res: Response) => {
   }
 });
 
-// GET /api/current-run — read from in-memory cache (populated by browser push)
+// GET /api/current-run — prefer live file on disk; fall back to pushed cache
 router.get('/', (req: AuthRequest, res: Response) => {
-  const cached = currentRunCache.get(req.userId!);
-  if (!cached) {
-    res.status(404).json({ error: 'No active run found. Connect your save folder in Settings first.' });
+  try {
+    const live = readLiveSaveFromDisk();
+    if (live) {
+      res.json(live);
+      return;
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to parse save file', detail: String(err) });
     return;
   }
-  res.json(cached.data);
+
+  const cached = currentRunCache.get(req.userId!);
+  if (cached) {
+    res.json(cached.data);
+    return;
+  }
+
+  res.status(404).json({
+    error: 'No active run found. Start a run in-game, or set the saves path in Settings.',
+  });
 });
 
 export default router;

@@ -1,6 +1,13 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { fetchCardText, fetchRecommendations, fetchCurrentRun, pushCurrentRun, type CardText, type CardScore } from '../api';
-import { findCurrentRunSave, loadFolderHandle } from './Settings';
+import {
+  fetchCardText,
+  fetchRecommendations,
+  fetchCurrentRun,
+  fetchCombatPace,
+  type CardText,
+  type CardScore,
+  type CombatPace,
+} from '../api';
 import { CardNameCell } from './CardNameCell';
 import { formatCharacter, formatRelicId, formatEncounterId } from '../utils';
 import PageHeader from './PageHeader';
@@ -51,7 +58,7 @@ const SCORE_COLORS: Record<CardScore['recommendation'], { ring: string; badge: s
 const FACTOR_LABELS: Record<string, { label: string; max: number; color: string }> = {
   strength:    { label: 'Strength',   max: 30, color: 'bg-blue-500' },
   synergy:     { label: 'Synergy',    max: 25, color: 'bg-purple-500' },
-  deck_needs:  { label: 'Deck Fit',   max: 20, color: 'bg-teal-500' },
+  deck_needs:  { label: 'Deck Fit',   max: 40, color: 'bg-teal-500' },
   win_con:     { label: 'Win Con',    max: 20, color: 'bg-amber-500' },
 };
 
@@ -65,6 +72,9 @@ function CardSearch({
   value,
   upgraded,
   onChange,
+  onSelected,
+  requestFocus,
+  onFocusHandled,
 }: {
   cards: CardText[];
   character: string;
@@ -72,6 +82,9 @@ function CardSearch({
   value: string;
   upgraded: boolean;
   onChange: (id: string, upgraded: boolean) => void;
+  onSelected?: () => void;
+  requestFocus?: boolean;
+  onFocusHandled?: () => void;
 }) {
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState(false);
@@ -102,13 +115,28 @@ function CardSearch({
     item?.scrollIntoView({ block: 'nearest' });
   }, [highlightedIdx]);
 
-  const selectItem = useCallback((e: SearchEntry) => {
+  // Parent asked us to start typing (after previous slot was confirmed)
+  useEffect(() => {
+    if (!requestFocus) return;
+    setQuery('');
+    setEditing(true);
+    setOpen(false);
+    const t = window.setTimeout(() => {
+      inputRef.current?.focus();
+      onFocusHandled?.();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [requestFocus, onFocusHandled]);
+
+  const selectItem = useCallback((e: SearchEntry, advance = false) => {
     onChange(e.card.id, e.upgraded);
     setQuery('');
     setEditing(false);
     setOpen(false);
     setHighlightedIdx(-1);
-  }, [onChange]);
+    // Only Enter advances to the next offered-card slot — mouse click stays put
+    if (advance) onSelected?.();
+  }, [onChange, onSelected]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open || filtered.length === 0) return;
@@ -121,7 +149,7 @@ function CardSearch({
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const target = filtered[highlightedIdx] ?? filtered[0];
-      if (target) selectItem(target);
+      if (target) selectItem(target, true);
     } else if (e.key === 'Escape') {
       setOpen(false);
       setEditing(false);
@@ -167,7 +195,7 @@ function CardSearch({
             </span>
             {/* Click name to enter edit mode — prefills query, doesn't clear */}
             <span
-              className={`text-sm font-medium flex-1 cursor-text hover:brightness-125 truncate ${RARITY_COLOR[selected.rarity] ?? 'text-gray-100'}`}
+              className={`text-sm font-bold flex-1 cursor-text hover:brightness-125 truncate ${RARITY_COLOR[selected.rarity] ?? 'text-gray-100'}`}
               onClick={() => { setQuery(selected.name); setEditing(true); setOpen(true); }}
             >
               {selected.name}
@@ -234,7 +262,7 @@ function CardSearch({
                 {entry.card.cost}
               </span>
               <div className="flex-1 min-w-0">
-                <div className={`text-sm truncate ${RARITY_COLOR[entry.card.rarity] ?? 'text-gray-100'}`}>{entry.card.name}</div>
+                <div className={`text-sm font-bold truncate ${RARITY_COLOR[entry.card.rarity] ?? 'text-gray-100'}`}>{entry.card.name}</div>
                 <div className="text-xs text-gray-500 truncate">{entry.card.description?.slice(0, 55)}{(entry.card.description?.length ?? 0) > 55 ? '…' : ''}</div>
               </div>
               <span className="text-xs text-gray-600 shrink-0">{entry.card.rarity[0]}</span>
@@ -259,7 +287,7 @@ function ScoreCard({ score, rank, upgraded }: { score: CardScore; rank: number; 
       {/* Header */}
       <div className="flex items-start justify-between gap-2 pt-1">
         <div>
-          <div className="font-semibold text-gray-100">
+          <div className="font-bold text-gray-100">
             {score.name}{upgraded && <span className="text-cyan-400 font-bold ml-0.5">+</span>}
           </div>
           <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${style.badge}`}>
@@ -329,6 +357,7 @@ export default function Advisor() {
   const [upgrades, setUpgrades] = useState<string[]>([]);
   const [offered, setOffered] = useState<[string, string, string]>(['', '', '']);
   const [offeredUpgrades, setOfferedUpgrades] = useState<[boolean, boolean, boolean]>([false, false, false]);
+  const [focusOfferedSlot, setFocusOfferedSlot] = useState<number | null>(null);
   const [currentBoss, setCurrentBoss] = useState<string | null>(null);
   const [actIndex, setActIndex] = useState<number | null>(null);
 
@@ -337,8 +366,7 @@ export default function Advisor() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [setupCollapsed, setSetupCollapsed] = useState(false);
-
-
+  const [combatPace, setCombatPace] = useState<CombatPace | null>(null);
 
   // Load card text once, then immediately sync
   useEffect(() => {
@@ -350,6 +378,15 @@ export default function Advisor() {
     });
   }, []);
 
+  // Historical clear speed for this character — damage-quality proxy
+  useEffect(() => {
+    let cancelled = false;
+    fetchCombatPace(character)
+      .then(pace => { if (!cancelled) setCombatPace(pace); })
+      .catch(() => { if (!cancelled) setCombatPace(null); });
+    return () => { cancelled = true; };
+  }, [character]);
+
   // Keep a stable ref to syncFromSave to avoid stale closures in the interval
   const syncRef = useRef(syncFromSave);
   useEffect(() => { syncRef.current = syncFromSave; });
@@ -359,7 +396,6 @@ export default function Advisor() {
     const interval = setInterval(() => syncRef.current(true), 10000);
     return () => clearInterval(interval);
   }, []);
-
 
   const act = actIndex != null ? actIndex + 1 : (floor <= 0 ? 1 : floor <= 17 ? 1 : floor <= 34 ? 2 : 3);
   const charKey = character.replace('CHARACTER.', '');
@@ -371,13 +407,7 @@ export default function Advisor() {
   async function syncFromSave(silent = false) {
     setSyncing(true);
     try {
-      // Try to push current_run.save from connected folder first
-      const folderHandle = await loadFolderHandle().catch(() => null);
-      if (folderHandle) {
-        const text = await findCurrentRunSave(folderHandle).catch(() => null);
-        if (text) await pushCurrentRun(text).catch(() => {});
-      }
-
+      // Backend reads current_run.save from the local STS2 saves folder
       const run = await fetchCurrentRun();
       if (run.floor > 0) setFloor(run.floor);
       if (run.currentBoss) setCurrentBoss(run.currentBoss);
@@ -398,7 +428,7 @@ export default function Advisor() {
       }
       if (!silent) setSetupCollapsed(false);
     } catch {
-      if (!silent) setError('No active run found — connect your save folder in Settings first.');
+      if (!silent) setError('No active run found — start a run in-game, or set the saves path in Settings.');
     } finally {
       setSyncing(false);
     }
@@ -409,13 +439,7 @@ export default function Advisor() {
     setScoring(true);
     setError(null);
     try {
-      // Auto-sync floor from save before scoring
       try {
-        const folderHandle = await loadFolderHandle().catch(() => null);
-        if (folderHandle) {
-          const text = await findCurrentRunSave(folderHandle).catch(() => null);
-          if (text) await pushCurrentRun(text).catch(() => {});
-        }
         const run = await fetchCurrentRun();
         if (run.floor > 0) setFloor(run.floor);
       } catch { /* ignore if no active run */ }
@@ -431,7 +455,7 @@ export default function Advisor() {
         currentBoss,
       });
       setScores(result);
-    } catch (e) {
+    } catch {
       setError('Failed to get recommendations. Is the backend running?');
     } finally {
       setScoring(false);
@@ -629,7 +653,7 @@ export default function Advisor() {
                         <CardNameCell
                           id={id}
                           cardTextMap={cardMap}
-                          className={`text-sm truncate ${colorClass}`}
+                          className={`text-sm font-bold truncate ${colorClass}`}
                         />
                         {isUpgraded && <span className="text-xs text-cyan-400 font-bold shrink-0 ml-0.5">+</span>}
                         <button
@@ -651,6 +675,7 @@ export default function Advisor() {
                 {relics.length === 0 ? (
                   <span className="text-xs text-gray-600 self-center">No relics — use Sync to load</span>
                 ) : relics.map(r => (
+
                   <span key={r} className="px-2 py-0.5 bg-yellow-900/30 border border-yellow-700/40 rounded text-sm text-yellow-300">
                     {formatRelicId(r)}
                   </span>
@@ -676,6 +701,11 @@ export default function Advisor() {
                 value={offered[slot]}
                 upgraded={offeredUpgrades[slot]}
                 onChange={(id, isUpgraded) => setOfferedCard(slot, id, isUpgraded)}
+                onSelected={() => {
+                  if (slot < 2) setFocusOfferedSlot(slot + 1);
+                }}
+                requestFocus={focusOfferedSlot === slot}
+                onFocusHandled={() => setFocusOfferedSlot(null)}
               />
             </div>
           ))}
@@ -711,6 +741,34 @@ export default function Advisor() {
         {error && <span className="text-xs text-red-400">{error}</span>}
       </div>
 
+      {/* Damage pace — always visible when we have history for this character */}
+      {combatPace && combatPace.runs > 0 && (
+        <div
+          className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-2.5 text-xs text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1"
+          title="Average turns to clear fights in your past runs for this character. Lower ≈ stronger damage."
+        >
+          <span className="text-gray-500 font-medium uppercase tracking-wide">Clear pace</span>
+          <span>
+            <span className="text-gray-500">Normals</span>{' '}
+            <span className="text-gray-200 tabular-nums font-medium">{combatPace.monster.n ? combatPace.monster.avg : '—'}</span>
+            {combatPace.monster.n > 0 && <span className="text-gray-600">t</span>}
+          </span>
+          <span className="text-gray-700">·</span>
+          <span>
+            <span className="text-gray-500">Elites</span>{' '}
+            <span className="text-gray-200 tabular-nums font-medium">{combatPace.elite.n ? combatPace.elite.avg : '—'}</span>
+            {combatPace.elite.n > 0 && <span className="text-gray-600">t</span>}
+          </span>
+          <span className="text-gray-700">·</span>
+          <span>
+            <span className="text-gray-500">Bosses</span>{' '}
+            <span className="text-gray-200 tabular-nums font-medium">{combatPace.boss.n ? combatPace.boss.avg : '—'}</span>
+            {combatPace.boss.n > 0 && <span className="text-gray-600">t</span>}
+          </span>
+          <span className="text-gray-600">({combatPace.runs} runs · lower = better damage)</span>
+        </div>
+      )}
+
       {/* ── Results ── */}
       {scores && (
         <div className="space-y-3">
@@ -732,7 +790,7 @@ export default function Advisor() {
           {/* Act context tip */}
           <div className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-3 text-xs text-gray-500 leading-relaxed">
             <span className="text-gray-400 font-medium">Act {act} principle: </span>
-            {act === 1 && 'Build consistency. Prefer 1-cost cards. A 3-cost card is risky without energy scaling.'}
+            {act === 1 && 'Increase energy efficiency — every energy spent should do more than 6 damage or 5 Block. Reduce wasted energy.'}
             {act === 2 && 'Identify your win condition. Take key synergy pieces. Avoid random Commons that dilute focus.'}
             {act === 3 && 'Your deck is mostly built. Only add clear upgrades. Rare > Uncommon > skip a Common.'}
           </div>

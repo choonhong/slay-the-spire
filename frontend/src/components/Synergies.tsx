@@ -221,13 +221,13 @@ export default function Synergies({ active = true }: { active?: boolean }) {
                   <td className="px-4 py-2.5">
                     <CardNameCell id={p.card_a} cardTextMap={cardTextMap}
                       colorByRarity={!(cardSearch && cardName(p.card_a).includes(cardSearch.toLowerCase()))}
-                      className={cardSearch && cardName(p.card_a).includes(cardSearch.toLowerCase()) ? 'font-semibold text-spire-400' : undefined}
+                      className={cardSearch && cardName(p.card_a).includes(cardSearch.toLowerCase()) ? 'font-bold text-spire-400' : 'font-bold'}
                     />
                   </td>
                   <td className="px-4 py-2.5">
                     <CardNameCell id={p.card_b} cardTextMap={cardTextMap}
                       colorByRarity={!(cardSearch && cardName(p.card_b).includes(cardSearch.toLowerCase()))}
-                      className={cardSearch && cardName(p.card_b).includes(cardSearch.toLowerCase()) ? 'font-semibold text-spire-400' : undefined}
+                      className={cardSearch && cardName(p.card_b).includes(cardSearch.toLowerCase()) ? 'font-bold text-spire-400' : 'font-bold'}
                     />
                   </td>
                   <td className="px-4 py-2.5 text-gray-400 tabular-nums">

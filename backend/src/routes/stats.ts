@@ -1,11 +1,16 @@
 import { Router, Request, Response } from 'express';
 import { getDb, getCardStats, getCharacters, getBuildIds } from '../db';
+import { getCombatPace } from '../combatPace';
 import { type AuthRequest } from '../middleware/auth';
 import fs from 'fs';
 import path from 'path';
 
 const COMMUNITY_CARDS_PATH = path.join(__dirname, '../../../data/community_cards.json');
 const CARD_TEXT_PATH = path.join(__dirname, '../../../data/card_text.json');
+const GAME_CONTEXT_PATH = path.join(__dirname, '../../../data/game_context.json');
+
+/** Display score used when hard-overwriting universal S-tier cards in Card Stats. */
+const UNIVERSAL_S_TIER_SCORE = 95;
 
 const router = Router();
 
@@ -39,8 +44,43 @@ router.get('/builds', (req: Request, res: Response) => {
 
 router.get('/community-cards', (_req: Request, res: Response) => {
   try {
-    const data = fs.readFileSync(COMMUNITY_CARDS_PATH, 'utf-8');
-    res.json(JSON.parse(data));
+    const cards = JSON.parse(fs.readFileSync(COMMUNITY_CARDS_PATH, 'utf-8')) as Array<{
+      id: string;
+      name?: string;
+      powerScore?: number;
+      powerTier?: string;
+      [key: string]: unknown;
+    }>;
+
+    let sTierIds = new Set<string>();
+    try {
+      const ctx = JSON.parse(fs.readFileSync(GAME_CONTEXT_PATH, 'utf-8')) as {
+        universal_s_tier_cards?: string[];
+      };
+      sTierIds = new Set(ctx.universal_s_tier_cards ?? []);
+    } catch { /* no overrides */ }
+
+    const byId = new Map(cards.map(c => [c.id, { ...c }]));
+    for (const id of sTierIds) {
+      const existing = byId.get(id);
+      if (existing) {
+        existing.powerTier = 'S';
+        existing.powerScore = UNIVERSAL_S_TIER_SCORE;
+      } else {
+        byId.set(id, {
+          id,
+          name: id.replace(/^CARD\./, '').replace(/_/g, ' '),
+          powerTier: 'S',
+          powerScore: UNIVERSAL_S_TIER_SCORE,
+          pickRate: 0,
+          winRateDelta: 0,
+          timesPicked: 0,
+          eloRating: 1800,
+        });
+      }
+    }
+
+    res.json([...byId.values()]);
   } catch {
     res.json([]);
   }
@@ -69,6 +109,14 @@ router.get('/relics', (req: AuthRequest, res: Response) => {
     ).all() as { relic_id: string }[];
   }
   res.json(rows.map(r => `RELIC.${r.relic_id}`));
+});
+
+/** Average turns to clear fights — damage-quality proxy (lower ≈ stronger output). */
+router.get('/combat-pace', (req: AuthRequest, res: Response) => {
+  const db = getDb();
+  const character = typeof req.query.character === 'string' ? req.query.character : undefined;
+  const userId = req.query.scope === 'mine' && req.userId !== undefined ? req.userId : undefined;
+  res.json(getCombatPace(db, { character, userId }));
 });
 
 export default router;

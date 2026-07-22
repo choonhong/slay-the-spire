@@ -20,7 +20,7 @@ export default function PageHeader({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
-        <h2 className="text-lg font-semibold text-gray-100">{title}</h2>
+        <h2 className="text-3xl font-bold text-gray-100 tracking-tight">{title}</h2>
         {subtitle && (
           <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
         )}

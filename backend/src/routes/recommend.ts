@@ -5,11 +5,24 @@ import { recommend } from '../recommend';
 const router = Router();
 
 router.post('/', (req: Request, res: Response) => {
-  const { deck = [], offered = [], character = '', floor = 0 } = req.body as {
+  const {
+    deck = [],
+    offered = [],
+    character = '',
+    floor = 0,
+    relics = [],
+    offeredUpgrades,
+    deckUpgrades,
+    currentBoss,
+  } = req.body as {
     deck?: string[];
     offered?: string[];
     character?: string;
     floor?: number;
+    relics?: string[];
+    offeredUpgrades?: boolean[];
+    deckUpgrades?: string[];
+    currentBoss?: string;
   };
 
   if (!Array.isArray(offered) || offered.length === 0) {
@@ -19,7 +32,16 @@ router.post('/', (req: Request, res: Response) => {
 
   try {
     const db = getDb();
-    const scores = recommend(db, { deck, offered, character, floor });
+    const scores = recommend(db, {
+      deck,
+      offered,
+      character,
+      floor,
+      relics,
+      offeredUpgrades,
+      deckUpgrades,
+      currentBoss,
+    });
     res.json(scores);
   } catch (err) {
     console.error('[recommend]', err);

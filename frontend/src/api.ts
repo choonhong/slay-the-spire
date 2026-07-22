@@ -236,6 +236,22 @@ export async function pushCurrentRun(text: string): Promise<void> {
   await api.post('/current-run/push', { text });
 }
 
+export interface AppConfig {
+  savesPath?: string;
+  watcherUserId?: number;
+  resolvedSavesPath?: string;
+}
+
+export async function fetchConfig(): Promise<AppConfig> {
+  const { data } = await api.get<AppConfig>('/config');
+  return data;
+}
+
+export async function saveConfig(savesPath: string): Promise<AppConfig> {
+  const { data } = await api.post<AppConfig>('/config', { savesPath });
+  return data;
+}
+
 export interface ScoreFactors {
   strength: number;
   synergy: number;
@@ -279,5 +295,25 @@ export interface CurrentRun {
 
 export async function fetchCurrentRun(): Promise<CurrentRun> {
   const { data } = await api.get<CurrentRun>('/current-run');
+  return data;
+}
+
+export interface PaceBucket {
+  avg: number;
+  n: number;
+}
+
+/** Average turns to clear fights — damage-quality proxy (lower ≈ stronger). */
+export interface CombatPace {
+  monster: PaceBucket;
+  elite: PaceBucket;
+  boss: PaceBucket;
+  runs: number;
+}
+
+export async function fetchCombatPace(character?: string): Promise<CombatPace> {
+  const { data } = await api.get<CombatPace>('/stats/combat-pace', {
+    params: { character: character || undefined, scope: 'mine' },
+  });
   return data;
 }

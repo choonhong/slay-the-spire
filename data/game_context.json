@@ -64,23 +64,34 @@
       "win_conditions": [
         "Speedster Draw Loop (S+): infinite cycle with Acrobatics/Footwork, output via Flick-Flack/Ricochet",
         "Sly Discard (S): Flick-Flack, Ricochet, Untouchable — discard to burst",
+        "Weak amp (S): Tracking — Weak enemies take 50% more Attack damage (Red Mask / Neutralize / Scare)",
         "Poison stack: Noxious Fumes + Catalyst + Bouncing Flask for multi-enemy poison"
       ],
       "best_cards": [
         "CARD.CATALYST", "CARD.NOXIOUS_FUMES", "CARD.BLADE_DANCE",
-        "CARD.ACCURACY", "CARD.ACROBATICS", "CARD.FOOTWORK",
+        "CARD.ACCURACY", "CARD.PREPARED", "CARD.ACROBATICS", "CARD.FOOTWORK",
         "CARD.FLICK_FLACK", "CARD.RICOCHET", "CARD.UNTOUCHABLE",
-        "CARD.DAGGER_THROW", "CARD.A_THOUSAND_CUTS", "CARD.AFTER_IMAGE"
+        "CARD.DAGGER_THROW", "CARD.A_THOUSAND_CUTS", "CARD.AFTERIMAGE",
+        "CARD.TRACKING"
       ],
-      "good_keywords": ["Poison", "Shiv", "Retain", "Innate", "Discard"],
+      "good_keywords": ["Poison", "Shiv", "Retain", "Innate", "Discard", "Weak"],
       "key_synergy_cards": [
-        "CARD.CATALYST", "CARD.ACCURACY", "CARD.NOXIOUS_FUMES"
+        "CARD.CATALYST", "CARD.ACCURACY", "CARD.NOXIOUS_FUMES", "CARD.TRACKING"
+      ],
+      "critical_rules": [
+        "Act 1: prefer Prepared (0-cost cycle) over Acrobatics — 1-energy draw is too expensive early; upgrade Prepared ASAP (Draw 2 / Discard 2)",
+        "Acrobatics shines later with Footwork, energy relics, or a discard engine — not as your first draw piece"
       ],
       "meta_builds": {
         "speedster_draw_loop": {
           "tier": "S+",
           "description": "Cycle infinitely through deck with draw cards, burst with Flick-Flack/Ricochet",
           "core": ["CARD.FLICK_FLACK", "CARD.RICOCHET", "CARD.ACROBATICS", "CARD.DAGGER_THROW", "CARD.UNTOUCHABLE"]
+        },
+        "weak_tracking": {
+          "tier": "S",
+          "description": "Weak amp via Tracking — Attacks deal 50% more to Weak enemies",
+          "core": ["CARD.TRACKING", "CARD.NEUTRALIZE", "CARD.SCARE", "CARD.LEG_SWEEP", "CARD.SUCKER_PUNCH"]
         },
         "poison": {
           "tier": "A",
@@ -94,7 +105,8 @@
         "CARD.STRIKE_SILENT","CARD.STRIKE_SILENT","CARD.STRIKE_SILENT",
         "CARD.STRIKE_SILENT","CARD.STRIKE_SILENT",
         "CARD.DEFEND_SILENT","CARD.DEFEND_SILENT","CARD.DEFEND_SILENT",
-        "CARD.DEFEND_SILENT","CARD.DEFEND_SILENT"
+        "CARD.DEFEND_SILENT","CARD.DEFEND_SILENT",
+        "CARD.NEUTRALIZE","CARD.SURVIVOR"
       ]
     },
 
@@ -389,6 +401,34 @@
       "max_bonus": 20,
       "reason": "Exhaust cards in deck — Feel No Pain gains Block each time you exhaust"
     },
+    "afterimage_zero_cost_draw": {
+      "enabler_filter": { "cost": "0", "keyword": "draw" },
+      "filter": { "id": "CARD.AFTERIMAGE" },
+      "bonus": 4,
+      "scale_with_count": true,
+      "max_bonus": 16,
+      "reason": "Synergy with 0-cost draw"
+    },
+    "afterimage_card_gen": {
+      "enabler_filter": { "generates_cards": true },
+      "filter": { "id": "CARD.AFTERIMAGE" },
+      "bonus": 4,
+      "scale_with_count": true,
+      "max_bonus": 16,
+      "reason": "Synergy with card generation"
+    },
+    "zero_cost_draw_afterimage": {
+      "enablers": ["CARD.AFTERIMAGE"],
+      "filter": { "cost": "0", "keyword": "draw" },
+      "bonus": 6,
+      "reason": "Synergy with Afterimage"
+    },
+    "card_gen_afterimage": {
+      "enablers": ["CARD.AFTERIMAGE"],
+      "filter": { "generates_cards": true },
+      "bonus": 6,
+      "reason": "Synergy with Afterimage"
+    },
     "hellraiser_strike_requirement": {
       "enablers": ["CARD.STRIKE_IRONCLAD","CARD.PERFECTED_STRIKE","CARD.POMMEL_STRIKE","CARD.SETUP_STRIKE","CARD.TWIN_STRIKE","CARD.ASHEN_STRIKE","CARD.WILD_STRIKE","CARD.INFERNAL_BLADE"],
       "filter": { "id": "CARD.HELLRAISER" },
@@ -417,7 +457,18 @@
     "RELIC.NEOWS_TORMENT":            { "filter": { "cost": "0" },                                           "bonus": 7, "reason": "Neow's Torment — boosts all 0-cost cards, making them trigger its effect" },
     "RELIC.BAG_OF_MARBLES":       { "filter": { "type": "Attack" },                                       "bonus": 5, "reason": "Bag of Marbles applies Vulnerable — attacks deal 50% more damage" },
     "RELIC.ORNAMENTAL_FAN":       { "filter": { "cost": "0", "type": "Attack" },                           "bonus": 6, "reason": "Ornamental Fan — 0-cost attacks trigger Block every 3rd hit faster" },
-    "RELIC.RED_MASK.go_for_eyes": { "relic_id": "RELIC.RED_MASK", "filter": { "card_id": "CARD.GO_FOR_THE_EYES" }, "bonus": -12, "reason": "↓ Red Mask already applies Weak at combat start — Go for the Eyes' effect is redundant" }
+    "RELIC.RED_MASK.go_for_eyes": { "relic_id": "RELIC.RED_MASK", "filter": { "card_id": "CARD.GO_FOR_THE_EYES" }, "bonus": -12, "reason": "↓ Red Mask already applies Weak at combat start — Go for the Eyes' effect is redundant" },
+    "RELIC.FRESNEL_LENS": {
+      "filter": { "gains_block": true },
+      "bonus": 16,
+      "reason": "Fresnel Lens — enchants new Block cards with Nimble 2 (+2 Block)"
+    },
+    "RELIC.FRESNEL_LENS.zero_cost": {
+      "relic_id": "RELIC.FRESNEL_LENS",
+      "filter": { "gains_block": true, "cost": "0" },
+      "bonus": 14,
+      "reason": "0-cost Block + Fresnel Lens — free Nimble block every cycle"
+    }
   },
 
   "keyword_synergies": {
@@ -457,14 +508,14 @@
 
   "act_principles": {
     "1": {
-      "summary": "Build consistency. Prefer 1-cost cards. Identify your archetype by floor 10. Avoid 3-cost without payoff.",
+      "summary": "Increase energy efficiency — every energy should do more than 6 damage or 5 Block. Reduce wasted energy.",
       "cost_weights": { "0": 1.0, "1": 1.0, "2": 0.65, "3": 0.15, "X": 0.5, "N/A": 0.0 },
       "rarity_matters": false,
       "notes": [
-        "1-cost cards are almost always correct — cheap = consistent",
+        "0-cost upfront damage (Backstab) and free Block+Draw are premium Act 1 picks",
+        "Prefer cards that beat 6 damage / 5 Block per energy — skip low-efficiency filler",
         "3-cost before energy scaling is often a mistake",
-        "Draw and cycle cards are most valuable here — find your engine pieces faster",
-        "Block matters more early — you don't know the deck yet, you'll take hits",
+        "Prefer 0-cost cycle (Prepared) over 1-energy pure draw early — energy is tight; upgrade the 0-cost soon",
         "Identify Stars vs Forge (Regent) or Osty vs Doom (Necrobinder) by Act 1 end",
         "Use Charge/Begone (Regent) or deck thinning to remove weak starters"
       ]
@@ -494,6 +545,18 @@
       ]
     }
   },
+
+  "universal_s_tier_cards": [
+    "CARD.SPLASH",
+    "CARD.HIDDEN_GEM",
+    "CARD.OMNISLICE",
+    "CARD.OFFERING",
+    "CARD.ADRENALINE",
+    "CARD.BIG_BANG",
+    "CARD.FISTICUFFS",
+    "CARD.DARK_SHACKLES",
+    "CARD.AFTERIMAGE"
+  ],
 
   "colorless_good_cards": [
     "CARD.HIDDEN_GEM", "CARD.SCRAWL", "CARD.RALLY", "CARD.JACKPOT",
@@ -584,7 +647,7 @@
       "max_useful_turns": 5,
       "relic_turns": { "RELIC.RED_MASK": 1 },
       "penalty_per_excess_turn": 4,
-      "reason": "Weak is a duration debuff — Red Mask (1t) + 2× upgraded Go for the Eyes (2t each) = 5 turns is the optimised cap"
+      "reason": "↓ Reduced synergy with Red Mask"
     },
     "Vulnerable": {
       "detect_keyword": "vulnerable",
@@ -604,8 +667,8 @@
 
   "general_advice": {
     "deck_size": "Smaller decks are more consistent — remove starters when possible. 10-15 is ideal, 20+ starts to feel clunky unless you have good draw.",
-    "draw_always_good": "A card that draws more cards is almost always worth considering — finding your engine pieces faster is foundational.",
+    "draw_always_good": "Draw/cycle is foundational, but Act 1 prefers 0-cost filters (Prepared+) over spending 1 energy on pure draw (Acrobatics) before you have energy scaling.",
     "avoid_win_more": "Cards that are great when you're already winning but useless when behind are low priority. Prefer cards that are good when things go wrong.",
-    "upgrade_priority": "Cards you plan to play every turn deserve upgrades first. Upgrade costs 0-cost cards last."
+    "upgrade_priority": "Prioritize upgrades that turn weak cycle into real draw (Prepared → Draw 2/Discard 2). Cards you play every fight deserve upgrades early."
   }
 }

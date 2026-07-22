@@ -7,13 +7,26 @@ import { type AuthRequest } from '../middleware/auth';
 
 const DATA_DIR = path.join(__dirname, '../../../data');
 
-function loadCardText(): { id: string; color: string }[] {
+function loadJson<T>(filename: string): T | null {
   try {
-    return JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'card_text.json'), 'utf-8'));
-  } catch { return []; }
+    return JSON.parse(fs.readFileSync(path.join(DATA_DIR, filename), 'utf-8'));
+  } catch { return null; }
 }
 
-const CURSE_IDS = new Set(loadCardText().filter(c => c.color === 'curse').map(c => c.id));
+/** Starter-deck cards, Basic rarity, and curses — excluded from synergy pairing. */
+function loadStarterExcludeIds(): string[] {
+  const ids = new Set<string>();
+  for (const c of loadJson<{ id: string; color: string; rarity: string }[]>('card_text.json') ?? []) {
+    if (c.rarity === 'Basic' || c.color === 'curse') ids.add(c.id);
+  }
+  const ctx = loadJson<{ characters?: Record<string, { starter_deck?: string[] }> }>('game_context.json');
+  for (const ch of Object.values(ctx?.characters ?? {})) {
+    for (const id of ch.starter_deck ?? []) ids.add(id);
+  }
+  return [...ids];
+}
+
+const STARTER_EXCLUDE = loadStarterExcludeIds();
 
 const router = Router();
 
@@ -34,18 +47,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
   const db = getDb();
   const { character, buildId, minRuns, scope } = req.query;
 
-  const STARTER_CARDS = [
-    'CARD.STRIKE_IRONCLAD','CARD.STRIKE_SILENT','CARD.STRIKE_DEFECT',
-    'CARD.STRIKE_WATCHER','CARD.STRIKE_REGENT','CARD.STRIKE_NECROBINDER',
-    'CARD.DEFEND_IRONCLAD','CARD.DEFEND_SILENT','CARD.DEFEND_DEFECT',
-    'CARD.DEFEND_WATCHER','CARD.DEFEND_REGENT','CARD.DEFEND_NECROBINDER',
-    // Starter non-Strike/Defend cards
-    'CARD.BASH',
-    'CARD.ZAP','CARD.DUALCAST',
-    'CARD.ERUPTION','CARD.VIGILANCE',
-    ...CURSE_IDS,
-  ];
-  const starterPlaceholders = STARTER_CARDS.map(() => '?').join(',');
+  const starterPlaceholders = STARTER_EXCLUDE.map(() => '?').join(',');
 
   const conditions: string[] = [
     "a.offer_index = -1",   // final deck rows only
@@ -55,7 +57,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     "a.card_id < b.card_id",
   ];
   // Two sets of starter placeholders (for card_a and card_b NOT IN)
-  const params: (string | number)[] = [...STARTER_CARDS, ...STARTER_CARDS];
+  const params: (string | number)[] = [...STARTER_EXCLUDE, ...STARTER_EXCLUDE];
 
   if (scope === 'mine' && req.userId !== undefined) {
     conditions.push('r.user_id = ?');
@@ -121,23 +123,12 @@ function getIndividualWinRates(
   buildId?: string,
   userId?: number
 ): Map<string, number> {
-  const STARTER_CARDS = [
-    'CARD.STRIKE_IRONCLAD','CARD.STRIKE_SILENT','CARD.STRIKE_DEFECT',
-    'CARD.STRIKE_WATCHER','CARD.STRIKE_REGENT','CARD.STRIKE_NECROBINDER',
-    'CARD.DEFEND_IRONCLAD','CARD.DEFEND_SILENT','CARD.DEFEND_DEFECT',
-    'CARD.DEFEND_WATCHER','CARD.DEFEND_REGENT','CARD.DEFEND_NECROBINDER',
-    // Starter non-Strike/Defend cards
-    'CARD.BASH',
-    'CARD.ZAP','CARD.DUALCAST',
-    'CARD.ERUPTION','CARD.VIGILANCE',
-    ...CURSE_IDS,
-  ];
-  const starterPlaceholders = STARTER_CARDS.map(() => '?').join(',');
+  const starterPlaceholders = STARTER_EXCLUDE.map(() => '?').join(',');
   const conditions = [
     "cc.offer_index = -1",
     `cc.card_id NOT IN (${starterPlaceholders})`,
   ];
-  const params: (string | number)[] = [...STARTER_CARDS];
+  const params: (string | number)[] = [...STARTER_EXCLUDE];
   if (userId !== undefined) { conditions.push('r.user_id = ?'); params.push(userId); }
   if (character) { conditions.push('r.character = ?'); params.push(character); }
   if (buildId)   { conditions.push('r.build_id = ?');  params.push(buildId); }

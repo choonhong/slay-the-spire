@@ -101,7 +101,7 @@ function PickRateBar({ value }: { value: number }) {
 }
 
 const TIER_COLOR: Record<string, string> = {
-  S: 'bg-yellow-500 text-black',
+  S: 'bg-yellow-500 text-white',
   A: 'bg-green-600 text-white',
   B: 'bg-blue-600 text-white',
   C: 'bg-gray-600 text-white',
@@ -206,7 +206,7 @@ export default function CardStatsTable() {
   const columns = useMemo(() => [
     col.accessor('card_id', {
       header: 'Card',
-      cell: info => <CardNameCell id={info.getValue()} cardTextMap={cardTextMap} colorByRarity />,
+      cell: info => <CardNameCell id={info.getValue()} cardTextMap={cardTextMap} colorByRarity className="font-bold" />,
     }),
     col.accessor('community_score', {
       header: 'Score',
@@ -311,8 +311,6 @@ export default function CardStatsTable() {
           );
           })}
 
-        {/* Colorless separator + button */}
-        <div className="w-px bg-gray-700 self-stretch mx-1" />
         <button
           onClick={() => { setSelectedChar(''); setColorlessOnly(c => !c); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${

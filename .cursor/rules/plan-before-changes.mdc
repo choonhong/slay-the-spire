@@ -1,0 +1,18 @@
+---
+description: Always present a plan and wait for approval before making changes
+alwaysApply: true
+---
+
+# Plan before changes
+
+Before editing any files, running mutating commands, or otherwise changing the project:
+
+1. **Outline the plan first** — what you will change, why, and which files/areas are involved.
+2. **Wait for explicit approval** — do not start implementing until the user confirms (e.g. "go", "yes", "do it").
+3. **Re-plan if scope shifts** — if new work appears mid-task, pause and get approval on the updated plan before continuing.
+
+Exceptions (no approval needed):
+
+- Read-only exploration (search, read files, answer questions)
+- The user already gave a clear go-ahead for a specific change in the same turn
+- Trivial follow-ups the user explicitly asked you to finish immediately after approving a plan

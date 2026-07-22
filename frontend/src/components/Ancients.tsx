@@ -43,7 +43,7 @@ function RelicTable({ rows }: { rows: AncientStat[] }) {
             key={i}
             className="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors"
           >
-            <td className="py-2 pr-4 text-gray-200 font-medium">{formatRelicId(row.relic_id)}</td>
+            <td className="py-2 pr-4 text-gray-200 font-bold">{formatRelicId(row.relic_id)}</td>
             <td className="py-2 pr-8 text-right text-gray-400 tabular-nums">{row.times_picked}</td>
             <td className="py-2">
               <WinRateBar value={row.win_rate} runs={row.times_picked} />
@@ -119,7 +119,7 @@ export default function Ancients() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Ancients"
+        title="Ancient Relics"
         onRefresh={load}
       />
 
@@ -179,7 +179,7 @@ export default function Ancients() {
           {/* Neow's Bonus */}
           <section>
             <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-base font-semibold text-gray-100">Neow's Bonus</h2>
+              <h2 className="text-xl font-bold text-gray-100">Neow's Bonus</h2>
               <span className="text-xs text-gray-500">{neowStats.length} relics · {neowStats.reduce((s, r) => s + r.times_picked, 0)} total picks</span>
             </div>
             {neowStats.length === 0 ? (
@@ -194,7 +194,7 @@ export default function Ancients() {
           {/* Ancient Events */}
           <section>
             <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-base font-semibold text-gray-100">Ancient Events</h2>
+              <h2 className="text-xl font-bold text-gray-100">Ancient Events</h2>
               <span className="text-xs text-gray-500">{eventNames.length} events</span>
             </div>
 
@@ -203,7 +203,7 @@ export default function Ancients() {
               <div className="flex flex-wrap gap-1.5 mb-4">
                 <button
                   onClick={() => setSelectedEvent('ALL')}
-                  className={`px-3 py-1 rounded-md border text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-md border text-sm font-semibold transition-colors ${
                     selectedEvent === 'ALL'
                       ? 'bg-spire-600 border-gray-700 text-white'
                       : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
@@ -215,7 +215,7 @@ export default function Ancients() {
                   <button
                     key={name}
                     onClick={() => setSelectedEvent(selectedEvent === name ? 'ALL' : name)}
-                    className={`px-3 py-1 rounded-md border text-xs font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-md border text-sm font-semibold transition-colors ${
                       selectedEvent === name
                         ? 'bg-purple-900/70 border-purple-700 text-purple-200'
                         : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
@@ -233,7 +233,7 @@ export default function Ancients() {
                   const rows = ancientEvents.get(name) ?? [];
                   return (
                     <div key={name} className="bg-gray-900/50 border border-gray-800 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-purple-300 mb-3">{formatEventName(name)}</h3>
+                      <h3 className="text-lg font-bold text-purple-300 mb-3">{formatEventName(name)}</h3>
                       <RelicTable rows={rows} />
                     </div>
                   );
@@ -241,7 +241,7 @@ export default function Ancients() {
               </div>
             ) : (
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4">
-                <h3 className="text-sm font-semibold text-purple-300 mb-3">{formatEventName(selectedEvent)}</h3>
+                <h3 className="text-lg font-bold text-purple-300 mb-3">{formatEventName(selectedEvent)}</h3>
                 <RelicTable rows={ancientEvents.get(selectedEvent) ?? []} />
               </div>
             )}

@@ -46,7 +46,7 @@ function AppInner() {
               >
                 {t === 'stats' ? 'Card Stats'
                   : t === 'synergies' ? 'Synergies'
-                  : t === 'ancients' ? 'Ancients'
+                  : t === 'ancients' ? 'Ancient Relics'
                   : t === 'runs' ? 'Run History'
                   : t === 'advisor' ? 'Advisor'
                   : 'Settings'}

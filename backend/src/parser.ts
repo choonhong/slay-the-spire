@@ -78,7 +78,12 @@ function formatKilledBy(raw: string): string | null {
     .join(' ');
 }
 
-export function parseRunFile(filePath: string, userId = 1): ParseResult | null {
+export function parseRunFile(
+  filePath: string,
+  userId = 1,
+  /** Storage key in DB (defaults to filePath). Use same key as manual upload to avoid dupes. */
+  storageKey?: string,
+): ParseResult | null {
   let raw: string;
   try {
     raw = fs.readFileSync(filePath, 'utf-8');
@@ -86,7 +91,7 @@ export function parseRunFile(filePath: string, userId = 1): ParseResult | null {
     console.error(`[parser] Cannot read file: ${filePath}`);
     return null;
   }
-  return parseRunJson(raw, filePath, userId);
+  return parseRunJson(raw, storageKey ?? filePath, userId);
 }
 
 export function parseRunJson(raw: string, filePath: string, userId: number): ParseResult | null {

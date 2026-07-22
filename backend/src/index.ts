@@ -12,6 +12,7 @@ import currentRunRouter from './routes/currentRun';
 import authRouter from './routes/auth';
 import uploadRouter from './routes/upload';
 import { requireAuth } from './middleware/auth';
+import { startWatcher } from './watcher';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -46,4 +47,5 @@ if (fs.existsSync(frontendDist)) {
 
 app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`[server] Listening on http://0.0.0.0:${PORT}`);
+  void startWatcher();
 });

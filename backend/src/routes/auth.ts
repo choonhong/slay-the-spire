@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
 import { signToken, requireAuth, type AuthRequest } from '../middleware/auth';
+import { claimWatcherUser } from '../watcher';
 
 const router = Router();
 
@@ -29,12 +30,16 @@ router.post('/init', (req: Request, res: Response) => {
     user = { id: Number(result.lastInsertRowid), username: label };
   }
 
+  // Local disk watcher imports under this UUID user
+  claimWatcherUser(user.id);
+
   const token = signToken(user.id, user.username);
   res.json({ token, user: { id: user.id, username: user.username } });
 });
 
 // GET /api/auth/me — returns the DB user (recreates row if DB was wiped)
 router.get('/me', requireAuth, (req: AuthRequest, res: Response) => {
+  claimWatcherUser(req.userId!);
   // If JWT userId was stale after a wipe, issue a fresh token with the real id
   const token = signToken(req.userId!, req.username!);
   res.json({ id: req.userId, username: req.username, token });
