@@ -1,8 +1,40 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { uploadRuns } from '../api';
 import { useAuth } from '../AuthContext';
 import { THEMES, useTheme } from '../themes';
 import PageHeader from './PageHeader';
+
+const LAST_PATH_KEY = 'sts2-last-upload-path';
+
+/** Known STS2 history path on this Mac (browsers cannot read the absolute path from a picker). */
+const DEFAULT_HISTORY_PATH =
+  '/Users/choonhong/Library/Application Support/Steam/userdata/133818532/2868840/remote/profile1/saves/history';
+
+/**
+ * Resolve a display path from a FileList.
+ * Chromium only exposes a relative folder name (e.g. "history"), never the real disk path.
+ */
+function pathFromFiles(files: File[], previous: string | null): string {
+  const withRel = files.find(f => f.webkitRelativePath);
+  if (withRel?.webkitRelativePath) {
+    const parts = withRel.webkitRelativePath.split('/');
+    parts.pop();
+    const relative = parts.join('/');
+    // If user already has a full path ending with this folder, keep it
+    if (previous && (previous === relative || previous.endsWith('/' + relative) || previous.endsWith('\\' + relative))) {
+      return previous;
+    }
+    // Common case: picked the STS2 history folder
+    if (relative === 'history' || relative.endsWith('/history')) {
+      return DEFAULT_HISTORY_PATH;
+    }
+    return relative || DEFAULT_HISTORY_PATH;
+  }
+  // Multi-file pick without folder context — keep previous full path if any
+  if (previous && previous.includes('/')) return previous;
+  if (files.length === 1) return files[0].name;
+  return `${files.length} .run files`;
+}
 
 // Persisted folder handle key in IndexedDB (used by Advisor if previously connected)
 const IDB_DB = 'sts2-tracker';
@@ -68,13 +100,33 @@ const SWATCHES: Record<string, [string, string, string]> = {
 };
 
 export default function Settings() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { themeId, setThemeId } = useTheme();
   const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<{ added: number; skipped: number } | null>(null);
+  const [uploadResult, setUploadResult] = useState<{
+    added: number;
+    skipped: number;
+    failed?: number;
+  } | null>(null);
+  const [chosenPath, setChosenPath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
+
+  const savePath = (path: string) => {
+    setChosenPath(path);
+    localStorage.setItem(LAST_PATH_KEY, path);
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem(LAST_PATH_KEY);
+    // Upgrade old short labels like "history" to the full path
+    if (!saved || saved === 'history' || !saved.includes('/')) {
+      savePath(DEFAULT_HISTORY_PATH);
+    } else {
+      setChosenPath(saved);
+    }
+  }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const all = Array.from(e.target.files ?? []);
@@ -84,6 +136,7 @@ export default function Settings() {
       e.target.value = '';
       return;
     }
+    savePath(pathFromFiles(files, chosenPath));
     setUploading(true);
     setUploadResult(null);
     setError(null);
@@ -92,7 +145,14 @@ export default function Settings() {
         files.map(async f => ({ filename: f.name, content: await f.text() }))
       );
       const result = await uploadRuns(payload);
-      setUploadResult({ added: result.added, skipped: result.skipped });
+      setUploadResult({
+        added: result.added,
+        skipped: result.skipped,
+        failed: result.failed ?? result.errors?.length ?? 0,
+      });
+      if (result.errors?.length) {
+        setError(`Some files failed: ${result.errors.slice(0, 3).join(', ')}${result.errors.length > 3 ? '…' : ''}`);
+      }
     } catch (err) {
       setError(`Upload failed: ${String(err)}`);
     } finally {
@@ -109,17 +169,9 @@ export default function Settings() {
       />
 
       {/* Account info */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-300">Signed in as</p>
-          <p className="text-base font-semibold text-spire-400 mt-0.5">{user?.username}</p>
-        </div>
-        <button
-          onClick={logout}
-          className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-400 text-sm rounded-md transition-colors"
-        >
-          Sign out
-        </button>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+        <p className="text-sm font-medium text-gray-300">Signed in as</p>
+        <p className="text-base font-semibold text-spire-400 mt-0.5 break-all">{user?.username}</p>
       </div>
 
       {error && (
@@ -176,18 +228,38 @@ export default function Settings() {
             <span className="text-sm text-green-400">
               +{uploadResult.added} new run{uploadResult.added !== 1 ? 's' : ''} added
               {uploadResult.skipped > 0 && (
-                <span className="text-gray-500">, {uploadResult.skipped} already up to date</span>
+                <span className="text-gray-500">, {uploadResult.skipped} already synced</span>
+              )}
+              {(uploadResult.failed ?? 0) > 0 && (
+                <span className="text-red-400">, {uploadResult.failed} failed</span>
               )}
             </span>
           )}
         </div>
 
         <p className="text-xs text-gray-500">
-          Your Mac path:{' '}
-          <code className="text-gray-400">
-            ~/Library/Application Support/Steam/userdata/133818532/2868840/remote/profile1/saves/history
-          </code>
+          “Already synced” means those files are already in <em>your</em> account — not that upload failed.
+          Card Stats defaults to <strong className="text-gray-400">My Stats</strong>; Global counts every account
+          (duplicate uploads look inflated).
         </p>
+
+        <div>
+          <p className="text-xs text-gray-500 mb-1">Folder path</p>
+          <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md">
+            <span className="text-green-400 text-sm shrink-0">✓</span>
+            <input
+              type="text"
+              value={chosenPath ?? ''}
+              onChange={e => savePath(e.target.value)}
+              spellCheck={false}
+              className="flex-1 min-w-0 bg-transparent text-sm text-gray-200 font-mono focus:outline-none"
+              placeholder={DEFAULT_HISTORY_PATH}
+            />
+          </div>
+          <p className="text-[10px] text-gray-600 mt-1">
+            Browsers cannot read the absolute path from the folder picker — this is filled from your known Steam saves location and is editable.
+          </p>
+        </div>
       </div>
 
       {/* How it works */}

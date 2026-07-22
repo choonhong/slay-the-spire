@@ -70,11 +70,14 @@ interface CardEntry {
 }
 
 interface PlayerStats {
+  player_id?: number;
   card_choices?: CardEntry[];
   damage_taken?: number;
   current_hp?: number;
   max_hp?: number;
   relics?: Array<{ id: string } | string>;
+  rest_site_choices?: string[];
+  upgraded_cards?: string[];
 }
 
 interface MapPoint {
@@ -91,6 +94,7 @@ interface RunFile {
   killed_by_event?: string;
   acts?: string[];
   players?: Array<{
+    id?: number;
     character?: string;
     deck?: Array<{ id: string }>;
     relics?: Array<{ id: string } | string>;
@@ -105,6 +109,7 @@ export interface ActStats {
   elite_count: number;
   elite_damage: number;
   rest_count: number;
+  rest_upgrades: number;
 }
 
 export interface RunDetails {
@@ -115,6 +120,9 @@ export interface RunDetails {
   killed_by: string | null;
   total_damage_taken: number;
   damage_per_act: { act: string; damage: number }[];
+  elite_count: number;
+  rest_count: number;
+  rest_upgrades: number;
   act_stats: ActStats[];
   card_offers: number;
   cards_picked: number;
@@ -143,7 +151,9 @@ function formatId(raw: string, prefix: string): string {
 
 function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
   const win = data.win === true;
-  const character = formatId(data.players?.[0]?.character ?? 'UNKNOWN', 'CHARACTER');
+  const primaryPlayer = data.players?.[0];
+  const primaryPlayerId = primaryPlayer?.id;
+  const character = formatId(primaryPlayer?.character ?? 'UNKNOWN', 'CHARACTER');
   const ascension = data.ascension ?? 0;
   const acts = (data.acts ?? []).map(a => formatId(a, 'ACT'));
 
@@ -154,10 +164,16 @@ function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
     killedByEvent !== 'NONE.NONE' ? formatId(killedByEvent, 'EVENT') :
     null;
 
+  const isPrimary = (ps: PlayerStats) =>
+    primaryPlayerId == null || ps.player_id == null || ps.player_id === primaryPlayerId;
+
   let totalDamage = 0;
   let cardOffers = 0;
   let cardsPicked = 0;
   let floorReached = 0;
+  let totalElites = 0;
+  let totalRests = 0;
+  let totalRestUpgrades = 0;
   const damagePerAct: { act: string; damage: number }[] = [];
   const actStats: ActStats[] = [];
 
@@ -171,6 +187,7 @@ function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
     let eliteCount = 0;
     let eliteDamage = 0;
     let restCount = 0;
+    let restUpgrades = 0;
     let actFloors = 0;
 
     for (const point of act) {
@@ -178,9 +195,10 @@ function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
       actFloors++;
       const type = point.map_point_type ?? '';
       const isElite = type === 'elite';
-      const isRest = type === 'rest';
+      const isRest = type === 'rest_site' || type === 'rest';
 
       for (const ps of point.player_stats ?? []) {
+        if (!isPrimary(ps)) continue;
         const dmg = ps.damage_taken ?? 0;
         actDamage += dmg;
         if (isElite) eliteDamage += dmg;
@@ -189,11 +207,30 @@ function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
           if (cc.was_picked) cardsPicked++;
         }
       }
+
+      // Count rest outcomes once per rest site (primary player only)
+      if (isRest) {
+        const choices = new Set<string>();
+        let smithUpgrades = 0;
+        for (const ps of point.player_stats ?? []) {
+          if (!isPrimary(ps)) continue;
+          for (const c of ps.rest_site_choices ?? []) choices.add(c);
+          if ((ps.rest_site_choices ?? []).includes('SMITH')) {
+            const n = (ps.upgraded_cards ?? []).length;
+            smithUpgrades = Math.max(smithUpgrades, n > 0 ? n : 1);
+          }
+        }
+        // Only the HEAL option counts as "Rest at rest sites"
+        if (choices.has('HEAL')) restCount++;
+        if (choices.has('SMITH')) restUpgrades += smithUpgrades;
+      }
       if (isElite) eliteCount++;
-      if (isRest) restCount++;
     }
 
     totalDamage += actDamage;
+    totalElites += eliteCount;
+    totalRests += restCount;
+    totalRestUpgrades += restUpgrades;
     damagePerAct.push({ act: actLabel, damage: actDamage });
     actStats.push({
       act: actLabel,
@@ -202,6 +239,7 @@ function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
       elite_count: eliteCount,
       elite_damage: eliteDamage,
       rest_count: restCount,
+      rest_upgrades: restUpgrades,
     });
   }
 
@@ -226,6 +264,9 @@ function extractRunDetails(data: RunFile, _filePath: string): RunDetails {
     win, character, ascension, floor_reached: floorReached,
     killed_by, total_damage_taken: totalDamage,
     damage_per_act: damagePerAct,
+    elite_count: totalElites,
+    rest_count: totalRests,
+    rest_upgrades: totalRestUpgrades,
     act_stats: actStats,
     card_offers: cardOffers, cards_picked: cardsPicked,
     final_deck_size: finalDeckSize, final_deck: finalDeck, relics, acts,

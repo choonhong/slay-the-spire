@@ -35,11 +35,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem('token');
 
     if (token) {
-      // Validate existing token
-      axios.get<AuthUser>('/api/auth/me', {
+      // Validate existing token (server may return a refreshed token after DB wipe)
+      axios.get<AuthUser & { token?: string }>('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then(r => setUser(r.data))
+        .then(r => {
+          if (r.data.token) localStorage.setItem('token', r.data.token);
+          setUser({ id: r.data.id, username: r.data.username });
+        })
         .catch(() => {
           // Token invalid — re-init
           localStorage.removeItem('token');

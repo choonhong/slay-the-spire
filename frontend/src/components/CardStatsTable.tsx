@@ -92,7 +92,7 @@ export default function CardStatsTable() {
   const [colorlessOnly, setColorlessOnly] = useState(false);
   const [selectedBuild, setSelectedBuild] = useState('');
   const [minRuns, setMinRuns] = useState(3);
-  const [scope, setScope] = useState<'global' | 'mine'>('global');
+  const [scope, setScope] = useState<'global' | 'mine'>('mine');
 
   const loadData = async () => {
     setLoading(true);

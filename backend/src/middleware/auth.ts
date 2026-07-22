@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { getDb } from '../db';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'sts2-dev-secret-change-in-production';
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
@@ -19,6 +20,26 @@ declare global {
 // Keep AuthRequest as an alias for backward compat with existing imports
 export type AuthRequest = Request;
 
+interface UserRow { id: number; username: string }
+
+/** Resolve JWT identity to a real users row (recreates after DB wipe). */
+export function resolveUser(userId: number, username: string): UserRow | null {
+  if (!username || username.length < 8) return null;
+  const db = getDb();
+
+  let user = db.prepare('SELECT id, username FROM users WHERE id = ?').get(userId) as UserRow | undefined;
+  if (user) return user;
+
+  user = db.prepare('SELECT id, username FROM users WHERE username = ?').get(username) as UserRow | undefined;
+  if (user) return user;
+
+  // DB was wiped (or user row lost) but JWT still has the clientId as username
+  const result = db.prepare(
+    'INSERT INTO users (username, password_hash) VALUES (?, ?)'
+  ).run(username, '');
+  return { id: Number(result.lastInsertRowid), username };
+}
+
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction): void {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
@@ -29,8 +50,13 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   const token = header.slice(7);
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { userId: number; username: string };
-    req.userId = payload.userId;
-    req.username = payload.username;
+    const user = resolveUser(payload.userId, payload.username);
+    if (!user) {
+      res.status(401).json({ error: 'Invalid or expired token' });
+      return;
+    }
+    req.userId = user.id;
+    req.username = user.username;
     next();
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' });

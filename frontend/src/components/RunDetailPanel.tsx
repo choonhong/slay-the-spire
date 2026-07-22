@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchRunDetails, fetchCardText, type RunDetails, type CardText } from '../api';
-import { formatCardId } from '../utils';
 import { CardNameCell } from './CardNameCell';
 
 const RARITY_COLOR: Record<string, string> = {
@@ -19,22 +18,22 @@ interface Props {
 export default function RunDetailPanel({ runId }: Props) {
   const [details, setDetails] = useState<RunDetails | null>(null);
   const [cardTextMap, setCardTextMap] = useState<Map<string, CardText>>(new Map());
-  const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Load details once on first render of the panel
-  if (!loaded && !loading) {
+  useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    setLoaded(true);
-    Promise.all([
-      fetchRunDetails(runId),
-      fetchCardText(),
-    ]).then(([d, cardTexts]) => {
-      setDetails(d);
-      setCardTextMap(new Map(cardTexts.map(c => [c.id, c])));
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }
+    setDetails(null);
+    Promise.all([fetchRunDetails(runId), fetchCardText()])
+      .then(([d, cardTexts]) => {
+        if (cancelled) return;
+        setDetails(d);
+        setCardTextMap(new Map(cardTexts.map(c => [c.id, c])));
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [runId]);
 
   if (loading) {
     return (
@@ -44,27 +43,14 @@ export default function RunDetailPanel({ runId }: Props) {
 
   if (!details) return null;
 
-  const pickRate = details.card_offers > 0
-    ? Math.round((details.cards_picked / details.card_offers) * 100)
-    : 0;
-
   return (
     <div className="px-4 pb-4 pt-1 space-y-4 border-t border-gray-800/60">
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
-        <Stat label="Floor reached" value={String(details.floor_reached)} />
-        <Stat label="Final deck" value={`${details.final_deck_size} cards`} />
-        <Stat
-          label="Total damage taken"
-          value={String(details.total_damage_taken)}
-          sub={details.damage_per_act.map((a, i) => `Act ${i + 1}: ${a.damage}`).join(' / ')}
-        />
-      </div>
-
       {/* Relics */}
       {details.relics.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Relics</p>
+        <div className="mt-2">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+            Relics <span className="text-gray-600 font-normal normal-case">({details.relics.length})</span>
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {details.relics.map((r, i) => (
               <span key={i} className="px-2 py-0.5 bg-gray-800 border border-gray-700 rounded text-xs text-gray-300">
@@ -134,12 +120,33 @@ export default function RunDetailPanel({ runId }: Props) {
         );
       })()}
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Stat
+          label="Total damage taken"
+          value={String(details.total_damage_taken)}
+          sub={details.damage_per_act.map((a, i) => `Act ${i + 1}: ${a.damage}`).join(' / ')}
+        />
+        <Stat
+          label="Elites"
+          value={String(details.elite_count ?? 0)}
+          sub={(details.act_stats ?? []).map((a, i) => `Act ${i + 1}: ${a.elite_count}`).join(' / ')}
+        />
+        <Stat
+          label="Heal at rest sites"
+          value={String(details.rest_count ?? 0)}
+          sub={(details.act_stats ?? []).map((a, i) => `Act ${i + 1}: ${a.rest_count}`).join(' / ')}
+        />
+        <Stat
+          label="Upgrade at rest site"
+          value={String(details.rest_upgrades ?? 0)}
+          sub={(details.act_stats ?? []).map((a, i) => `Act ${i + 1}: ${a.rest_upgrades ?? 0}`).join(' / ')}
+        />
+      </div>
 
-      {/* Patch version (hidden here) */}
+      {/* Patch version */}
       {details.build_id && (
         <p className="text-xs text-gray-600 font-mono">Patch: {details.build_id}</p>
       )}
-
     </div>
   );
 }

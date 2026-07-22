@@ -138,6 +138,7 @@ export interface ActStats {
   elite_count: number;
   elite_damage: number;
   rest_count: number;
+  rest_upgrades: number;
 }
 
 export interface RunDetails {
@@ -148,6 +149,9 @@ export interface RunDetails {
   killed_by: string | null;
   total_damage_taken: number;
   damage_per_act: { act: string; damage: number }[];
+  elite_count: number;
+  rest_count: number;
+  rest_upgrades: number;
   act_stats: ActStats[];
   card_offers: number;
   cards_picked: number;
@@ -214,7 +218,7 @@ export async function fetchRunDetails(id: number): Promise<RunDetails> {
 
 export async function uploadRuns(
   files: Array<{ filename: string; content: string }>
-): Promise<{ added: number; skipped: number; errors: string[] }> {
+): Promise<{ added: number; skipped: number; failed?: number; errors: string[] }> {
   const { data } = await api.post('/upload/runs', files);
   return data;
 }

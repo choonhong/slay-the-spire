@@ -15,28 +15,32 @@ router.post('/runs', (req: AuthRequest, res: Response) => {
 
   let added = 0;
   let skipped = 0;
+  let failed = 0;
   const errors: string[] = [];
 
   for (const file of files) {
-    if (!file.filename || !file.content) { skipped++; continue; }
+    if (!file.filename || !file.content) {
+      failed++;
+      errors.push(`${file.filename || '(unknown)'}: empty content`);
+      continue;
+    }
     // Use filename as the unique file_path key per user
     const filePath = `user:${req.userId}:${file.filename}`;
     try {
-      // Check if already stored (by looking at raw content hash via file_path key)
       const db = getDb();
       const existing = db.prepare('SELECT id FROM runs WHERE user_id = ? AND file_path = ?').get(req.userId!, filePath);
       if (existing) { skipped++; continue; }
 
       const result = parseRunJson(file.content, filePath, req.userId!);
       if (result) added++;
-      else { skipped++; errors.push(file.filename); }
+      else { failed++; errors.push(file.filename); }
     } catch (err) {
-      skipped++;
+      failed++;
       errors.push(`${file.filename}: ${String(err)}`);
     }
   }
 
-  res.json({ added, skipped, errors });
+  res.json({ added, skipped, failed, errors });
 });
 
 export default router;

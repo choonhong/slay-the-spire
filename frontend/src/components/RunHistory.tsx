@@ -17,7 +17,15 @@ function formatRunDate(run: RunRow): string {
 function formatActs(actsJson: string): string {
   try {
     const acts: string[] = JSON.parse(actsJson);
-    return acts.map(a => a.replace(/^ACT\./, '')).join(' → ');
+    return acts
+      .map(a =>
+        a
+          .replace(/^ACT\./, '')
+          .split('_')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(' ')
+      )
+      .join(' → ');
   } catch {
     return actsJson;
   }
@@ -59,7 +67,7 @@ export default function RunHistory() {
   const [page, setPage] = useState(0);
   const [selectedChar, setSelectedChar] = useState('');
   const [selectedBuild, setSelectedBuild] = useState('');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
   const load = async () => {
     setLoading(true);
@@ -91,7 +99,12 @@ export default function RunHistory() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  const toggle = (id: number) => setExpandedId(prev => prev === id ? null : id);
+  const toggle = (id: number) => setExpandedIds(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
 
   return (
     <div className="space-y-5">
@@ -170,11 +183,7 @@ export default function RunHistory() {
           {runs.map(run => (
             <div
               key={run.id}
-              className={`rounded-lg border transition-colors ${
-                run.win
-                  ? 'bg-green-950/20 border-green-900/40'
-                  : 'bg-gray-900/40 border-gray-800'
-              }`}
+              className="rounded-lg border border-gray-800 bg-gray-900/40 transition-colors"
             >
               {/* Row */}
               <button
@@ -212,13 +221,13 @@ export default function RunHistory() {
                 </span>
 
                 {/* Chevron */}
-                <span className={`text-gray-600 text-xs transition-transform shrink-0 ${expandedId === run.id ? 'rotate-180' : ''}`}>
+                <span className={`text-gray-600 text-xs transition-transform shrink-0 ${expandedIds.has(run.id) ? 'rotate-180' : ''}`}>
                   ▼
                 </span>
               </button>
 
               {/* Detail panel */}
-              {expandedId === run.id && (
+              {expandedIds.has(run.id) && (
                 <RunDetailPanel runId={run.id} />
               )}
             </div>

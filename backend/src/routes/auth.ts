@@ -33,9 +33,11 @@ router.post('/init', (req: Request, res: Response) => {
   res.json({ token, user: { id: user.id, username: user.username } });
 });
 
-// GET /api/auth/me
+// GET /api/auth/me — returns the DB user (recreates row if DB was wiped)
 router.get('/me', requireAuth, (req: AuthRequest, res: Response) => {
-  res.json({ id: req.userId, username: req.username });
+  // If JWT userId was stale after a wipe, issue a fresh token with the real id
+  const token = signToken(req.userId!, req.username!);
+  res.json({ id: req.userId, username: req.username, token });
 });
 
 export default router;

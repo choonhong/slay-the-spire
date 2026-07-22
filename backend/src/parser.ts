@@ -16,6 +16,7 @@ interface GainedCardEntry {
 }
 
 interface PlayerStats {
+  player_id?: number;
   card_choices?: CardEntry[];
   ancient_choice?: AncientChoiceEntry[];
   cards_gained?: GainedCardEntry[];
@@ -44,7 +45,7 @@ interface RunFile {
   run_time?: number;
   killed_by_encounter?: string;
   killed_by_event?: string;
-  players?: Array<{ character?: string; deck?: Array<{ id: string; current_upgrade_level?: number }> }>;
+  players?: Array<{ id?: number; character?: string; deck?: Array<{ id: string; current_upgrade_level?: number }> }>;
   map_point_history?: MapPoint[][];
 }
 
@@ -97,7 +98,9 @@ export function parseRunJson(raw: string, filePath: string, userId: number): Par
     return null;
   }
 
-  const character = data.players?.[0]?.character ?? 'UNKNOWN';
+  const primaryPlayer = data.players?.[0];
+  const character = primaryPlayer?.character ?? 'UNKNOWN';
+  const primaryPlayerId = primaryPlayer?.id;
   const win = data.win === true;
   const ascension = data.ascension ?? 0;
   const gameMode = data.game_mode ?? 'standard';
@@ -119,6 +122,11 @@ export function parseRunJson(raw: string, filePath: string, userId: number): Par
       const roomModelId = point.rooms?.[0]?.model_id ?? '';
 
       for (const ps of point.player_stats ?? []) {
+        // Multiplayer runs include every player's stats — only keep the primary player
+        if (primaryPlayerId != null && ps.player_id != null && ps.player_id !== primaryPlayerId) {
+          continue;
+        }
+
         if (ps.card_choices && ps.card_choices.length > 0) {
           offerEvents.push(ps.card_choices);
         }
