@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs';
-import http from 'http';
 import { getDb, getRuns, getRunCount } from '../db';
+import { type AuthRequest } from '../middleware/auth';
 
-type RunRecord = { file_path: string; win: number; character: string; ascension: number; raw_json: string | null };
+type RunRecord = { file_path: string; win: number; character: string; ascension: number; raw_json: string | null; user_id: number };
 
 const router = Router();
 
@@ -11,16 +11,18 @@ const router = Router();
 
 router.get('/', (req: Request, res: Response) => {
   const db = getDb();
-  const { character, buildId, limit, offset } = req.query;
+  const { character, buildId, limit, offset, scope } = req.query;
 
-  const filters: { character?: string; buildId?: string; limit?: number; offset?: number } = {};
+  const filters: { character?: string; buildId?: string; limit?: number; offset?: number; userId?: number } = {};
+  // Default scope is mine — users see their own runs
+  if (scope !== 'global') filters.userId = req.userId;
   if (typeof character === 'string' && character) filters.character = character;
   if (typeof buildId === 'string' && buildId) filters.buildId = buildId;
   if (typeof limit === 'string') filters.limit = parseInt(limit, 10);
   if (typeof offset === 'string') filters.offset = parseInt(offset, 10);
 
   const runs = getRuns(db, filters);
-  const total = getRunCount(db, { character: filters.character, buildId: filters.buildId });
+  const total = getRunCount(db, { character: filters.character, buildId: filters.buildId, userId: filters.userId });
 
   res.json({ runs, total });
 });
@@ -29,7 +31,7 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/:id/details', (req: Request, res: Response) => {
   const db = getDb();
-  const runRow = db.prepare('SELECT * FROM runs WHERE id = ?').get(req.params.id) as RunRecord | undefined;
+  const runRow = db.prepare('SELECT * FROM runs WHERE id = ? AND user_id = ?').get(req.params.id, req.userId!) as RunRecord | undefined;
 
   if (!runRow) {
     res.status(404).json({ error: 'Run not found' });
@@ -44,33 +46,6 @@ router.get('/:id/details', (req: Request, res: Response) => {
 
   const data = JSON.parse(raw) as RunFile;
   res.json(extractRunDetails(data, runRow.file_path));
-});
-
-// ── AI insight via Ollama ──────────────────────────────────────────────────
-
-router.post('/:id/ai-insight', (req: Request, res: Response) => {
-  const db = getDb();
-  const runRow = db.prepare('SELECT * FROM runs WHERE id = ?').get(req.params.id) as RunRecord | undefined;
-
-  if (!runRow) {
-    res.status(404).json({ error: 'Run not found' });
-    return;
-  }
-
-  const raw = getRawJson(runRow);
-  if (!raw) {
-    res.status(500).json({ error: 'Could not read run data' });
-    return;
-  }
-
-  const data = JSON.parse(raw) as RunFile;
-  const details = extractRunDetails(data, runRow.file_path);
-  const model: string = typeof req.body?.model === 'string' ? req.body.model : 'llama3';
-  const prompt = buildPrompt(details);
-
-  callOllama(model, prompt)
-    .then(insight => res.json({ insight }))
-    .catch(err => res.status(503).json({ error: String(err) }));
 });
 
 export default router;
@@ -305,53 +280,3 @@ function buildInsights(p: {
   return list;
 }
 
-// ── Ollama ─────────────────────────────────────────────────────────────────
-
-function buildPrompt(d: RunDetails): string {
-  const outcome = d.win
-    ? `WIN on floor ${d.floor_reached}`
-    : `LOSS on floor ${d.floor_reached}${d.killed_by ? ` (killed by ${d.killed_by})` : ''}`;
-
-  const lastAct = d.act_stats[d.act_stats.length - 1];
-  const lastActSummary = lastAct
-    ? `${lastAct.act}: ${lastAct.damage} dmg (${Math.round(lastAct.damage / Math.max(lastAct.floors, 1))}/floor), ` +
-      `${lastAct.elite_count} elites (${lastAct.elite_damage} dmg), ${lastAct.rest_count} rest sites`
-    : 'n/a';
-
-  return `You are a concise Slay the Spire 2 coach. Give exactly 3 bullet points of specific, actionable advice for this run. Be direct, no fluff.
-
-Run summary:
-- Character: ${d.character} | Ascension ${d.ascension} | ${outcome}
-- Acts: ${d.acts.join(' → ')}
-- Total damage: ${d.total_damage_taken} | Last act: ${lastActSummary}
-- Final deck: ${d.final_deck_size} cards
-- Relics: ${d.relics.slice(0, 6).join(', ') || 'none'}
-
-${d.win ? 'Focus on what went well and how to push further.' : 'Focus on why they died and what to do differently next time.'}`;
-}
-
-function callOllama(model: string, prompt: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({ model, prompt, stream: false });
-    const req = http.request(
-      { hostname: 'localhost', port: 11434, path: '/api/generate', method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } },
-      res => {
-        let data = '';
-        res.on('data', chunk => { data += chunk; });
-        res.on('end', () => {
-          try {
-            const json = JSON.parse(data) as { response?: string; error?: string };
-            if (json.error) reject(new Error(json.error));
-            else resolve(json.response ?? '');
-          } catch {
-            reject(new Error('Invalid response from Ollama'));
-          }
-        });
-      }
-    );
-    req.on('error', err => reject(new Error(`Ollama not reachable: ${err.message}. Run: ollama serve`)));
-    req.write(body);
-    req.end();
-  });
-}

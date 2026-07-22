@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { fetchCardText, fetchRecommendations, fetchCurrentRun, type CardText, type CardScore } from '../api';
+import { fetchCardText, fetchRecommendations, fetchCurrentRun, pushCurrentRun, type CardText, type CardScore } from '../api';
+import { findCurrentRunSave, loadFolderHandle } from './Settings';
 import { CardNameCell } from './CardNameCell';
 import { formatCharacter, formatRelicId, formatEncounterId } from '../utils';
+import PageHeader from './PageHeader';
 
 // ─── Search helpers ───────────────────────────────────────────────────────────
 /** 0 = exact · 1 = name starts-with · 2 = word starts-with · 3 = contains */
@@ -32,12 +34,12 @@ const CHARACTERS = [
 ];
 
 const CHARACTER_COLOR: Record<string, string> = {
-  IRONCLAD:    'text-red-400',
-  SILENT:      'text-green-400',
-  DEFECT:      'text-blue-400',
-  WATCHER:     'text-purple-400',
-  NECROBINDER: 'text-pink-400',
-  REGENT:      'text-yellow-400',
+  IRONCLAD:    'text-gray-200',
+  SILENT:      'text-gray-200',
+  DEFECT:      'text-gray-200',
+  WATCHER:     'text-gray-200',
+  NECROBINDER: 'text-gray-200',
+  REGENT:      'text-gray-200',
 };
 
 const SCORE_COLORS: Record<CardScore['recommendation'], { ring: string; badge: string; label: string }> = {
@@ -369,6 +371,13 @@ export default function Advisor() {
   async function syncFromSave(silent = false) {
     setSyncing(true);
     try {
+      // Try to push current_run.save from connected folder first
+      const folderHandle = await loadFolderHandle().catch(() => null);
+      if (folderHandle) {
+        const text = await findCurrentRunSave(folderHandle).catch(() => null);
+        if (text) await pushCurrentRun(text).catch(() => {});
+      }
+
       const run = await fetchCurrentRun();
       if (run.floor > 0) setFloor(run.floor);
       if (run.currentBoss) setCurrentBoss(run.currentBoss);
@@ -389,7 +398,7 @@ export default function Advisor() {
       }
       if (!silent) setSetupCollapsed(false);
     } catch {
-      if (!silent) setError('No active run found — start a run in-game first.');
+      if (!silent) setError('No active run found — connect your save folder in Settings first.');
     } finally {
       setSyncing(false);
     }
@@ -402,6 +411,11 @@ export default function Advisor() {
     try {
       // Auto-sync floor from save before scoring
       try {
+        const folderHandle = await loadFolderHandle().catch(() => null);
+        if (folderHandle) {
+          const text = await findCurrentRunSave(folderHandle).catch(() => null);
+          if (text) await pushCurrentRun(text).catch(() => {});
+        }
         const run = await fetchCurrentRun();
         if (run.floor > 0) setFloor(run.floor);
       } catch { /* ignore if no active run */ }
@@ -462,15 +476,13 @@ export default function Advisor() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold text-gray-100">Card Advisor</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Set your character, current floor, deck, and the 3 cards being offered — get a scored recommendation.
-        </p>
-      </div>
+    <div className="space-y-5 max-w-4xl mx-auto">
+      <PageHeader
+        title="Advisor"
+        subtitle="Set your character, current floor, deck, and the 3 cards being offered — get a scored recommendation."
+        onRefresh={() => syncFromSave(false)}
+        refreshLabel={syncing ? 'Syncing…' : 'Sync'}
+      />
 
       {/* ── Setup section (collapsible) ── */}
       {setupCollapsed ? (
@@ -483,7 +495,7 @@ export default function Advisor() {
             {currentBoss && (
               <>
                 <span className="text-gray-400">·</span>
-                <span className="text-yellow-400 font-medium">⚔ {formatEncounterId(currentBoss)}</span>
+                <span className="text-yellow-400 font-medium">{formatEncounterId(currentBoss)}</span>
               </>
             )}
             <span className="text-gray-400">·</span>
@@ -553,18 +565,6 @@ export default function Advisor() {
               </div>
             </div>
 
-            {/* Sync from save */}
-            <div className="space-y-1">
-              <label className="text-xs text-gray-500 uppercase tracking-wide opacity-0 select-none">Sync</label>
-              <button
-                onClick={() => syncFromSave(false)}
-                disabled={syncing}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:border-gray-500 disabled:opacity-40 transition-colors"
-              >
-                <span>{syncing ? '⟳' : '⇣'}</span>
-                {syncing ? 'Syncing…' : 'Sync'}
-              </button>
-            </div>
           </div>
 
           {/* ── Deck builder ── */}
@@ -690,7 +690,7 @@ export default function Advisor() {
           disabled={!canScore || scoring}
           className="px-5 py-2.5 bg-spire-600 hover:bg-spire-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
         >
-          {scoring ? 'Scoring…' : '⚔ Get Recommendation'}
+          {scoring ? 'Scoring…' : 'Get Recommendation'}
         </button>
         {scores && (
           <button
@@ -717,7 +717,7 @@ export default function Advisor() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Recommendation</h3>
-            <span className="text-xs text-gray-600">Floor {floor} · Act {act}{currentBoss ? ` · ⚔ ${formatEncounterId(currentBoss)}` : ''} · {deck.length} cards in deck</span>
+            <span className="text-xs text-gray-600">Floor {floor} · Act {act}{currentBoss ? ` · ${formatEncounterId(currentBoss)}` : ''} · {deck.length} cards in deck</span>
           </div>
           <div className={`grid gap-4 ${scores.length === 1 ? 'grid-cols-1 max-w-xs' : scores.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {scores.map((s, i) => (

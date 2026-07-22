@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fetchRunDetails, fetchAiInsight, fetchCardText, type RunDetails, type CardText } from '../api';
+import { fetchRunDetails, fetchCardText, type RunDetails, type CardText } from '../api';
 import { formatCardId } from '../utils';
 import { CardNameCell } from './CardNameCell';
 
@@ -20,9 +20,6 @@ export default function RunDetailPanel({ runId }: Props) {
   const [details, setDetails] = useState<RunDetails | null>(null);
   const [cardTextMap, setCardTextMap] = useState<Map<string, CardText>>(new Map());
   const [loading, setLoading] = useState(false);
-  const [aiInsight, setAiInsight] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   // Load details once on first render of the panel
@@ -38,19 +35,6 @@ export default function RunDetailPanel({ runId }: Props) {
       setLoading(false);
     }).catch(() => setLoading(false));
   }
-
-  const handleAiInsight = async () => {
-    setAiLoading(true);
-    setAiError(null);
-    try {
-      const insight = await fetchAiInsight(runId);
-      setAiInsight(insight);
-    } catch {
-      setAiError('Could not reach Ollama. Make sure it is running: ollama serve');
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -156,44 +140,6 @@ export default function RunDetailPanel({ runId }: Props) {
         <p className="text-xs text-gray-600 font-mono">Patch: {details.build_id}</p>
       )}
 
-      {/* AI Insight */}
-      <div className="border-t border-gray-800/60 pt-3">
-        {aiInsight ? (
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">AI Coach</p>
-            <div className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">
-              {aiInsight}
-            </div>
-            <button
-              onClick={() => setAiInsight(null)}
-              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              Clear
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleAiInsight}
-              disabled={aiLoading}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 border border-gray-700 hover:bg-gray-700 disabled:opacity-50 rounded-md text-sm text-gray-300 transition-colors"
-            >
-              {aiLoading ? (
-                <>
-                  <span className="inline-block w-3 h-3 border-2 border-gray-500 border-t-gray-200 rounded-full animate-spin" />
-                  Thinking...
-                </>
-              ) : (
-                <>✨ AI Coach</>
-              )}
-            </button>
-            {aiError && <p className="text-xs text-red-400">{aiError}</p>}
-            {!aiError && (
-              <p className="text-xs text-gray-600">Requires <code>ollama serve</code></p>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

@@ -1,0 +1,7 @@
+node_modules
+*/node_modules
+frontend/dist
+backend/dist
+data/sts2.db
+.git
+*.md

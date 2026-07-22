@@ -2,18 +2,16 @@ import { useEffect, useState, useMemo } from 'react';
 import { fetchSynergies, fetchCharacters, fetchBuilds, fetchCardText, type SynergyPair, type CardText } from '../api';
 import { formatCharacter } from '../utils';
 import { CardNameCell } from './CardNameCell';
+import PageHeader from './PageHeader';
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
 const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-red-950/40',    border: 'border-red-800/60',    text: 'text-red-300',    activeBg: 'bg-red-800' },
-  SILENT:      { bg: 'bg-green-950/40',  border: 'border-green-800/60',  text: 'text-green-300',  activeBg: 'bg-green-800' },
-  NECROBINDER: { bg: 'bg-pink-950/40',   border: 'border-pink-800/60',   text: 'text-pink-300',   activeBg: 'bg-pink-800' },
-  REGENT:      { bg: 'bg-yellow-950/40', border: 'border-yellow-800/60', text: 'text-yellow-300', activeBg: 'bg-yellow-800' },
-  DEFECT:      { bg: 'bg-blue-950/40',   border: 'border-blue-800/60',   text: 'text-blue-300',   activeBg: 'bg-blue-800' },
-  WATCHER:     { bg: 'bg-purple-950/40', border: 'border-purple-800/60', text: 'text-purple-300', activeBg: 'bg-purple-800' },
-};
-const CHARACTER_ICON: Record<string, string> = {
-  IRONCLAD: '🗡️', SILENT: '🗡️', DEFECT: '🤖', WATCHER: '👁️', NECROBINDER: '💀', REGENT: '👑',
+  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
 };
 
 function LiftBadge({ value }: { value: number }) {
@@ -35,7 +33,7 @@ function WinBar({ value }: { value: number }) {
   );
 }
 
-export default function Synergies() {
+export default function Synergies({ active = true }: { active?: boolean }) {
   const [pairs, setPairs] = useState<SynergyPair[]>([]);
   const [characters, setCharacters] = useState<string[]>([]);
   const [builds, setBuilds] = useState<string[]>([]);
@@ -74,7 +72,11 @@ export default function Synergies() {
     }
   };
 
-  useEffect(() => { load(); }, [selectedChar, selectedBuild, minRuns]);
+  // Refetch when filters change, and whenever the tab becomes visible again
+  // (keeps search state, but picks up newly synced runs)
+  useEffect(() => {
+    if (active) load();
+  }, [active, selectedChar, selectedBuild, minRuns]);
 
   const cardName = (id: string) =>
     (cardTextMap.get(id)?.name ?? id.replace(/^CARD\./, '').replace(/_/g, ' ')).toLowerCase();
@@ -93,13 +95,12 @@ export default function Synergies() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div>
-        <h2 className="text-base font-semibold text-gray-100">Card Synergies</h2>
-        <p className="text-xs text-gray-500 mt-0.5">
-          Pairs of cards that appear together in winning runs. Lift = win rate together minus average individual win rate.
-        </p>
-      </div>
+      <PageHeader
+        title="Synergies"
+        subtitle="Pairs of cards that appear together in winning runs. Lift = win rate together minus average individual win rate."
+        countLabel={!loading ? `${sorted.length} pairs` : undefined}
+        onRefresh={load}
+      />
 
       {/* Character filter */}
       <div className="flex flex-wrap gap-2">
@@ -107,8 +108,8 @@ export default function Synergies() {
           onClick={() => setSelectedChar('')}
           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
             !selectedChar
-              ? 'bg-gray-600 border-gray-500 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
+              ? 'bg-spire-600 border-gray-700 text-white'
+              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
           }`}
         >
           All
@@ -121,7 +122,7 @@ export default function Synergies() {
           const key = c.replace(/^CHARACTER\./, '');
           const style = CHARACTER_STYLE[key] ?? {
             bg: 'bg-gray-900/40', border: 'border-gray-700',
-            text: 'text-gray-300', activeBg: 'bg-gray-700',
+            text: 'text-gray-300', activeBg: 'bg-spire-600',
           };
           const isActive = selectedChar === c;
           return (
@@ -130,11 +131,10 @@ export default function Synergies() {
               onClick={() => setSelectedChar(isActive ? '' : c)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                 isActive
-                  ? `${style.activeBg} border-transparent text-white shadow-lg`
+                  ? `${style.activeBg} ${style.border} text-white`
                   : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
               }`}
             >
-              <span>{CHARACTER_ICON[key] ?? '⚔️'}</span>
               {formatCharacter(c)}
             </button>
           );
@@ -180,15 +180,6 @@ export default function Synergies() {
             <option value="runs">Most Runs Together</option>
           </select>
         </div>
-        <button
-          onClick={load}
-          className="ml-auto px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors"
-        >
-          Refresh
-        </button>
-        {!loading && (
-          <span className="text-xs text-gray-500">{sorted.length} pairs</span>
-        )}
       </div>
 
       {error && (

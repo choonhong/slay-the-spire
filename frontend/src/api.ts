@@ -2,6 +2,22 @@ import axios from 'axios';
 
 const api = axios.create({ baseURL: '/api' });
 
+// Attach JWT to every request if present
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+
+export interface AuthUser { id: number; username: string }
+
+export async function fetchMe(): Promise<AuthUser> {
+  const { data } = await api.get<AuthUser>('/auth/me');
+  return data;
+}
+
 export interface CardStat {
   card_id: string;
   runs_with_card: number;
@@ -21,13 +37,10 @@ export interface RunRow {
   build_id: string | null;
   floor_reached: number;
   killed_by: string | null;
+  start_time: number | null;
   parsed_at: string;
 }
 
-export interface AppConfig {
-  savesPath?: string;
-  resolvedSavesPath: string;
-}
 
 export async function fetchCardStats(filters: {
   character?: string;
@@ -36,6 +49,7 @@ export async function fetchCardStats(filters: {
   buildId?: string;
   colorless?: boolean;
   weighted?: boolean;
+  scope?: 'global' | 'mine';
 } = {}): Promise<CardStat[]> {
   const params = new URLSearchParams();
   if (filters.character) params.set('character', filters.character);
@@ -44,6 +58,7 @@ export async function fetchCardStats(filters: {
   if (filters.buildId) params.set('buildId', filters.buildId);
   if (filters.colorless) params.set('colorless', 'true');
   if (filters.weighted) params.set('weighted', 'true');
+  if (filters.scope) params.set('scope', filters.scope);
   const { data } = await api.get<CardStat[]>(`/stats/cards?${params}`);
   return data;
 }
@@ -104,12 +119,14 @@ export async function fetchRuns(filters: {
   buildId?: string;
   limit?: number;
   offset?: number;
+  scope?: 'global' | 'mine';
 } = {}): Promise<{ runs: RunRow[]; total: number }> {
   const params = new URLSearchParams();
   if (filters.character) params.set('character', filters.character);
   if (filters.buildId) params.set('buildId', filters.buildId);
   if (filters.limit !== undefined) params.set('limit', String(filters.limit));
   if (filters.offset !== undefined) params.set('offset', String(filters.offset));
+  if (filters.scope) params.set('scope', filters.scope);
   const { data } = await api.get<{ runs: RunRow[]; total: number }>(`/runs?${params}`);
   return data;
 }
@@ -154,10 +171,12 @@ export interface AncientStat {
 export async function fetchAncients(filters: {
   character?: string;
   buildId?: string;
+  scope?: 'global' | 'mine';
 } = {}): Promise<AncientStat[]> {
   const params = new URLSearchParams();
   if (filters.character) params.set('character', filters.character);
   if (filters.buildId) params.set('buildId', filters.buildId);
+  if (filters.scope) params.set('scope', filters.scope);
   const { data } = await api.get<AncientStat[]>(`/ancients?${params}`);
   return data;
 }
@@ -177,11 +196,13 @@ export async function fetchSynergies(filters: {
   character?: string;
   buildId?: string;
   minRuns?: number;
+  scope?: 'global' | 'mine';
 } = {}): Promise<SynergyPair[]> {
   const params = new URLSearchParams();
   if (filters.character) params.set('character', filters.character);
   if (filters.buildId) params.set('buildId', filters.buildId);
   if (filters.minRuns !== undefined) params.set('minRuns', String(filters.minRuns));
+  if (filters.scope) params.set('scope', filters.scope);
   const { data } = await api.get<SynergyPair[]>(`/synergies?${params}`);
   return data;
 }
@@ -191,19 +212,15 @@ export async function fetchRunDetails(id: number): Promise<RunDetails> {
   return data;
 }
 
-export async function fetchAiInsight(id: number, model = 'llama3'): Promise<string> {
-  const { data } = await api.post<{ insight: string }>(`/runs/${id}/ai-insight`, { model });
-  return data.insight;
-}
-
-export async function fetchConfig(): Promise<AppConfig> {
-  const { data } = await api.get<AppConfig>('/config');
+export async function uploadRuns(
+  files: Array<{ filename: string; content: string }>
+): Promise<{ added: number; skipped: number; errors: string[] }> {
+  const { data } = await api.post('/upload/runs', files);
   return data;
 }
 
-export async function saveConfig(savesPath: string): Promise<AppConfig> {
-  const { data } = await api.post<AppConfig>('/config', { savesPath });
-  return data;
+export async function pushCurrentRun(text: string): Promise<void> {
+  await api.post('/current-run/push', { text });
 }
 
 export interface ScoreFactors {

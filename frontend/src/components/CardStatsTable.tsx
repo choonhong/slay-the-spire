@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { CardNameCell } from './CardNameCell';
+import PageHeader from './PageHeader';
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,24 +17,15 @@ type CardRow = CardStat & { community_score: number; community_tier: string };
 const col = createColumnHelper<CardRow>();
 
 const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-red-950/40',    border: 'border-red-800/60',    text: 'text-red-300',    activeBg: 'bg-red-800' },
-  SILENT:      { bg: 'bg-green-950/40',  border: 'border-green-800/60',  text: 'text-green-300',  activeBg: 'bg-green-800' },
-  DEFECT:      { bg: 'bg-blue-950/40',   border: 'border-blue-800/60',   text: 'text-blue-300',   activeBg: 'bg-blue-800' },
-  WATCHER:     { bg: 'bg-purple-950/40', border: 'border-purple-800/60', text: 'text-purple-300', activeBg: 'bg-purple-800' },
-  NECROBINDER: { bg: 'bg-pink-950/40', border: 'border-pink-800/60', text: 'text-pink-300', activeBg: 'bg-pink-800' },
-  REGENT:      { bg: 'bg-yellow-950/40', border: 'border-yellow-800/60', text: 'text-yellow-300', activeBg: 'bg-yellow-800' },
+  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
 };
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
-
-const CHARACTER_ICON: Record<string, string> = {
-  IRONCLAD:    '🗡️',
-  SILENT:      '🗡️',
-  DEFECT:      '🤖',
-  WATCHER:     '👁️',
-  NECROBINDER: '💀',
-  REGENT:      '👑',
-};
 
 function WinRateBadge({ value }: { value: number }) {
   const color =
@@ -100,6 +92,7 @@ export default function CardStatsTable() {
   const [colorlessOnly, setColorlessOnly] = useState(false);
   const [selectedBuild, setSelectedBuild] = useState('');
   const [minRuns, setMinRuns] = useState(3);
+  const [scope, setScope] = useState<'global' | 'mine'>('global');
 
   const loadData = async () => {
     setLoading(true);
@@ -109,11 +102,13 @@ export default function CardStatsTable() {
         fetchCardStats({
           character: selectedChar || undefined,
           buildId: selectedBuild || undefined,
+          scope,
         }),
         fetchCardStats({
           character: selectedChar || undefined,
           buildId: selectedBuild || undefined,
           weighted: true,
+          scope,
         }),
         fetchCharacters(),
         fetchBuilds(),
@@ -140,7 +135,7 @@ export default function CardStatsTable() {
     }
   };
 
-  useEffect(() => { loadData(); }, [selectedChar, selectedBuild, colorlessOnly]);
+  useEffect(() => { loadData(); }, [selectedChar, selectedBuild, colorlessOnly, scope]);
 
   const filtered = useMemo(
     () => data.filter(d => {
@@ -214,6 +209,11 @@ export default function CardStatsTable() {
 
   return (
     <div className="space-y-5">
+      <PageHeader
+        title="Card Stats"
+        countLabel={!loading ? `${filtered.length} cards` : undefined}
+        onRefresh={loadData}
+      />
 
       {/* Character picker */}
       <div className="flex flex-wrap gap-2">
@@ -221,8 +221,8 @@ export default function CardStatsTable() {
           onClick={() => { setSelectedChar(''); setColorlessOnly(false); }}
           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
             selectedChar === '' && !colorlessOnly
-              ? 'bg-gray-600 border-gray-500 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
+              ? 'bg-spire-600 border-gray-700 text-white'
+              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
           }`}
         >
           All
@@ -235,7 +235,7 @@ export default function CardStatsTable() {
           const key = c.replace(/^CHARACTER\./, '');
           const style = CHARACTER_STYLE[key] ?? {
             bg: 'bg-gray-900/40', border: 'border-gray-700',
-            text: 'text-gray-300', activeBg: 'bg-gray-700',
+            text: 'text-gray-300', activeBg: 'bg-spire-600',
           };
           const isActive = selectedChar === c;
           return (
@@ -244,11 +244,10 @@ export default function CardStatsTable() {
               onClick={() => { setColorlessOnly(false); setSelectedChar(isActive ? '' : c); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                 isActive
-                  ? `${style.activeBg} border-transparent text-white shadow-lg`
+                  ? `${style.activeBg} ${style.border} text-white`
                   : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
               }`}
             >
-              <span>{CHARACTER_ICON[key] ?? '⚔️'}</span>
               {formatCharacter(c)}
             </button>
           );
@@ -260,13 +259,29 @@ export default function CardStatsTable() {
           onClick={() => { setSelectedChar(''); setColorlessOnly(c => !c); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
             colorlessOnly
-              ? 'bg-gray-500 border-transparent text-white shadow-lg'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
+              ? 'bg-spire-600 border-gray-700 text-white'
+              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
           }`}
         >
-          <span>✨</span>
           Colorless
         </button>
+      </div>
+
+{/* Scope toggle */}
+      <div className="flex rounded-lg bg-gray-800/60 p-0.5 w-fit gap-0.5">
+        {(['global', 'mine'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setScope(s)}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              scope === s
+                ? 'bg-spire-600 text-white'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            {s === 'global' ? 'Global Stats' : 'My Stats'}
+          </button>
+        ))}
       </div>
 
 {/* Secondary filters */}
@@ -298,15 +313,6 @@ export default function CardStatsTable() {
             className="w-14 px-2 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-gray-100 focus:outline-none focus:border-spire-500"
           />
         </div>
-        <button
-          onClick={loadData}
-          className="ml-auto px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors"
-        >
-          Refresh
-        </button>
-        {!loading && (
-          <span className="text-xs text-gray-500">{filtered.length} cards</span>
-        )}
       </div>
 
       {/* Error */}

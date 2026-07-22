@@ -1,8 +1,9 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'fs';
 import path from 'path';
 import { getDb } from '../db';
+import { type AuthRequest } from '../middleware/auth';
 
 const DATA_DIR = path.join(__dirname, '../../../data');
 
@@ -29,9 +30,9 @@ export interface SynergyPair {
   synergy_lift: number;
 }
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (req: AuthRequest, res: Response) => {
   const db = getDb();
-  const { character, buildId, minRuns } = req.query;
+  const { character, buildId, minRuns, scope } = req.query;
 
   const STARTER_CARDS = [
     'CARD.STRIKE_IRONCLAD','CARD.STRIKE_SILENT','CARD.STRIKE_DEFECT',
@@ -56,6 +57,10 @@ router.get('/', (req: Request, res: Response) => {
   // Two sets of starter placeholders (for card_a and card_b NOT IN)
   const params: (string | number)[] = [...STARTER_CARDS, ...STARTER_CARDS];
 
+  if (scope === 'mine' && req.userId !== undefined) {
+    conditions.push('r.user_id = ?');
+    params.push(req.userId);
+  }
   if (typeof character === 'string' && character) {
     conditions.push('r.character = ?');
     params.push(character);
@@ -72,9 +77,10 @@ router.get('/', (req: Request, res: Response) => {
     SELECT
       a.card_id                                                        AS card_a,
       b.card_id                                                        AS card_b,
-      COUNT(DISTINCT r.id)                                             AS runs_together,
-      SUM(r.win)                                                       AS wins_together,
-      ROUND(SUM(r.win) * 100.0 / COUNT(DISTINCT r.id), 1)             AS win_rate_together
+      COUNT(DISTINCT r.id)                                                        AS runs_together,
+      COUNT(DISTINCT CASE WHEN r.win = 1 THEN r.id END)                          AS wins_together,
+      ROUND(COUNT(DISTINCT CASE WHEN r.win = 1 THEN r.id END) * 100.0
+            / NULLIF(COUNT(DISTINCT r.id), 0), 1)                                AS win_rate_together
     FROM card_choices a
     JOIN card_choices b ON b.run_id = a.run_id
     JOIN runs r         ON r.id = a.run_id
@@ -88,7 +94,8 @@ router.get('/', (req: Request, res: Response) => {
   }[];
 
   // Fetch individual win rates for lift calculation
-  const individualRates = getIndividualWinRates(db, character as string, buildId as string);
+  const userId = scope === 'mine' ? req.userId : undefined;
+  const individualRates = getIndividualWinRates(db, character as string, buildId as string, userId);
 
   const result: SynergyPair[] = pairs.map(p => {
     const wrA = individualRates.get(p.card_a) ?? 0;
@@ -111,7 +118,8 @@ router.get('/', (req: Request, res: Response) => {
 function getIndividualWinRates(
   db: DatabaseSync,
   character?: string,
-  buildId?: string
+  buildId?: string,
+  userId?: number
 ): Map<string, number> {
   const STARTER_CARDS = [
     'CARD.STRIKE_IRONCLAD','CARD.STRIKE_SILENT','CARD.STRIKE_DEFECT',
@@ -130,6 +138,7 @@ function getIndividualWinRates(
     `cc.card_id NOT IN (${starterPlaceholders})`,
   ];
   const params: (string | number)[] = [...STARTER_CARDS];
+  if (userId !== undefined) { conditions.push('r.user_id = ?'); params.push(userId); }
   if (character) { conditions.push('r.character = ?'); params.push(character); }
   if (buildId)   { conditions.push('r.build_id = ?');  params.push(buildId); }
 

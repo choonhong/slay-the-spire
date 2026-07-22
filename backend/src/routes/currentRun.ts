@@ -1,7 +1,8 @@
-import { Router, Request, Response } from 'express';
-import fs from 'fs';
-import path from 'path';
-import { getSavesPath } from '../watcher';
+import { Router, Response } from 'express';
+import { type AuthRequest } from '../middleware/auth';
+
+// In-memory cache: userId → parsed current run data (pushed from browser)
+const currentRunCache = new Map<number, { data: ReturnType<typeof parseSaveText>; updatedAt: number }>();
 
 const router = Router();
 
@@ -25,19 +26,6 @@ function detectCharacter(cardIds: string[]): string | null {
   return null;
 }
 
-function findCurrentRunSave(dir: string): string | null {
-  if (!fs.existsSync(dir)) return null;
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const full = path.join(dir, entry.name);
-    if (entry.isFile() && entry.name === 'current_run.save') return full;
-    if (entry.isDirectory()) {
-      const found = findCurrentRunSave(full);
-      if (found) return found;
-    }
-  }
-  return null;
-}
 
 function bracketBlock(text: string, keyPattern: RegExp): string {
   const keyIdx = text.search(keyPattern);
@@ -52,9 +40,7 @@ function bracketBlock(text: string, keyPattern: RegExp): string {
   return text.slice(start, end + 1);
 }
 
-function parseSaveFile(filePath: string) {
-  const raw = fs.readFileSync(filePath);
-  const text = raw.toString('latin1');
+function parseSaveText(text: string) {
 
   // ── Deck: bracket-aware extraction, then parse each card object ──────────
   const deckBlock = bracketBlock(text, /"deck"\s*:\s*\[/);
@@ -110,20 +96,30 @@ function parseSaveFile(filePath: string) {
   return { character, floor, deck, relics: relicIds, upgrades, actIndex, currentBoss };
 }
 
-router.get('/', (_req: Request, res: Response) => {
-  const savesPath = getSavesPath();
-  const saveFile  = findCurrentRunSave(savesPath);
-
-  if (!saveFile) {
-    return res.status(404).json({ error: 'No active run found. Start a run in-game first.' });
+// POST /api/current-run/push — browser pushes raw save file text
+router.post('/push', (req: AuthRequest, res: Response) => {
+  const { text } = req.body as { text?: string };
+  if (!text || typeof text !== 'string') {
+    res.status(400).json({ error: 'text field required' });
+    return;
   }
-
   try {
-    const data = parseSaveFile(saveFile);
-    res.json(data);
+    const data = parseSaveText(text);
+    currentRunCache.set(req.userId!, { data, updatedAt: Date.now() });
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to parse save file', detail: String(err) });
   }
+});
+
+// GET /api/current-run — read from in-memory cache (populated by browser push)
+router.get('/', (req: AuthRequest, res: Response) => {
+  const cached = currentRunCache.get(req.userId!);
+  if (!cached) {
+    res.status(404).json({ error: 'No active run found. Connect your save folder in Settings first.' });
+    return;
+  }
+  res.json(cached.data);
 });
 
 export default router;

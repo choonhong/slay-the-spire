@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react';
 import { fetchRuns, fetchCharacters, fetchBuilds, type RunRow } from '../api';
 import { formatCharacter } from '../utils';
 import RunDetailPanel from './RunDetailPanel';
+import PageHeader from './PageHeader';
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+function formatRunDate(run: RunRow): string {
+  const d = run.start_time
+    ? new Date(run.start_time * 1000)
+    : new Date(run.parsed_at);
+  return d.toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -21,15 +25,12 @@ function formatActs(actsJson: string): string {
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
 const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-red-950/40',    border: 'border-red-800/60',    text: 'text-red-300',    activeBg: 'bg-red-800' },
-  SILENT:      { bg: 'bg-green-950/40',  border: 'border-green-800/60',  text: 'text-green-300',  activeBg: 'bg-green-800' },
-  NECROBINDER: { bg: 'bg-pink-950/40',   border: 'border-pink-800/60',   text: 'text-pink-300',   activeBg: 'bg-pink-800' },
-  REGENT:      { bg: 'bg-yellow-950/40', border: 'border-yellow-800/60', text: 'text-yellow-300', activeBg: 'bg-yellow-800' },
-  DEFECT:      { bg: 'bg-blue-950/40',   border: 'border-blue-800/60',   text: 'text-blue-300',   activeBg: 'bg-blue-800' },
-  WATCHER:     { bg: 'bg-purple-950/40', border: 'border-purple-800/60', text: 'text-purple-300', activeBg: 'bg-purple-800' },
-};
-const CHARACTER_ICON: Record<string, string> = {
-  IRONCLAD: '🗡️', SILENT: '🗡️', DEFECT: '🤖', WATCHER: '👁️', NECROBINDER: '💀', REGENT: '👑',
+  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
 };
 
 function CharBadge({ character }: { character: string }) {
@@ -93,15 +94,21 @@ export default function RunHistory() {
   const toggle = (id: number) => setExpandedId(prev => prev === id ? null : id);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      <PageHeader
+        title="Run History"
+        countLabel={!loading ? `${total} runs` : undefined}
+        onRefresh={load}
+      />
+
       {/* Character filter */}
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setSelectedChar('')}
           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
             !selectedChar
-              ? 'bg-gray-600 border-gray-500 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
+              ? 'bg-spire-600 border-gray-700 text-white'
+              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
           }`}
         >
           All
@@ -114,7 +121,7 @@ export default function RunHistory() {
           const key = c.replace(/^CHARACTER\./, '');
           const style = CHARACTER_STYLE[key] ?? {
             bg: 'bg-gray-900/40', border: 'border-gray-700',
-            text: 'text-gray-300', activeBg: 'bg-gray-700',
+            text: 'text-gray-300', activeBg: 'bg-spire-600',
           };
           const isActive = selectedChar === c;
           return (
@@ -123,11 +130,10 @@ export default function RunHistory() {
               onClick={() => setSelectedChar(isActive ? '' : c)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                 isActive
-                  ? `${style.activeBg} border-transparent text-white shadow-lg`
+                  ? `${style.activeBg} ${style.border} text-white`
                   : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
               }`}
             >
-              <span>{CHARACTER_ICON[key] ?? '⚔️'}</span>
               {formatCharacter(c)}
             </button>
           );
@@ -146,15 +152,6 @@ export default function RunHistory() {
             <option key={b} value={b}>{b}</option>
           ))}
         </select>
-        <button
-          onClick={load}
-          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors"
-        >
-          Refresh
-        </button>
-        {!loading && (
-          <span className="ml-auto text-xs text-gray-500">{total} runs</span>
-        )}
       </div>
 
       {error && (
@@ -211,7 +208,7 @@ export default function RunHistory() {
 
                 {/* Date */}
                 <span className="text-xs text-gray-500 ml-auto whitespace-nowrap shrink-0">
-                  {formatDate(run.parsed_at)}
+                  {formatRunDate(run)}
                 </span>
 
                 {/* Chevron */}

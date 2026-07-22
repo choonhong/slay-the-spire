@@ -1,52 +1,125 @@
-import { useEffect, useState } from 'react';
-import { fetchConfig, saveConfig, type AppConfig } from '../api';
+import { useRef, useState } from 'react';
+import { uploadRuns } from '../api';
+import { useAuth } from '../AuthContext';
+import { THEMES, useTheme } from '../themes';
+import PageHeader from './PageHeader';
+
+// Persisted folder handle key in IndexedDB (used by Advisor if previously connected)
+const IDB_DB = 'sts2-tracker';
+const IDB_STORE = 'config';
+const IDB_KEY = 'folderHandle';
+
+async function getIdb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function loadFolderHandle(): Promise<FileSystemDirectoryHandle | null> {
+  const db = await getIdb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+    req.onsuccess = () => resolve((req.result as FileSystemDirectoryHandle) ?? null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function findCurrentRunSave(dir: FileSystemDirectoryHandle): Promise<string | null> {
+  for await (const [name, entry] of dir.entries()) {
+    if (entry.kind === 'file' && name === 'current_run.save') {
+      const file = await (entry as FileSystemFileHandle).getFile();
+      const buf = await file.arrayBuffer();
+      return new TextDecoder('latin1').decode(buf);
+    }
+    if (entry.kind === 'directory') {
+      const found = await findCurrentRunSave(entry as FileSystemDirectoryHandle);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// Swatch colors per theme (bg, panel, accent)
+const SWATCHES: Record<string, [string, string, string]> = {
+  'ayu-dark':       ['#0d1017', '#131721', '#f2c357'],
+  'tokyo-night':    ['#1a1b2e', '#24253a', '#7aa2f7'],
+  'dracula':        ['#282a36', '#313341', '#bd93f9'],
+  'catppuccin':     ['#1e1e2e', '#181825', '#cba6f7'],
+  'gruvbox':        ['#282828', '#32302f', '#fabd2f'],
+  'one-dark':       ['#21252b', '#2c313a', '#e5c07b'],
+  'nord':           ['#2e3440', '#3b4252', '#88c0d0'],
+  'solarized-dark': ['#002b36', '#073642', '#268bd2'],
+  'monokai':        ['#272822', '#3e3d32', '#e6db74'],
+  'material-ocean': ['#0f111a', '#1a1c2a', '#82aaff'],
+  'palenight':      ['#292d3e', '#2f3448', '#c792ea'],
+  'rose-pine':      ['#191724', '#26233a', '#ebbcba'],
+  'everforest':     ['#2d353b', '#343f44', '#a7c080'],
+  'horizon':        ['#1c1e26', '#232530', '#e95678'],
+  'iceberg':        ['#161821', '#1e2132', '#84a0c6'],
+  'night-owl':      ['#011627', '#021d36', '#82aaff'],
+  'kanagawa':       ['#1f1f28', '#2a2a37', '#c0a36e'],
+  'oxocarbon':      ['#1e1e1e', '#262626', '#78a9ff'],
+  'cyberpunk':      ['#0e0e1f', '#14143a', '#ff007c'],
+  'synthwave':      ['#241734', '#2d1b45', '#ff8fff'],
+};
 
 export default function Settings() {
-  const [config, setConfig] = useState<AppConfig | null>(null);
-  const [savesPath, setSavesPath] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const { user, logout } = useAuth();
+  const { themeId, setThemeId } = useTheme();
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ added: number; skipped: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
-  const load = async () => {
-    try {
-      const cfg = await fetchConfig();
-      setConfig(cfg);
-      setSavesPath(cfg.savesPath ?? '');
-    } catch {
-      setError('Could not reach the backend.');
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const all = Array.from(e.target.files ?? []);
+    const files = all.filter(f => f.name.endsWith('.run'));
+    if (!files.length) {
+      setError('No .run files found in that selection.');
+      e.target.value = '';
+      return;
     }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const handleSave = async () => {
-    setSaving(true);
-    setSuccess(false);
+    setUploading(true);
+    setUploadResult(null);
     setError(null);
     try {
-      const updated = await saveConfig(savesPath);
-      setConfig(updated);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch {
-      setError('Failed to save settings.');
+      const payload = await Promise.all(
+        files.map(async f => ({ filename: f.name, content: await f.text() }))
+      );
+      const result = await uploadRuns(payload);
+      setUploadResult({ added: result.added, skipped: result.skipped });
+    } catch (err) {
+      setError(`Upload failed: ${String(err)}`);
     } finally {
-      setSaving(false);
+      setUploading(false);
+      e.target.value = '';
     }
-  };
-
-  const handleReset = () => {
-    setSavesPath('');
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-100">Settings</h2>
-        <p className="text-sm text-gray-400 mt-1">
-          Configure the path to your STS2 save files. Leave blank to use the default Mac path.
-        </p>
+    <div className="max-w-2xl space-y-5">
+      <PageHeader
+        title="Settings"
+        subtitle="Upload your STS2 .run files to sync history to the server."
+      />
+
+      {/* Account info */}
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-300">Signed in as</p>
+          <p className="text-base font-semibold text-spire-400 mt-0.5">{user?.username}</p>
+        </div>
+        <button
+          onClick={logout}
+          className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-400 text-sm rounded-md transition-colors"
+        >
+          Sign out
+        </button>
       </div>
 
       {error && (
@@ -55,58 +128,132 @@ export default function Settings() {
         </div>
       )}
 
+      {/* Upload runs */}
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1.5">
-            STS2 Saves Directory
-          </label>
+          <p className="text-sm font-medium text-gray-300">Sync run history</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Select your <code className="text-gray-400">history</code> folder, or pick .run files directly. Only new runs are uploaded.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
           <input
-            type="text"
-            value={savesPath}
-            onChange={e => setSavesPath(e.target.value)}
-            placeholder="Leave blank for default Mac path"
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-spire-500 font-mono"
+            ref={folderInputRef}
+            type="file"
+            multiple
+            // @ts-expect-error webkitdirectory is a non-standard attribute
+            webkitdirectory=""
+            directory=""
+            onChange={handleUpload}
+            className="hidden"
+            id="run-folder-input"
           />
-          {config?.resolvedSavesPath && (
-            <p className="mt-1.5 text-xs text-gray-500 font-mono break-all">
-              Active path: {config.resolvedSavesPath}
-            </p>
+          <label
+            htmlFor="run-folder-input"
+            className={`cursor-pointer px-4 py-2 bg-spire-600 hover:bg-spire-500 text-white text-sm font-medium rounded-md transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+          >
+            {uploading ? 'Uploading…' : 'Choose history folder…'}
+          </label>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".run"
+            multiple
+            onChange={handleUpload}
+            className="hidden"
+            id="run-file-input"
+          />
+          <label
+            htmlFor="run-file-input"
+            className={`cursor-pointer px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 text-sm font-medium rounded-md transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+          >
+            Choose .run files…
+          </label>
+
+          {uploadResult && (
+            <span className="text-sm text-green-400">
+              +{uploadResult.added} new run{uploadResult.added !== 1 ? 's' : ''} added
+              {uploadResult.skipped > 0 && (
+                <span className="text-gray-500">, {uploadResult.skipped} already up to date</span>
+              )}
+            </span>
           )}
         </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-2 bg-spire-600 hover:bg-spire-500 disabled:opacity-50 text-white text-sm font-medium rounded-md transition-colors"
-          >
-            {saving ? 'Saving...' : 'Save & Restart Watcher'}
-          </button>
-          <button
-            onClick={handleReset}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-md transition-colors"
-          >
-            Reset to Default
-          </button>
-          {success && (
-            <span className="self-center text-sm text-green-400">Saved!</span>
-          )}
+        <p className="text-xs text-gray-500">
+          Your Mac path:{' '}
+          <code className="text-gray-400">
+            ~/Library/Application Support/Steam/userdata/133818532/2868840/remote/profile1/saves/history
+          </code>
+        </p>
+      </div>
+
+      {/* How it works */}
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-4 text-sm text-gray-400">
+        <p className="font-medium text-gray-300">How it works</p>
+        <ul className="space-y-1 text-xs list-disc list-inside">
+          <li>Click <strong>Choose history folder…</strong> and select your STS2 <code>history</code> folder</li>
+          <li>Or use <strong>Choose .run files…</strong> and multi-select individual runs (⌘+A)</li>
+          <li>Only new runs are uploaded — already synced files are skipped</li>
+        </ul>
+
+        <div className="border-t border-gray-800 pt-4 space-y-2">
+          <p className="font-medium text-gray-300 text-xs">Find your runs folder</p>
+          <p className="text-xs text-gray-500">Run files are saved by the game in your Steam user data folder:</p>
+          <div className="space-y-1.5">
+            <div>
+              <p className="text-[10px] text-gray-500 mb-0.5">Windows</p>
+              <code className="block text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-gray-300 break-all">
+                C:\Users\&lt;YourUsername&gt;\AppData\Roaming\SlayTheSpire2\steam\&lt;SteamID&gt;\profile1\saves\history
+              </code>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-500 mb-0.5">macOS</p>
+              <code className="block text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-gray-300 break-all">
+                ~/Library/Application Support/Steam/userdata/&lt;SteamID&gt;/2868840/remote/profile1/saves/history
+              </code>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Info box */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-2 text-sm text-gray-400">
-        <p className="font-medium text-gray-300">Default save path (Mac)</p>
-        <code className="block text-xs font-mono text-gray-500 break-all">
-          ~/Library/Application Support/SlayTheSpire2/steam/&lt;steamid&gt;/profile1/saves/history/
-        </code>
-        <ul className="mt-3 space-y-1 text-xs list-disc list-inside">
-          <li>The watcher picks up new <code>.run</code> files automatically when you finish a run</li>
-          <li>Existing runs are parsed on server startup</li>
-          <li>Previously parsed runs are cached in SQLite and not re-parsed</li>
-          <li>The database is stored at <code>data/sts2.db</code> in the project root</li>
-        </ul>
+      {/* Theme picker */}
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-gray-300">Theme</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {THEMES.find(t => t.id === themeId)?.description ?? ''}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {(() => {
+              const [c1, c2, c3] = SWATCHES[themeId] ?? ['#222', '#333', '#888'];
+              return (
+                <span className="flex gap-1">
+                  <span className="w-4 h-4 rounded-sm" style={{ background: c1, border: '1px solid rgba(255,255,255,0.12)' }} />
+                  <span className="w-4 h-4 rounded-sm" style={{ background: c2 }} />
+                  <span className="w-4 h-4 rounded-sm" style={{ background: c3 }} />
+                </span>
+              );
+            })()}
+            <select
+              value={themeId}
+              onChange={e => setThemeId(e.target.value)}
+              className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
+            >
+              {THEMES.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
+// Export helpers for use in Advisor tab
+export { findCurrentRunSave, loadFolderHandle };

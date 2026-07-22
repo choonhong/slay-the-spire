@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchAncients, fetchCharacters, fetchBuilds, type AncientStat } from '../api';
 import { formatRelicId, formatEventName, formatCharacter } from '../utils';
+import PageHeader from './PageHeader';
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT'];
 const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-red-950/40',    border: 'border-red-800/60',    text: 'text-red-300',    activeBg: 'bg-red-800' },
-  SILENT:      { bg: 'bg-green-950/40',  border: 'border-green-800/60',  text: 'text-green-300',  activeBg: 'bg-green-800' },
-  NECROBINDER: { bg: 'bg-pink-950/40',   border: 'border-pink-800/60',   text: 'text-pink-300',   activeBg: 'bg-pink-800' },
-  REGENT:      { bg: 'bg-yellow-950/40', border: 'border-yellow-800/60', text: 'text-yellow-300', activeBg: 'bg-yellow-800' },
-  DEFECT:      { bg: 'bg-blue-950/40',   border: 'border-blue-800/60',   text: 'text-blue-300',   activeBg: 'bg-blue-800' },
-  WATCHER:     { bg: 'bg-purple-950/40', border: 'border-purple-800/60', text: 'text-purple-300', activeBg: 'bg-purple-800' },
-};
-const CHARACTER_ICON: Record<string, string> = {
-  IRONCLAD: '🗡️', SILENT: '🗡️', DEFECT: '🤖', WATCHER: '👁️', NECROBINDER: '💀', REGENT: '👑',
+  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
+  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
 };
 
 function WinRateBar({ value, runs }: { value: number; runs: number }) {
@@ -119,57 +117,60 @@ export default function Ancients() {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Character filter */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedChar('')}
-            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-              !selectedChar
-                ? 'bg-gray-600 border-gray-500 text-white'
-                : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
-            }`}
-          >
-            All
-          </button>
-          {orderedChars.map(c => {
-            const key = c.replace(/^CHARACTER\./, '');
-            const style = CHARACTER_STYLE[key] ?? {
-              bg: 'bg-gray-900/40', border: 'border-gray-700',
-              text: 'text-gray-300', activeBg: 'bg-gray-700',
-            };
-            const isActive = selectedChar === c;
-            return (
-              <button
-                key={c}
-                onClick={() => setSelectedChar(isActive ? '' : c)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                  isActive
-                    ? `${style.activeBg} border-transparent text-white shadow-lg`
-                    : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
-                }`}
-              >
-                <span>{CHARACTER_ICON[key] ?? '⚔️'}</span>
-                {formatCharacter(c)}
-              </button>
-            );
-          })}
-        </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Ancients"
+        subtitle="Win rates for Neow's Bonus and ancient event relic picks."
+        onRefresh={load}
+      />
 
-        {/* Build filter */}
-        {builds.length > 1 && (
+      {/* Character filter */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setSelectedChar('')}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+            !selectedChar
+              ? 'bg-spire-600 border-gray-700 text-white'
+              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
+          }`}
+        >
+          All
+        </button>
+        {orderedChars.map(c => {
+          const key = c.replace(/^CHARACTER\./, '');
+          const style = CHARACTER_STYLE[key] ?? {
+            bg: 'bg-gray-900/40', border: 'border-gray-700',
+            text: 'text-gray-300', activeBg: 'bg-spire-600',
+          };
+          const isActive = selectedChar === c;
+          return (
+            <button
+              key={c}
+              onClick={() => setSelectedChar(isActive ? '' : c)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                isActive
+                  ? `${style.activeBg} ${style.border} text-white`
+                  : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
+              }`}
+            >
+              {formatCharacter(c)}
+            </button>
+          );
+        })}
+      </div>
+
+      {builds.length > 1 && (
+        <div className="flex flex-wrap items-center gap-3">
           <select
             value={selectedBuild}
             onChange={e => setSelectedBuild(e.target.value)}
-            className="ml-auto text-xs bg-gray-800 border border-gray-700 rounded-md px-2 py-1.5 text-gray-300"
+            className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
           >
-            <option value="">All patches</option>
+            <option value="">All Patches</option>
             {builds.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
-        )}
-      </div>
+        </div>
+      )}
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
       {loading && <p className="text-gray-500 text-sm">Loading…</p>}
@@ -205,7 +206,7 @@ export default function Ancients() {
                   onClick={() => setSelectedEvent('ALL')}
                   className={`px-3 py-1 rounded-md border text-xs font-medium transition-colors ${
                     selectedEvent === 'ALL'
-                      ? 'bg-spire-600 border-spire-500 text-white'
+                      ? 'bg-spire-600 border-gray-700 text-white'
                       : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
                   }`}
                 >

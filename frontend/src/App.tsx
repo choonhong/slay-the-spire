@@ -1,15 +1,27 @@
 import { useState } from 'react';
+import { AuthProvider, useAuth } from './AuthContext';
 import CardStatsTable from './components/CardStatsTable';
 import RunHistory from './components/RunHistory';
 import Synergies from './components/Synergies';
 import Ancients from './components/Ancients';
 import Advisor from './components/Advisor';
 import Settings from './components/Settings';
+import { useTheme } from './themes';
 
-type Tab = 'stats' | 'runs' | 'synergies' | 'ancients' | 'advisor' | 'settings';
+type Tab = 'stats' | 'synergies' | 'ancients' | 'runs' | 'advisor' | 'settings';
 
-export default function App() {
+function AppInner() {
+  const { user, loading } = useAuth();
   const [tab, setTab] = useState<Tab>('stats');
+  useTheme(); // initialize theme from localStorage on mount
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <span className="text-gray-500 text-sm">Loading…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -17,13 +29,12 @@ export default function App() {
       <header className="border-b border-gray-800 bg-gray-900/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🗡️</span>
-            <span className="font-bold text-lg tracking-tight text-spire-400">
-              STS2 Card Tracker
+            <span className="font-bold text-2xl tracking-tight text-spire-400">
+              STS2 Advisor
             </span>
           </div>
           <nav className="flex gap-1 ml-4">
-            {(['stats', 'runs', 'synergies', 'ancients', 'advisor', 'settings'] as Tab[]).map((t) => (
+            {(['stats', 'synergies', 'ancients', 'runs', 'advisor', 'settings'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -34,10 +45,10 @@ export default function App() {
                 }`}
               >
                 {t === 'stats' ? 'Card Stats'
-                  : t === 'runs' ? 'Run History'
                   : t === 'synergies' ? 'Synergies'
                   : t === 'ancients' ? 'Ancients'
-                  : t === 'advisor' ? '⚔ Advisor'
+                  : t === 'runs' ? 'Run History'
+                  : t === 'advisor' ? 'Advisor'
                   : 'Settings'}
               </button>
             ))}
@@ -48,12 +59,20 @@ export default function App() {
       {/* Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         {tab === 'stats' && <CardStatsTable />}
-        {tab === 'runs' && <RunHistory />}
-        <div className={tab === 'synergies' ? '' : 'hidden'}><Synergies /></div>
+        <div className={tab === 'synergies' ? '' : 'hidden'}><Synergies active={tab === 'synergies'} /></div>
         {tab === 'ancients' && <Ancients />}
+        {tab === 'runs' && <RunHistory />}
         <div className={tab === 'advisor' ? '' : 'hidden'}><Advisor /></div>
         {tab === 'settings' && <Settings />}
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
   );
 }

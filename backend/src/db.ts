@@ -5,7 +5,8 @@ import fs from 'fs';
 const DB_PATH = path.join(__dirname, '../../data/sts2.db');
 
 // Bump this whenever the schema changes — DB will be wiped and rebuilt from .run files
-const SCHEMA_VERSION = 8;
+// Note: additive column migrations below do NOT require a wipe.
+const SCHEMA_VERSION = 10;
 
 let _db: DatabaseSync | null = null;
 
@@ -35,21 +36,37 @@ function ensureSchema(db: DatabaseSync): void {
   const currentVersion = row ? parseInt(row.value, 10) : 0;
 
   if (currentVersion !== SCHEMA_VERSION) {
-    console.log(`[db] Schema version ${currentVersion} → ${SCHEMA_VERSION}, rebuilding tables...`);
-    db.exec(`
-      DROP TABLE IF EXISTS card_choices;
-      DROP TABLE IF EXISTS ancient_picks;
-      DROP TABLE IF EXISTS runs;
-    `);
+    // Only wipe on major schema breaks (pre-v10). v10+ uses additive migrations.
+    if (currentVersion < 9) {
+      console.log(`[db] Schema version ${currentVersion} → ${SCHEMA_VERSION}, rebuilding tables...`);
+      db.exec(`
+        DROP TABLE IF EXISTS card_choices;
+        DROP TABLE IF EXISTS ancient_picks;
+        DROP TABLE IF EXISTS runs;
+      `);
+    } else {
+      console.log(`[db] Schema version ${currentVersion} → ${SCHEMA_VERSION}`);
+    }
     db.prepare("INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('version', ?)").run(
       String(SCHEMA_VERSION)
     );
   }
 
+  // users table is never dropped on schema migration — preserve accounts
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      username      TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      created_at    TEXT DEFAULT (datetime('now'))
+    );
+  `);
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS runs (
       id             INTEGER PRIMARY KEY AUTOINCREMENT,
-      file_path      TEXT UNIQUE NOT NULL,
+      user_id        INTEGER NOT NULL DEFAULT 1 REFERENCES users(id) ON DELETE CASCADE,
+      file_path      TEXT NOT NULL,
       character      TEXT,
       win            INTEGER DEFAULT 0,
       ascension      INTEGER DEFAULT 0,
@@ -58,8 +75,10 @@ function ensureSchema(db: DatabaseSync): void {
       build_id       TEXT,
       floor_reached  INTEGER DEFAULT 0,
       killed_by      TEXT,
+      start_time     INTEGER,
       parsed_at      TEXT,
-      raw_json       TEXT
+      raw_json       TEXT,
+      UNIQUE(user_id, file_path)
     );
 
     CREATE TABLE IF NOT EXISTS card_choices (
@@ -85,10 +104,50 @@ function ensureSchema(db: DatabaseSync): void {
     CREATE INDEX IF NOT EXISTS idx_ancient_picks_run_id ON ancient_picks(run_id);
     CREATE INDEX IF NOT EXISTS idx_ancient_picks_relic_id ON ancient_picks(relic_id);
   `);
+
+  // Additive: start_time on existing DBs created before v10
+  const runCols = db.prepare('PRAGMA table_info(runs)').all() as Array<{ name: string }>;
+  if (!runCols.some(c => c.name === 'start_time')) {
+    console.log('[db] Adding start_time column to runs…');
+    db.exec('ALTER TABLE runs ADD COLUMN start_time INTEGER');
+  }
+  backfillStartTimes(db);
+}
+
+/** Fill start_time from raw_json.start_time or filename epoch for existing rows. */
+function backfillStartTimes(db: DatabaseSync): void {
+  const rows = db.prepare(
+    'SELECT id, file_path, raw_json FROM runs WHERE start_time IS NULL'
+  ).all() as Array<{ id: number; file_path: string; raw_json: string | null }>;
+  if (rows.length === 0) return;
+
+  const update = db.prepare('UPDATE runs SET start_time = ? WHERE id = ?');
+  let filled = 0;
+  for (const row of rows) {
+    let start: number | null = null;
+    if (row.raw_json) {
+      try {
+        const data = JSON.parse(row.raw_json) as { start_time?: number };
+        if (typeof data.start_time === 'number' && data.start_time > 0) {
+          start = data.start_time;
+        }
+      } catch { /* ignore */ }
+    }
+    if (start == null) {
+      const m = row.file_path.match(/(\d+)\.run$/);
+      if (m) start = Number(m[1]);
+    }
+    if (start != null) {
+      update.run(start, row.id);
+      filled++;
+    }
+  }
+  if (filled > 0) console.log(`[db] Backfilled start_time for ${filled} runs`);
 }
 
 export interface RunRow {
   id: number;
+  user_id: number;
   file_path: string;
   character: string;
   win: number;
@@ -98,6 +157,7 @@ export interface RunRow {
   build_id: string | null;
   floor_reached: number;
   killed_by: string | null;
+  start_time: number | null;
   parsed_at: string;
 }
 
@@ -110,6 +170,7 @@ export interface CardStat {
 
 export function upsertRun(
   db: DatabaseSync,
+  userId: number,
   filePath: string,
   character: string,
   win: boolean,
@@ -119,21 +180,22 @@ export function upsertRun(
   buildId: string | null,
   floorReached: number,
   killedBy: string | null,
-  rawJson: string
+  rawJson: string,
+  startTime: number | null = null
 ): number {
-  const existing = db.prepare('SELECT id FROM runs WHERE file_path = ?').get(filePath) as
+  const existing = db.prepare('SELECT id FROM runs WHERE user_id = ? AND file_path = ?').get(userId, filePath) as
     | { id: number }
     | undefined;
 
   if (existing) {
     db.prepare(`
       UPDATE runs SET character=?, win=?, ascension=?, game_mode=?, acts=?, build_id=?,
-        floor_reached=?, killed_by=?, parsed_at=?, raw_json=?
-      WHERE file_path=?
+        floor_reached=?, killed_by=?, start_time=?, parsed_at=?, raw_json=?
+      WHERE id=?
     `).run(
       character, win ? 1 : 0, ascension, gameMode,
-      JSON.stringify(acts), buildId, floorReached, killedBy,
-      new Date().toISOString(), rawJson, filePath
+      JSON.stringify(acts), buildId, floorReached, killedBy, startTime,
+      new Date().toISOString(), rawJson, existing.id
     );
     db.prepare('DELETE FROM card_choices WHERE run_id = ?').run(existing.id);
     db.prepare('DELETE FROM ancient_picks WHERE run_id = ?').run(existing.id);
@@ -141,12 +203,12 @@ export function upsertRun(
   }
 
   const result = db.prepare(`
-    INSERT INTO runs (file_path, character, win, ascension, game_mode, acts, build_id,
-      floor_reached, killed_by, parsed_at, raw_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO runs (user_id, file_path, character, win, ascension, game_mode, acts, build_id,
+      floor_reached, killed_by, start_time, parsed_at, raw_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    filePath, character, win ? 1 : 0, ascension, gameMode,
-    JSON.stringify(acts), buildId, floorReached, killedBy,
+    userId, filePath, character, win ? 1 : 0, ascension, gameMode,
+    JSON.stringify(acts), buildId, floorReached, killedBy, startTime,
     new Date().toISOString(), rawJson
   );
   return Number(result.lastInsertRowid);
@@ -189,11 +251,15 @@ const ASC_WEIGHT_EXPR = `CASE WHEN r.ascension >= 7 THEN 1.0 ELSE 0.3 + r.ascens
 
 export function getCardStats(
   db: DatabaseSync,
-  filters: { character?: string; ascension?: number; gameMode?: string; buildId?: string; colorless?: boolean; weighted?: boolean } = {}
+  filters: { character?: string; ascension?: number; gameMode?: string; buildId?: string; colorless?: boolean; weighted?: boolean; userId?: number } = {}
 ): CardStat[] {
   const conditions: string[] = [];
   const params: (string | number)[] = [];
 
+  if (filters.userId !== undefined) {
+    conditions.push('r.user_id = ?');
+    params.push(filters.userId);
+  }
   if (filters.character) {
     conditions.push('r.character = ?');
     params.push(filters.character);
@@ -262,11 +328,15 @@ export function getCardStats(
 
 export function getRuns(
   db: DatabaseSync,
-  filters: { character?: string; buildId?: string; limit?: number; offset?: number } = {}
+  filters: { character?: string; buildId?: string; limit?: number; offset?: number; userId?: number } = {}
 ): RunRow[] {
   const conditions: string[] = [];
   const params: (string | number)[] = [];
 
+  if (filters.userId !== undefined) {
+    conditions.push('user_id = ?');
+    params.push(filters.userId);
+  }
   if (filters.character) {
     conditions.push('character = ?');
     params.push(filters.character);
@@ -282,15 +352,19 @@ export function getRuns(
 
   return db.prepare(`
     SELECT * FROM runs ${where}
-    ORDER BY parsed_at DESC
+    ORDER BY COALESCE(start_time, 0) DESC, parsed_at DESC
     LIMIT ? OFFSET ?
   `).all(...params, limit, offset) as unknown as RunRow[];
 }
 
-export function getRunCount(db: DatabaseSync, filters: { character?: string; buildId?: string } = {}): number {
+export function getRunCount(db: DatabaseSync, filters: { character?: string; buildId?: string; userId?: number } = {}): number {
   const conditions: string[] = [];
   const params: (string | number)[] = [];
 
+  if (filters.userId !== undefined) {
+    conditions.push('user_id = ?');
+    params.push(filters.userId);
+  }
   if (filters.character) {
     conditions.push('character = ?');
     params.push(filters.character);
@@ -305,22 +379,32 @@ export function getRunCount(db: DatabaseSync, filters: { character?: string; bui
   return Number(row.count);
 }
 
-export function getCharacters(db: DatabaseSync): string[] {
+export function getCharacters(db: DatabaseSync, userId?: number): string[] {
+  if (userId !== undefined) {
+    const rows = db.prepare('SELECT DISTINCT character FROM runs WHERE user_id = ? ORDER BY character').all(userId) as { character: string }[];
+    return rows.map(r => r.character).filter(Boolean);
+  }
   const rows = db.prepare('SELECT DISTINCT character FROM runs ORDER BY character').all() as {
     character: string;
   }[];
   return rows.map(r => r.character).filter(Boolean);
 }
 
-export function getBuildIds(db: DatabaseSync): string[] {
+export function getBuildIds(db: DatabaseSync, userId?: number): string[] {
+  if (userId !== undefined) {
+    const rows = db.prepare(
+      "SELECT DISTINCT build_id FROM runs WHERE user_id = ? AND build_id IS NOT NULL ORDER BY build_id DESC"
+    ).all(userId) as { build_id: string }[];
+    return rows.map(r => r.build_id);
+  }
   const rows = db.prepare(
     "SELECT DISTINCT build_id FROM runs WHERE build_id IS NOT NULL ORDER BY build_id DESC"
   ).all() as { build_id: string }[];
   return rows.map(r => r.build_id);
 }
 
-export function isRunParsed(db: DatabaseSync, filePath: string): boolean {
-  const row = db.prepare('SELECT id FROM runs WHERE file_path = ?').get(filePath);
+export function isRunParsed(db: DatabaseSync, userId: number, filePath: string): boolean {
+  const row = db.prepare('SELECT id FROM runs WHERE user_id = ? AND file_path = ?').get(userId, filePath);
   return !!row;
 }
 
@@ -355,11 +439,15 @@ export interface AncientStat {
 
 export function getAncientStats(
   db: DatabaseSync,
-  filters: { character?: string; buildId?: string } = {}
+  filters: { character?: string; buildId?: string; userId?: number } = {}
 ): AncientStat[] {
   const conditions: string[] = [];
   const params: (string | number)[] = [];
 
+  if (filters.userId !== undefined) {
+    conditions.push('r.user_id = ?');
+    params.push(filters.userId);
+  }
   if (filters.character) {
     conditions.push('r.character = ?');
     params.push(filters.character);
