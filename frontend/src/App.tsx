@@ -27,7 +27,7 @@ function AppInner() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="border-b border-gray-800 bg-gray-900/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-3 flex items-center gap-6">
           <div className="flex items-center gap-2">
             <span className="font-bold text-2xl tracking-tight text-spire-400">
               STS2 Advisor
@@ -57,7 +57,7 @@ function AppInner() {
       </header>
 
       {/* Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-8 py-6">
         {tab === 'stats' && <CardStatsTable />}
         <div className={tab === 'synergies' ? '' : 'hidden'}><Synergies active={tab === 'synergies'} /></div>
         {tab === 'ancients' && <Ancients />}

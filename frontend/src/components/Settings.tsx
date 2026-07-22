@@ -162,11 +162,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-2xl space-y-5">
-      <PageHeader
-        title="Settings"
-        subtitle="Upload your STS2 .run files to sync history to the server."
-      />
+    <div className="space-y-5">
+      <PageHeader title="Settings" />
 
       {/* Account info */}
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">

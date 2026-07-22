@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { fetchSynergies, fetchCharacters, fetchBuilds, fetchCardText, type SynergyPair, type CardText } from '../api';
 import { formatCharacter } from '../utils';
 import { CardNameCell } from './CardNameCell';
@@ -37,7 +37,8 @@ export default function Synergies({ active = true }: { active?: boolean }) {
   const [pairs, setPairs] = useState<SynergyPair[]>([]);
   const [characters, setCharacters] = useState<string[]>([]);
   const [builds, setBuilds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedChar, setSelectedChar] = useState('');
   const [selectedBuild, setSelectedBuild] = useState('');
@@ -46,11 +47,13 @@ export default function Synergies({ active = true }: { active?: boolean }) {
   const [cardSearch, setCardSearch] = useState('');
   const [cardTexts, setCardTexts] = useState<CardText[]>([]);
   const cardTextMap = useMemo(() => new Map(cardTexts.map(c => [c.id, c])), [cardTexts]);
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => { fetchCardText().then(setCardTexts).catch(() => {}); }, []);
 
   const load = async () => {
-    setLoading(true);
+    if (!hasLoadedOnce.current) setInitialLoading(true);
+    else setRefreshing(true);
     setError(null);
     try {
       const [data, chars, buildList] = await Promise.all([
@@ -65,10 +68,12 @@ export default function Synergies({ active = true }: { active?: boolean }) {
       setPairs(data);
       setCharacters(chars);
       setBuilds(buildList);
+      hasLoadedOnce.current = true;
     } catch {
       setError('Could not reach the backend.');
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -97,8 +102,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
     <div className="space-y-5">
       <PageHeader
         title="Synergies"
-        subtitle="Pairs of cards that appear together in winning runs. Lift = win rate together minus average individual win rate."
-        countLabel={!loading ? `${sorted.length} pairs` : undefined}
+        countLabel={!initialLoading ? `${sorted.length} pairs` : undefined}
         onRefresh={load}
       />
 
@@ -186,8 +190,12 @@ export default function Synergies({ active = true }: { active?: boolean }) {
         <div className="rounded-lg bg-red-900/30 border border-red-800 p-4 text-red-300 text-sm">{error}</div>
       )}
 
-      {/* Table */}
-      <div className="rounded-lg border border-gray-800 overflow-hidden">
+      {/* Table — keep previous rows while refetching; only blank on first load */}
+      <div
+        className={`rounded-lg border border-gray-800 overflow-hidden transition-opacity duration-200 ${
+          refreshing ? 'opacity-55' : 'opacity-100'
+        }`}
+      >
         <table className="w-full text-sm">
           <thead className="bg-gray-900 border-b border-gray-800">
             <tr>
@@ -200,7 +208,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {initialLoading ? (
               <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500">Loading...</td></tr>
             ) : sorted.length === 0 ? (
               <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500">No pairs found — try lowering Min. runs together</td></tr>

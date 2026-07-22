@@ -476,10 +476,9 @@ export default function Advisor() {
   }
 
   return (
-    <div className="space-y-5 max-w-4xl mx-auto">
+    <div className="space-y-5">
       <PageHeader
         title="Advisor"
-        subtitle="Set your character, current floor, deck, and the 3 cards being offered — get a scored recommendation."
         onRefresh={() => syncFromSave(false)}
         refreshLabel={syncing ? 'Syncing…' : 'Sync'}
       />

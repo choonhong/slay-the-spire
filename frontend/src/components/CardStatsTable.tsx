@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { CardNameCell } from './CardNameCell';
 import PageHeader from './PageHeader';
 import {
@@ -81,7 +81,8 @@ export default function CardStatsTable() {
   const [cardTextMap, setCardTextMap] = useState<Map<string, CardText>>(new Map());
   const [characters, setCharacters] = useState<string[]>([]);
   const [builds, setBuilds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'win_rate', desc: true },
@@ -93,9 +94,11 @@ export default function CardStatsTable() {
   const [selectedBuild, setSelectedBuild] = useState('');
   const [minRuns, setMinRuns] = useState(3);
   const [scope, setScope] = useState<'global' | 'mine'>('mine');
+  const hasLoadedOnce = useRef(false);
 
   const loadData = async () => {
-    setLoading(true);
+    if (!hasLoadedOnce.current) setInitialLoading(true);
+    else setRefreshing(true);
     setError(null);
     try {
       const [stats, weightedStats, chars, buildList, communityCards, cardTexts] = await Promise.all([
@@ -128,10 +131,12 @@ export default function CardStatsTable() {
       setBuilds(buildList);
       setCommunityMap(cMap);
       setCardTextMap(tMap);
+      hasLoadedOnce.current = true;
     } catch {
       setError('Could not reach the backend. Make sure the server is running on port 3001.');
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -211,7 +216,7 @@ export default function CardStatsTable() {
     <div className="space-y-5">
       <PageHeader
         title="Card Stats"
-        countLabel={!loading ? `${filtered.length} cards` : undefined}
+        countLabel={!initialLoading ? `${filtered.length} cards` : undefined}
         onRefresh={loadData}
       />
 
@@ -322,8 +327,12 @@ export default function CardStatsTable() {
         </div>
       )}
 
-      {/* Table */}
-      <div className="rounded-lg border border-gray-800 overflow-hidden">
+      {/* Table — keep previous rows while refetching; only blank on first load */}
+      <div
+        className={`rounded-lg border border-gray-800 overflow-hidden transition-opacity duration-200 ${
+          refreshing ? 'opacity-55' : 'opacity-100'
+        }`}
+      >
         <table className="w-full text-sm">
           <thead className="bg-gray-900 border-b border-gray-800">
             {table.getHeaderGroups().map(hg => (
@@ -351,7 +360,7 @@ export default function CardStatsTable() {
             ))}
           </thead>
           <tbody>
-            {loading ? (
+            {initialLoading ? (
               <tr>
                 <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
                   Loading...

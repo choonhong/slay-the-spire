@@ -120,7 +120,6 @@ export default function Ancients() {
     <div className="space-y-5">
       <PageHeader
         title="Ancients"
-        subtitle="Win rates for Neow's Bonus and ancient event relic picks."
         onRefresh={load}
       />
 
