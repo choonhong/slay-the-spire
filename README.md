@@ -1,9 +1,10 @@
 # STS2 Card Advisor
 
-```bash
-npm install
-make dev   # http://localhost:5173
-```
+## How to open
+
+1. `npm install`
+2. `make dev`
+3. Open http://localhost:5173
 
 ## 1. Upload run history
 
