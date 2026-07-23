@@ -2,9 +2,15 @@
 
 ## How to open
 
-1. Run `npm install`
-2. Run `make dev`
-3. Open http://localhost:5173
+1. Install **Node.js 22.13+** (Node 22 LTS recommended). If you use a version manager, this repo now includes `.nvmrc` and `.node-version`.
+2. Run `npm install`
+3. Run `make dev`
+4. Open http://localhost:5173
+
+Why this matters:
+
+- The backend uses Node's built-in `node:sqlite` module, which is available in newer Node 22 releases.
+- The frontend's Vite version also expects a newer Node runtime.
 
 ## 1. Upload run history
 
