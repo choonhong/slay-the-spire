@@ -465,6 +465,17 @@ export function getBuildIds(db: DatabaseSync, userId?: number): string[] {
   return rows.map(r => r.build_id);
 }
 
+/** Upsert the reserved community user and return its ID. */
+export function getCommunityUserId(db: DatabaseSync): number {
+  const COMMUNITY_USERNAME = '__community__';
+  let row = db.prepare('SELECT id FROM users WHERE username = ?').get(COMMUNITY_USERNAME) as { id: number } | undefined;
+  if (!row) {
+    const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(COMMUNITY_USERNAME, '');
+    row = { id: Number(result.lastInsertRowid) };
+  }
+  return row.id;
+}
+
 export function isRunParsed(db: DatabaseSync, userId: number, filePath: string): boolean {
   const row = db.prepare('SELECT id FROM runs WHERE user_id = ? AND file_path = ?').get(userId, filePath);
   return !!row;

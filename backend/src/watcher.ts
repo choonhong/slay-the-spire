@@ -3,9 +3,11 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import { parseRunFile } from './parser';
-import { getDb, isRunParsed, getRunCount } from './db';
+import { getDb, isRunParsed, getRunCount, getCommunityUserId } from './db';
 import type { DatabaseSync } from 'node:sqlite';
 import { loadConfig, saveConfig } from './config';
+
+const COMMUNITY_RUNS_DIR = path.join(__dirname, '../../../data/community_runs');
 
 export function getSavesPath(): string {
   const cfg = loadConfig();
@@ -103,20 +105,28 @@ export async function startWatcher(): Promise<void> {
   console.log(`[watcher] Watching: ${savesPath} (user_id=${userId})`);
 
   await parseExistingRuns(savesPath, userId);
+  await parseCommunityRuns();
 
-  watcher = chokidar.watch(`${savesPath}/**/*.run`, {
+  watcher = chokidar.watch([`${savesPath}/**/*.run`, `${COMMUNITY_RUNS_DIR}/**/*.run`], {
     persistent: true,
     ignoreInitial: true,
     awaitWriteFinish: { stabilityThreshold: 1000, pollInterval: 200 },
   });
 
   watcher.on('add', (filePath) => {
-    importRunFromDisk(filePath, userId);
+    if (filePath.startsWith(COMMUNITY_RUNS_DIR)) {
+      importCommunityRun(filePath);
+    } else {
+      importRunFromDisk(filePath, userId);
+    }
   });
 
   watcher.on('change', (filePath) => {
-    // Only import if not already present (uploads / prior watch)
-    importRunFromDisk(filePath, userId);
+    if (filePath.startsWith(COMMUNITY_RUNS_DIR)) {
+      importCommunityRun(filePath);
+    } else {
+      importRunFromDisk(filePath, userId);
+    }
   });
 
   watcher.on('error', (err) => {
@@ -145,6 +155,36 @@ export function stopWatcher(): void {
   if (watcher) {
     void watcher.close();
     watcher = null;
+  }
+}
+
+function importCommunityRun(filePath: string): void {
+  const db = getDb();
+  const communityUserId = getCommunityUserId(db);
+  const key = `community:${path.basename(filePath)}`;
+  if (isRunParsed(db, communityUserId, key)) return;
+  console.log(`[community] New run: ${path.basename(filePath)}`);
+  const result = parseRunFile(filePath, communityUserId, key);
+  if (result) {
+    console.log(`[community] Parsed: ${result.character} | win=${result.win} | offers=${result.totalOffers}`);
+  }
+}
+
+async function parseCommunityRuns(): Promise<void> {
+  if (!fs.existsSync(COMMUNITY_RUNS_DIR)) return;
+  const db = getDb();
+  const communityUserId = getCommunityUserId(db);
+  const runFiles = findRunFiles(COMMUNITY_RUNS_DIR);
+  let parsed = 0;
+  let skipped = 0;
+  for (const filePath of runFiles) {
+    const key = `community:${path.basename(filePath)}`;
+    if (isRunParsed(db, communityUserId, key)) { skipped++; continue; }
+    const result = parseRunFile(filePath, communityUserId, key);
+    if (result) parsed++;
+  }
+  if (parsed > 0 || skipped > 0) {
+    console.log(`[community] ${parsed} new, ${skipped} cached runs from data/community_runs/`);
   }
 }
 

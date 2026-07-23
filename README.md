@@ -25,7 +25,21 @@ Default Mac path:
 ~/Library/Application Support/SlayTheSpire2/steam/<steamid>/profile1/saves
 ```
 
-## 2. Run Advisor
+## 3. Share run history with friends
+
+Run history is pooled automatically from `data/community_runs/`. Anyone can contribute their `.run` files:
+
+1. Copy your finished `.run` files from:
+   ```
+   ~/Library/Application Support/SlayTheSpire2/steam/<steamid>/profile1/saves/history/
+   ```
+   into `data/community_runs/` in this repo.
+2. `git add data/community_runs/ && git commit -m "add runs" && git push`
+3. Everyone else pulls — the backend picks up the new files on next `make dev` startup.
+
+The backend imports them under a shared **community** user, so they count in global stats automatically.
+
+## 4. Run Advisor
 
 1. Start a run in-game (`make dev` must be running).
 2. Open the **Advisor** tab → **Sync** (or wait for auto-sync).

@@ -1,6 +1,7 @@
 node_modules/
 dist/
-# Persist data/sts2.db in git; ignore SQLite sidecars only
+# DB is rebuilt from .run files — don't commit the binary
+data/sts2.db
 data/*.db-shm
 data/*.db-wal
 *.db-shm
@@ -9,3 +10,6 @@ data/*.db-wal
 .DS_Store
 frontend/dist/
 data/config.json
+# community_runs/ is committed; individual .run files are the source of truth
+!data/community_runs/
+!data/community_runs/**
