@@ -15,9 +15,21 @@ Why this matters:
 ## 1. Upload run history
 
 1. Open **Settings**.
-2. Set **Local saves directory** (or leave blank for the default Mac path), then **Save & Restart Watcher**.
+2. Set **Local saves directory** (or leave blank for the default path on your OS), then **Save & Restart Watcher**.
 3. Finished `.run` files import automatically from that folder.
 4. Or click **Choose history folder…** / **Choose .run files…** to upload manually.
+
+Default Windows path:
+
+```
+%APPDATA%\SlayTheSpire2\steam
+```
+
+Inside that folder, Slay the Spire 2 stores saves under per-user subfolders such as:
+
+```
+%APPDATA%\SlayTheSpire2\steam\<user-id>
+```
 
 Default Mac path:
 
