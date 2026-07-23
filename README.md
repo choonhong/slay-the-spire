@@ -2,8 +2,8 @@
 
 ## How to open
 
-1. `npm install`
-2. `make dev`
+1. Run `npm install`
+2. Run `make dev`
 3. Open http://localhost:5173
 
 ## 1. Upload run history
