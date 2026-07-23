@@ -8,6 +8,7 @@ import path from 'path';
 const COMMUNITY_CARDS_PATH = path.join(__dirname, '../../../data/community_cards.json');
 const CARD_TEXT_PATH = path.join(__dirname, '../../../data/card_text.json');
 const GAME_CONTEXT_PATH = path.join(__dirname, '../../../data/game_context.json');
+const RELICS_PATH = path.join(__dirname, '../../../data/relics.json');
 
 /** Display score used when hard-overwriting universal S-tier cards in Card Stats. */
 const UNIVERSAL_S_TIER_SCORE = 95;
@@ -108,7 +109,27 @@ router.get('/relics', (req: AuthRequest, res: Response) => {
       "SELECT DISTINCT relic_id FROM ancient_picks WHERE relic_id IS NOT NULL ORDER BY relic_id"
     ).all() as { relic_id: string }[];
   }
-  res.json(rows.map(r => `RELIC.${r.relic_id}`));
+  const merged = new Set(rows.map(r => `RELIC.${r.relic_id}`));
+
+  // Merge with static relic list (all known STS2 relics) so every relic is
+  // always available in the dropdown regardless of run history.
+  try {
+    const staticRelics = JSON.parse(fs.readFileSync(RELICS_PATH, 'utf-8')) as string[];
+    for (const id of staticRelics) merged.add(id);
+  } catch { /* ignore if file missing */ }
+
+  // Also include any relics defined in game_context relic_synergies.
+  try {
+    const ctx = JSON.parse(fs.readFileSync(GAME_CONTEXT_PATH, 'utf-8')) as {
+      relic_synergies?: Record<string, { relic_id?: string }>;
+    };
+    for (const [key, rs] of Object.entries(ctx.relic_synergies ?? {})) {
+      const id = (rs as { relic_id?: string }).relic_id ?? key;
+      if (id.startsWith('RELIC.')) merged.add(id);
+    }
+  } catch { /* ignore */ }
+
+  res.json([...merged].sort());
 });
 
 /** Average turns to clear fights — damage-quality proxy (lower ≈ stronger output). */

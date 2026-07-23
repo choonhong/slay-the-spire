@@ -96,6 +96,23 @@ function cardGeneratesHandCards(ct: CardText | undefined): boolean {
   return /add .+ into your hand|add .+ to your hand|shivs? into your hand/.test(desc);
 }
 
+/** Strip self-referential "whenever you draw this" so it isn't treated as providing draw. */
+function descWithoutSelfDrawTrigger(desc: string): string {
+  return desc.replace(/whenever you draw this card[^.]*/g, '');
+}
+
+/** True draw / cycle effect (Acrobatics, Guiding Star) — not on-draw self payoffs. */
+function cardProvidesDraw(ct: CardText | undefined): boolean {
+  if (!ct) return false;
+  return /\bdraw\b/.test(descWithoutSelfDrawTrigger((ct.description ?? '').toLowerCase()));
+}
+
+/** Benefits when redrawn (Kingly Kick cost-down, Kingly Punch damage-up, …). */
+function cardPaysOffOnDraw(ct: CardText | undefined): boolean {
+  if (!ct) return false;
+  return /whenever you draw this card/i.test(ct.description ?? '');
+}
+
 interface BossContext {
   act: number;
   name: string;
@@ -374,6 +391,7 @@ function scoreCard(
   ctx: GameContext,
   db: DatabaseSync,
   currentBoss?: string,
+  cardTagMap: Map<string, string[]> = new Map(),
 ): CardScore {
   const act = actFromFloor(floor);
   const charCtx = ctx.characters[character];
@@ -482,7 +500,7 @@ function scoreCard(
     const lift = clamp(p.win_rate_together / 100, 0, 1);
     synergy += lift * 8;
     const partnerCt = cardTextMap.get(partner);
-    if (partnerCt) reasons.push(`Pairs with ${partnerCt.name} (${p.win_rate_together}% wr together)`);
+    if (partnerCt && p.win_rate_together > 0) reasons.push(`Pairs with ${partnerCt.name} (${p.win_rate_together}% wr together)`);
   }
 
   // Duplicate card — diminishing returns penalty, partially offset by win rate data
@@ -524,7 +542,7 @@ function scoreCard(
       reasons.push(`${tag}${copyLabel} copy — ${wr}% wr with ${alreadyInDeck + 1}+ copies (${dupStats.runs} runs)${stackNote}`);
     } else {
       synergy -= BASE_PENALTY + extraPenalty;
-      const stackNote = nonStackable ? ', effect non-stackable' : ', no multi-copy data';
+      const stackNote = nonStackable ? ', effect non-stackable' : '';
       reasons.push(`↓ ${copyLabel} copy — diminishing returns${stackNote}`);
     }
   }
@@ -797,7 +815,8 @@ function scoreCard(
     );
   }
 
-  // Deck lacks damage scaling — block solved or no Accuracy/poison/Strength/Tracking output
+  // Damage assessment — damage × block × velocity is the core STS2 formula.
+  // Damage comes first: no damage = die to scaling Elites/Boss before block matters.
   const hasDamageScaling = deck.some(id => {
     if (['CARD.ACCURACY', 'CARD.NOXIOUS_FUMES', 'CARD.CATALYST', 'CARD.A_THOUSAND_CUTS', 'CARD.ENVENOM', 'CARD.OUTBREAK', 'CARD.ACCELERANT', 'CARD.TRACKING'].includes(id)) {
       return true;
@@ -809,7 +828,17 @@ function scoreCard(
   const nonStrikeDmg = deckTexts.filter(
     c => c.type === 'Attack' && !/strike/i.test(c.id) && !/strike/i.test(c.name),
   ).length;
-  const deckLacksDamage = !hasDamageScaling && (blockSolved || nonStrikeDmg < 4 || act >= 2);
+  // AoE: Act 1 always has a multi-enemy Elite; Act 2 is largely solved by board clear.
+  // Tag-first detection (card_tags.json), regex description as fallback.
+  const isAoe = (id: string, desc: string) =>
+    (cardTagMap.get(id) ?? []).includes('aoe') ||
+    /all enemies|every enemy|to each enemy|all other enemies|for each enemy/i.test(desc);
+  const deckHasAoe = deckTexts.some(c => isAoe(c.id, c.description ?? ''));
+  // Damage solved: has a scaling engine, AoE, or enough non-Strike attacks for the act
+  const dmgThreshold = act === 1 ? 3 : 5;
+  const damageSolved = hasDamageScaling || deckHasAoe || nonStrikeDmg >= dmgThreshold;
+  // deckLacksDamage kept for backwards-compat with specific card rules below
+  const deckLacksDamage = !damageSolved || blockSolved;
   const deckHasWeak = relics.includes('RELIC.RED_MASK') || deckTexts.some(c =>
     /apply\s+\d+\s+weak/i.test(c.description ?? ''),
   );
@@ -832,6 +861,161 @@ function scoreCard(
         ? 'Deck lacks damage — Tracking is +50% Attack damage vs Weak'
         : 'Deck lacks damage — Tracking is strong damage scaling',
     );
+  }
+
+  // AoE damage — general boost by act
+  // Act 1: always a multi-enemy Elite (essential to have at least one AoE)
+  // Act 2: board clear is THE way to solve Act 2 encounters; heavily prioritise
+  const offeredIsAoe = ct?.type !== 'Power' && isAoe(cardId, ct?.description ?? '');
+  if (offeredIsAoe) {
+    if (!deckHasAoe) {
+      // First AoE in deck — urgent regardless of act
+      const aoeBonus = act === 1 ? 18 : act === 2 ? 26 : 16;
+      deckNeeds += aoeBonus;
+      reasons.push(
+        act === 1
+          ? 'First AoE — Act 1 multi-enemy Elite demands board clear'
+          : act === 2
+          ? 'First AoE — board clear is the answer to Act 2'
+          : 'First AoE — essential for multi-enemy fights',
+      );
+    } else {
+      // Deck already has AoE — 2nd copy still valuable in Act 2, minor elsewhere
+      const aoeBonus = act === 2 ? 12 : 6;
+      deckNeeds += aoeBonus;
+      if (act === 2) reasons.push('2nd AoE — Act 2 rewards consistent board clear');
+    }
+  }
+
+  // Recurring attacks: cards that return to hand every turn are permanently active
+  // — they deal their damage in every single turn of every combat.
+  // Thrumming Hatchet (11 dmg for 1 energy) is a permanent Strike upgrade.
+  if (ct?.type === 'Attack' && alreadyInDeck === 0 &&
+      /return(s)? (this|it) to your hand/i.test(ct.description ?? '')) {
+    const dmgMatch = (ct.description ?? '').match(/deal (\d+) damage/i);
+    const dmg = dmgMatch ? parseInt(dmgMatch[1]) : 0;
+    const strikeDmg = 6;
+    const perTurnBonus = dmg - strikeDmg; // e.g. +5 for Hatchet
+    if (perTurnBonus > 0) {
+      if (act === 1) {
+        strength = Math.min(30, strength + 10);
+        synergy += 12;
+        deckNeeds += 26;
+      } else {
+        strength = Math.min(30, strength + 6);
+        synergy += 8;
+        deckNeeds += 16;
+      }
+      reasons.unshift(`Recurring attack — +${perTurnBonus} damage vs Strike, every turn`);
+    }
+  }
+
+  // Tutor attacks: deal damage AND search/select a card from draw pile into hand.
+  // Far stronger than pure draw — you pick exactly what you need.
+  if (ct?.type === 'Attack' && alreadyInDeck === 0 &&
+      /choose .+ (of|from) .+ draw pile.+hand|draw pile.+into your hand/i.test(ct.description ?? '')) {
+    const strFloor = act === 1 ? 8 : 5;
+    strength = Math.max(strength, Math.min(30, strength + strFloor));
+    synergy += act === 1 ? 14 : 10;
+    deckNeeds += act === 1 ? 20 : 14;
+    reasons.unshift('Damage + tutor — search any card from Draw Pile into Hand');
+  }
+
+  // BEGONE!: transforms a hand card into Minion Strike (0-cost: 6 dmg + draw 1)
+  // = deck thinning + free attack generation. Excellent Act 1 tool.
+  if (cardId === 'CARD.BEGONE' && alreadyInDeck === 0) {
+    const thinningTargets = charCtx?.deck_thinning_targets ?? [];
+    const hasThinningTargets = thinningTargets.some(t => deck.includes(t));
+    const hasCharge = deck.includes('CARD.CHARGE');
+    strength = Math.min(30, strength + 6);
+    synergy += hasThinningTargets ? 10 : 6;
+    if (hasCharge) { synergy += 8; reasons.push('Synergy with CHARGE!! — both thin and replace weak starters'); }
+    deckNeeds += act === 1 ? 22 : 14;
+    reasons.unshift(
+      hasThinningTargets
+        ? 'Converts weak starter into free 6 dmg + draw — Act 1 damage + thinning'
+        : 'Converts a hand card into free 6 dmg + draw — tempo positive',
+    );
+  }
+
+  // CHARGE!!: transforms 2 Draw Pile cards into Minion Dive Bombs (0-cost: 13 dmg each)
+  // = removes 2 dead starters, injects 2 free heavy-hitters. Superb Act 1 thinning tool.
+  if (cardId === 'CARD.CHARGE' && alreadyInDeck === 0) {
+    const thinningTargets = charCtx?.deck_thinning_targets ?? [];
+    const thinCount = thinningTargets.filter(t => deck.includes(t)).length;
+    const hasBegone = deck.includes('CARD.BEGONE');
+    strength = Math.min(30, strength + 8);
+    synergy += thinCount >= 2 ? 12 : thinCount === 1 ? 8 : 5;
+    if (hasBegone) { synergy += 8; reasons.push('Synergy with BEGONE! — combined thinning clears out all weak starters'); }
+    deckNeeds += act === 1 ? 26 : 16;
+    reasons.unshift(
+      thinCount >= 2
+        ? `Converts ${thinCount} weak starters into free 13-dmg Dive Bombs — elite Act 1 thinning`
+        : 'Transforms Draw Pile cards into free 13-dmg Dive Bombs — deck thinning + damage',
+    );
+  }
+
+  // ── Star economy (Regent) ────────────────────────────────────────────────
+  // Count star generation in deck (cards with "Gain N★")
+  const starGenInDeck = deckTexts.reduce((sum, c) => {
+    const m = (c.description ?? '').match(/gain (\d+)★/gi);
+    return sum + (m ? m.reduce((s, t) => s + parseInt(t.match(/\d+/)?.[0] ?? '0', 10), 0) : 0);
+  }, 0);
+  const hasStarPayoff = deck.includes('CARD.CHILD_OF_THE_STARS');
+  const hasStarGen    = starGenInDeck >= 3; // at least 3 stars/cycle from deck cards
+
+  // Child of the Stars: strong payoff, but dead without star generation
+  if (cardId === 'CARD.CHILD_OF_THE_STARS' && alreadyInDeck === 0) {
+    if (!hasStarGen) {
+      deckNeeds = Math.max(0, deckNeeds - 18);
+      reasons.push('↓ No star generation in deck — Child of the Stars needs star sources first');
+    } else {
+      synergy += 12;
+      deckNeeds += 16;
+      reasons.push('Star payoff — each ★ spent gains 2 Block; strong with star generation');
+    }
+  }
+
+  // Hidden Cache: generates 4★ total (1★ now + 3★ next turn) — premium star engine
+  if (cardId === 'CARD.HIDDEN_CACHE' && alreadyInDeck === 0) {
+    const starPayoffBonus = hasStarPayoff ? 12 : 0;
+    strength = Math.min(30, strength + 5);
+    synergy += 8 + starPayoffBonus;
+    deckNeeds += act === 1 ? 18 : 12;
+    if (hasStarPayoff) reasons.push('Star gen for Child of the Stars — 4★ turns on the payoff');
+    else reasons.unshift('Generates 4★ — star engine for Regent resource plays');
+  }
+
+  // Kingly Kick: Act 1 nuke that self-cheapens on redraw
+  if (cardId === 'CARD.KINGLY_KICK' && alreadyInDeck === 0 && act === 1) {
+    strength = Math.min(30, strength + 3);
+    synergy += 8;
+    deckNeeds += 24;
+    reasons.unshift('Act 1 nuke');
+  }
+
+  // Silken Tress: first reward gets Glam (Replay) — high-cost cards get the most value
+  if (
+    relics.includes('RELIC.SILKEN_TRESS') &&
+    floor > 0 && floor <= 2 &&
+    alreadyInDeck === 0 &&
+    !isNaN(cardCost)
+  ) {
+    if (cardCost >= 4) {
+      strength = Math.min(30, strength + 5);
+      synergy += 18;
+      deckNeeds += 28;
+      reasons.unshift('Silken Tress Glam — Replay makes high-cost cards absurd');
+    } else if (cardCost === 3) {
+      strength = Math.min(30, strength + 3);
+      synergy += 12;
+      deckNeeds += 18;
+      reasons.unshift('Silken Tress Glam — Replay doubles a 3-cost card');
+    } else if (cardCost === 2) {
+      synergy += 6;
+      deckNeeds += 8;
+      reasons.push('Silken Tress Glam — Replay adds value to 2-cost cards');
+    }
   }
 
   // Power gap: bonus for first few power cards (not poison payoffs with no Poison yet)
@@ -859,16 +1043,40 @@ function scoreCard(
   }
 
   // Draw / cycle: early prefer 0-cost filter (Prepared) over paid pure-draw (Acrobatics)
+  // On-draw self payoffs (Kingly Kick) do NOT provide draw — they combo WITH draw.
   const cardDescLower = (ct?.description ?? '').toLowerCase();
-  const isDrawCard = cardDescLower.includes('draw');
-  const deckHasDraw = deckTexts.some(c => c.description?.toLowerCase().includes('draw'));
+  const isDrawCard = cardProvidesDraw(ct);
+  const deckHasDraw = deckTexts.some(c => cardProvidesDraw(c));
   const isBlockAndDraw = cardGainsNumericBlock(ct) && isDrawCard;
+
+  // On-draw payoffs ↔ draw engines (bidirectional)
+  if (cardPaysOffOnDraw(ct) && deckHasDraw) {
+    synergy += 8;
+    reasons.push('Synergy with draw — pays off every time you redraw it');
+  } else if (isDrawCard && deckTexts.some(c => cardPaysOffOnDraw(c))) {
+    synergy += 6;
+    const payoffNames = deckTexts
+      .filter(c => cardPaysOffOnDraw(c))
+      .map(c => c.name)
+      .filter((n, i, a) => a.indexOf(n) === i)
+      .slice(0, 2);
+    reasons.push(`Synergy with ${payoffNames.join('/')} — draw triggers their on-draw effect`);
+  }
+
+  // Conditional draw Powers (e.g. Pale Blue Dot) — always valuable regardless of existing draw
+  const isConditionalDrawPower = ct?.type === 'Power' && isDrawCard &&
+    /if you (play|have played)/i.test(cardDescLower);
+  if (isConditionalDrawPower && alreadyInDeck === 0) {
+    synergy += 6;
+    deckNeeds += act === 1 ? 14 : 10;
+    reasons.push('Conditional draw Power — consistent extra card when you play out your hand');
+  }
 
   // Young decks love free Block+Draw (Finesse, etc.) — tempo + consistency
   if (act === 1 && deckSize <= 20 && cardCost === 0 && isBlockAndDraw) {
     deckNeeds += 10;
     reasons.push('Early 0-cost Block+Draw — excellent tempo for a young deck');
-  } else if (isDrawCard && !deckHasDraw && deckSize < 20) {
+  } else if (!isConditionalDrawPower && isDrawCard && !deckHasDraw && deckSize < 20) {
     const isPureDrawCycle = !/(deal \d+|gain \d+ block|gain \d+ energy|channel|apply )/i.test(cardDescLower);
     const baseDraw = parseInt(cardDescLower.match(/draw (\d+)/)?.[1] ?? '0', 10);
     const upgDraw = parseInt((ct?.upgrade_description ?? '').toLowerCase().match(/draw (\d+)/)?.[1] ?? '0', 10);
@@ -891,6 +1099,50 @@ function scoreCard(
     }
   }
 
+  // Pure draw cap when damage unsolved — draw is velocity, but velocity without damage is nothing.
+  // If deck can't kill, extra draw just cycles the same weak cards faster.
+  if (!damageSolved && act === 1 && isDrawCard && !offeredIsAoe) {
+    const isPureDrawOnly = !/(deal \d+|gain \d+ block|gain \d+ energy|channel|apply )/i.test(cardDescLower);
+    if (isPureDrawOnly && deckNeeds > 8) {
+      deckNeeds = 8;
+      reasons.push('⚠ Deck needs damage first — draw without damage just cycles weak cards');
+    }
+  }
+
+  // Block de-prioritization when damage unsolved — block alone won't kill Act 1 Elites.
+  // Pure defensive Skills (gain block only, no damage/draw/energy/debuff) drop in priority.
+  if (!damageSolved && ct?.type === 'Skill') {
+    // Exempt cards that also retrieve/cycle (discard→draw), apply debuffs, generate energy, or deal damage
+    const hasRetrieval = /(discard pile|draw pile|put a card|retrieve|return .* to your hand)/i.test(cardDescLower);
+    const isPureBlock = cardGainsNumericBlock(ct) &&
+      !isDrawCard &&
+      !offeredIsAoe &&
+      !hasRetrieval &&
+      !/(deal \d+|gain \d+ energy|apply |channel )/i.test(cardDescLower);
+    if (isPureBlock) {
+      deckNeeds = Math.max(0, deckNeeds - 14);
+      reasons.push('⚠ Damage unsolved — block cards are lower priority than killing elites');
+    }
+  }
+
+  // Block + retrieval (e.g. Cosmic Indifference): not pure block — retrieval adds consistency
+  // and enables combos (e.g. re-queuing Kingly Kick for cost reduction). Score it positively.
+  if (cardGainsNumericBlock(ct) && ct?.type === 'Skill' && alreadyInDeck === 0) {
+    const hasRetrieval = /(discard pile|draw pile|put a card|retrieve)/i.test(cardDescLower);
+    if (hasRetrieval) {
+      // Don't count Basic starter cards (Defend) as real block — they're placeholders
+      const deckLacksBlock = !deckTexts.some(c =>
+        cardGainsNumericBlock(c) && c.type === 'Skill' && !BASIC_CARDS.has(c.id),
+      );
+      deckNeeds += deckLacksBlock ? 18 : 8;
+      reasons.push(
+        deckLacksBlock
+          ? 'Block + retrieval — gains Block while queuing your best card from discard'
+          : 'Retrieval Skill — puts key card from discard on top of Draw Pile',
+      );
+    }
+  }
+
   // Act 1 energy efficiency — prefer >6 damage or >5 Block per energy (0-cost = free)
   // Powers skipped — conditional payoffs (e.g. Outbreak) are not "efficient attacks"
   if (act === 1 && deckSize <= 22 && ct && ct.type !== 'Power') {
@@ -905,19 +1157,20 @@ function scoreCard(
       c => c.type === 'Attack' && !/strike/i.test(c.id) && !/strike/i.test(c.name),
     ).length;
 
-    if (energy === 0 && dmg >= 8) {
+    if (energy === 0 && dmg >= 8 && character !== 'CHARACTER.REGENT') {
       // Backstab-tier free upfront damage — premium Act 1 deck fit
+      // (Regent skipped: ★ is a real resource cost, 0-energy ≠ free)
       let bonus = dmg >= 11 ? 20 : 16;
       if (isInnate) bonus += 8;
       if (nonStrikeAttacks < 2) {
         bonus += 10;
-        reasons.push('Act 1 deck needs upfront damage beyond Strikes');
+        reasons.push('Act 1 deck needs upfront damage');
       }
       deckNeeds += bonus;
       reasons.push(
         isInnate
-          ? `Early free Innate damage (${dmg}) — high energy-efficiency opener`
-          : `Early 0-cost damage (${dmg}) — high energy efficiency`,
+          ? 'Early free Innate damage — high energy-efficiency opener'
+          : 'Early 0-cost damage — high energy efficiency',
       );
     } else if (energy > 0 && energy <= 2 && dmg / energy > 6) {
       let bonus = 8;
@@ -945,11 +1198,47 @@ function scoreCard(
     /apply.*vulnerable|vulnerable.*apply/i.test(c.description ?? '')
   ).length;
   const cardAppliesVuln = /apply.*vulnerable|vulnerable.*apply/i.test(ct?.description ?? '');
+  const cardAppliesWeak = /apply.*weak(?!ness)|weak.*apply/i.test(ct?.description ?? '');
+
   if (cardAppliesVuln && vulnAppliers < 2) {
-    const bonus = vulnAppliers === 0 ? 8 : 4;
-    deckNeeds += bonus;
-    const urgency = vulnAppliers === 0 ? 'No Vulnerable source' : 'Only 1 Vulnerable source';
-    reasons.push(`↑ ${urgency} — desperate need, 50% damage amp with Vicious/Whirlwind`);
+    const needsBonus = vulnAppliers === 0 ? 8 : 4;
+    const synBonus   = vulnAppliers === 0 ? 10 : 4;
+    deckNeeds += needsBonus;
+    synergy   += synBonus;
+    if (vulnAppliers === 0) {
+      reasons.push('1st Vulnerable source — 50% damage amp pairs well with high damage cards');
+    } else {
+      reasons.push('↑ Only 1 Vulnerable source — more coverage for big hits');
+    }
+  }
+
+  // Vulnerable applier × big-hit synergy: Vulnerable's +50% multiplier scales with damage
+  // A deck with high-damage cards (15+ dmg) gets huge value from every Vulnerable application.
+  if (cardAppliesVuln && vulnAppliers === 0) {
+    const bigHits = deckTexts.filter(c => {
+      const m = (c.description ?? '').match(/deal (\d+) damage/i);
+      return m && parseInt(m[1]) >= 15;
+    });
+    if (bigHits.length > 0) {
+      const bigHitBonus = Math.min(bigHits.length * 8, 20);
+      synergy += bigHitBonus;
+      const names = bigHits.map(c => c.name).filter((n, i, a) => a.indexOf(n) === i).slice(0, 2).join('/');
+      reasons.push(`Vulnerable ×${names} — 50% damage amp on big hits`);
+    }
+  }
+
+  // Dual debuff cards (apply both Weak + Vulnerable) are exceptionally efficient —
+  // one card does two jobs: reduce enemy offense AND amplify your offense.
+  // Also credits front-load damage when the card deals damage too.
+  if (cardAppliesVuln && cardAppliesWeak && alreadyInDeck === 0) {
+    const dmgMatch = (ct?.description ?? '').match(/deal (\d+) damage/i);
+    const hasDmg = dmgMatch && parseInt(dmgMatch[1]) > 0;
+    strength = Math.min(30, strength + (hasDmg ? 8 : 5));
+    synergy += 10;
+    deckNeeds += act === 1 ? 16 : 10;
+    reasons.push(hasDmg
+      ? 'Damage + Weak + Vulnerable — front-load burst and dual debuff in one card'
+      : 'Applies Weak + Vulnerable — dual debuff in one card');
   }
 
   // Avoid trap cards
@@ -958,13 +1247,25 @@ function scoreCard(
     reasons.push(`Avoid card for ${character.replace('CHARACTER.', '')}`);
   }
 
-  // Regent: penalise mixing Stars and Forge
-  if (character === 'CHARACTER.REGENT') {
+  // Big Bang: bridges Stars + Forge + draw + energy in a single card — always a priority pick.
+  // Each copy does all four things, so multiple copies remain highly desirable.
+  if (cardId === 'CARD.BIG_BANG') {
+    const bigBangBonus = alreadyInDeck === 0 ? 35 : alreadyInDeck === 1 ? 26 : alreadyInDeck === 2 ? 16 : 8;
+    deckNeeds += bigBangBonus;
+    reasons.push(
+      alreadyInDeck === 0
+        ? 'Draw + Energy + Star + Forge in one card — fits every Regent archetype'
+        : `Copy ${alreadyInDeck + 1} — each Big Bang still draws, generates energy, Stars, and Forge`,
+    );
+  }
+
+  // Regent: penalise mixing Stars and Forge (Big Bang exempt — it feeds both)
+  if (character === 'CHARACTER.REGENT' && cardId !== 'CARD.BIG_BANG') {
     const deckText = deck.map(id => cardTextMap.get(id)?.description ?? '').join(' ').toLowerCase();
     const cardDesc = (ct?.description ?? '').toLowerCase() + (ct?.name ?? '').toLowerCase();
     const deckHasStars = deckText.includes('star') || deck.some(id => id.includes('ALIGNMENT') || id.includes('SEVEN_STARS') || id.includes('BIG_BANG'));
     const deckHasForge = deckText.includes('forge') || deck.some(id => id.includes('SOVEREIGN') || id.includes('BULWARK') || id.includes('FURNACE'));
-    const cardIsStars = cardDesc.includes('star') || ['CARD.BIG_BANG','CARD.ALIGNMENT','CARD.SEVEN_STARS','CARD.CONVERGENCE'].includes(cardId);
+    const cardIsStars = cardDesc.includes('star') || ['CARD.ALIGNMENT','CARD.SEVEN_STARS','CARD.CONVERGENCE'].includes(cardId);
     const cardIsForge = cardDesc.includes('forge') || ['CARD.SUMMON_FORTH','CARD.CONQUEROR','CARD.FURNACE','CARD.BULWARK'].includes(cardId);
     if (deckHasStars && cardIsForge && !deckHasForge) {
       deckNeeds = Math.max(0, deckNeeds - 12);
@@ -1027,6 +1328,35 @@ function scoreCard(
       reasons.push(bestWinConReason);
     }
   }
+
+  // First AoE in deck solves a critical survival gap — treat it as a win condition piece.
+  // Act 1 always has a multi-enemy Elite; Act 2 is largely won/lost on board clear.
+  if (offeredIsAoe && !deckHasAoe) {
+    const aoeWinCon = act === 1 ? 14 : act === 2 ? 18 : 12;
+    if (winCon < aoeWinCon) {
+      winCon = aoeWinCon;
+      reasons.push(
+        act === 1
+          ? 'Solves multi-enemy gap — first AoE is a survival win condition'
+          : 'First AoE — board clear is the win condition for Act 2',
+      );
+    }
+  }
+
+  // Big Bang is a self-contained win condition for Regent — it alone generates Stars,
+  // Forge, draw, and energy. Every additional copy deepens the engine.
+  if (cardId === 'CARD.BIG_BANG' && character === 'CHARACTER.REGENT') {
+    const winConFloor = alreadyInDeck === 0 ? 18 : alreadyInDeck === 1 ? 14 : 10;
+    if (winCon < winConFloor) {
+      winCon = winConFloor;
+      reasons.push(
+        alreadyInDeck === 0
+          ? 'Self-contained win con — Stars + Forge + draw + energy in one card'
+          : `More Big Bangs = faster Star/Forge engine`,
+      );
+    }
+  }
+
   winCon = Math.round(clamp(winCon, 0, 20));
 
   // ── Factor 5: Rarity — not scored (rarity alone is not a pick signal) ──────
@@ -1087,6 +1417,12 @@ export function recommend(db: DatabaseSync, req: RecommendRequest): CardScore[] 
 
   const cardTextMap = new Map(cardTexts.map(c => [c.id, c]));
 
+  // Load card tags (card_tags.json) — tag-first AoE/etc detection
+  const rawTags = loadJson<Record<string, string[]>>('card_tags.json') ?? {};
+  const cardTagMap = new Map(
+    Object.entries(rawTags).filter(([k]) => !k.startsWith('_')).map(([k, v]) => [k, v]),
+  );
+
   // Win rates filtered by character + global fallback
   const charWinRates = getWinRates(db, req.character);
   const allWinRates = getWinRates(db);
@@ -1115,6 +1451,7 @@ export function recommend(db: DatabaseSync, req: RecommendRequest): CardScore[] 
       ctx,
       db,
       req.currentBoss,
+      cardTagMap,
     )
   );
 }

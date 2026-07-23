@@ -251,7 +251,8 @@
       "deck_thinning_targets": ["CARD.STRIKE_REGENT", "CARD.DEFEND_REGENT"],
       "starter_deck": [
         "CARD.STRIKE_REGENT","CARD.STRIKE_REGENT","CARD.STRIKE_REGENT","CARD.STRIKE_REGENT",
-        "CARD.DEFEND_REGENT","CARD.DEFEND_REGENT","CARD.DEFEND_REGENT","CARD.DEFEND_REGENT"
+        "CARD.DEFEND_REGENT","CARD.DEFEND_REGENT","CARD.DEFEND_REGENT","CARD.DEFEND_REGENT",
+        "CARD.FALLING_STAR", "CARD.VENERATE"
       ]
     },
 
@@ -468,6 +469,11 @@
       "filter": { "gains_block": true, "cost": "0" },
       "bonus": 14,
       "reason": "0-cost Block + Fresnel Lens — free Nimble block every cycle"
+    },
+    "RELIC.CENTENNIAL_PUZZLE": {
+      "filter": { "keyword": "Lose HP" },
+      "bonus": 6,
+      "reason": "Centennial Puzzle — Lose HP cards reliably trigger the 3-card draw early in combat"
     }
   },
 

@@ -4,6 +4,7 @@ import {
   fetchRecommendations,
   fetchCurrentRun,
   fetchCombatPace,
+  fetchRelics,
   type CardText,
   type CardScore,
   type CombatPace,
@@ -274,18 +275,98 @@ function CardSearch({
   );
 }
 
-function ScoreCard({ score, rank, upgraded }: { score: CardScore; rank: number; upgraded: boolean }) {
+function RelicSearch({
+  relics,
+  exclude,
+  onPick,
+  requestFocus,
+}: {
+  relics: string[];
+  exclude: string[];
+  onPick: (id: string) => void;
+  requestFocus?: boolean;
+}) {
+  const [query, setQuery] = useState('');
+  const [highlightedIdx, setHighlightedIdx] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const excludeSet = useMemo(() => new Set(exclude), [exclude]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const available = relics.filter(id => !excludeSet.has(id));
+    if (!q) return available.slice(0, 12);
+    return sortByQuery(
+      available.map(id => ({ id, name: formatRelicId(id) })),
+      q,
+    ).slice(0, 12).map(r => r.id);
+  }, [query, relics, excludeSet]);
+
+  useEffect(() => { setHighlightedIdx(0); }, [filtered]);
+  useEffect(() => {
+    if (requestFocus) {
+      const t = window.setTimeout(() => inputRef.current?.focus(), 0);
+      return () => window.clearTimeout(t);
+    }
+  }, [requestFocus]);
+
+  return (
+    <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+      <input
+        ref={inputRef}
+        type="text"
+        placeholder="Search relic…"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setHighlightedIdx(i => Math.min(i + 1, filtered.length - 1));
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setHighlightedIdx(i => Math.max(i - 1, 0));
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const id = filtered[highlightedIdx] ?? filtered[0];
+            if (id) onPick(id);
+          } else if (e.key === 'Escape') {
+            setQuery('');
+          }
+        }}
+        className="w-full px-3 py-2 bg-gray-800 border-b border-gray-700 text-sm text-gray-100 placeholder-gray-500 focus:outline-none"
+      />
+      <div className="max-h-48 overflow-y-auto">
+        {filtered.length === 0 ? (
+          <div className="px-3 py-2 text-xs text-gray-500">No relics found</div>
+        ) : filtered.map((id, i) => (
+          <button
+            key={id}
+            type="button"
+            onMouseDown={() => onPick(id)}
+            onMouseEnter={() => setHighlightedIdx(i)}
+            className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+              i === highlightedIdx ? 'bg-gray-700 text-yellow-200' : 'text-yellow-300/90 hover:bg-gray-800'
+            }`}
+          >
+            {formatRelicId(id)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ScoreCard({ score, rank, upgraded, onPick }: { score: CardScore; rank: number; upgraded: boolean; onPick?: () => void }) {
   const style = SCORE_COLORS[score.recommendation];
 
   return (
-    <div className={`relative flex flex-col gap-3 rounded-xl bg-gray-900 border border-gray-800 p-4 ${style.ring} transition-all`}>
+    <div className={`relative flex flex-col rounded-xl bg-gray-900 border border-gray-800 p-4 ${style.ring} transition-all`}>
       {/* Rank badge */}
       <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center text-xs font-bold text-gray-300">
         {rank}
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-2 pt-1">
+      <div className="flex items-start justify-between gap-2 pt-1 mb-3">
         <div>
           <div className="font-bold text-gray-100">
             {score.name}{upgraded && <span className="text-cyan-400 font-bold ml-0.5">+</span>}
@@ -301,7 +382,7 @@ function ScoreCard({ score, rank, upgraded }: { score: CardScore; rank: number; 
       </div>
 
       {/* Score breakdown bars */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 mb-3">
         {(Object.entries(score.factors) as [string, number][]).map(([key, val]) => {
           const meta = FACTOR_LABELS[key];
           if (!meta) return null;
@@ -319,16 +400,28 @@ function ScoreCard({ score, rank, upgraded }: { score: CardScore; rank: number; 
         })}
       </div>
 
-      {/* Reasons */}
-      {score.reasons.length > 0 && (
-        <ul className="space-y-1 border-t border-gray-800 pt-2">
-          {score.reasons.map((r, i) => (
-            <li key={i} className="text-xs text-gray-400 flex gap-1.5">
-              <span className="text-gray-600 shrink-0">•</span>
-              <span>{r}</span>
-            </li>
-          ))}
-        </ul>
+      {/* Reasons — grows to fill space so button stays at bottom */}
+      <div className="flex-1">
+        {score.reasons.length > 0 && (
+          <ul className="space-y-1 border-t border-gray-800 pt-2">
+            {score.reasons.map((r, i) => (
+              <li key={i} className="text-xs text-gray-400 flex gap-1.5">
+                <span className="text-gray-600 shrink-0">•</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Pick button — pinned to bottom */}
+      {onPick && (
+        <button
+          onClick={onPick}
+          className="w-full mt-3 py-1.5 rounded-md bg-gray-800 border border-gray-700 text-xs text-gray-400 hover:text-white hover:border-spire-500 hover:bg-gray-700 transition-colors"
+        >
+          + Add to deck
+        </button>
       )}
 
     </div>
@@ -348,9 +441,10 @@ const RARITY_COLOR: Record<string, string> = {
 export default function Advisor() {
   const [allCards, setAllCards] = useState<CardText[]>([]);
   const [cardMap, setCardMap] = useState<Map<string, CardText>>(new Map());
+  const [allRelics, setAllRelics] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [character, setCharacter] = useState('CHARACTER.REGENT');
+  const [character, setCharacter] = useState('');
   const [floor, setFloor] = useState(1);
   const [deck, setDeck] = useState<string[]>([]);
   const [relics, setRelics] = useState<string[]>([]);
@@ -367,19 +461,25 @@ export default function Advisor() {
   const [error, setError] = useState<string | null>(null);
   const [setupCollapsed, setSetupCollapsed] = useState(false);
   const [combatPace, setCombatPace] = useState<CombatPace | null>(null);
+  const [addingToDeck, setAddingToDeck] = useState(false);
+  const [addingRelic, setAddingRelic] = useState(false);
 
-  // Load card text once, then immediately sync
+  // Load card text + relic list once, then immediately sync
   useEffect(() => {
-    fetchCardText().then(cards => {
-      setAllCards(cards);
-      setCardMap(new Map(cards.map(c => [c.id, c])));
-      setLoading(false);
-      syncFromSave(true);
-    });
+    Promise.all([fetchCardText(), fetchRelics()])
+      .then(([cards, relicIds]) => {
+        setAllCards(cards);
+        setCardMap(new Map(cards.map(c => [c.id, c])));
+        setAllRelics(relicIds);
+        setLoading(false);
+        syncFromSave(true);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   // Historical clear speed for this character — damage-quality proxy
   useEffect(() => {
+    if (!character) { setCombatPace(null); return; }
     let cancelled = false;
     fetchCombatPace(character)
       .then(pace => { if (!cancelled) setCombatPace(pace); })
@@ -425,6 +525,9 @@ export default function Advisor() {
         });
         setRelics(newRelics);
         setUpgrades(newUpgrades);
+        if (newRelics.length > 0) {
+          setAllRelics(prev => [...new Set([...prev, ...newRelics])]);
+        }
       }
       if (!silent) setSetupCollapsed(false);
     } catch {
@@ -463,7 +566,38 @@ export default function Advisor() {
   }
 
   function removeFromDeck(idx: number) {
+    const removed = deck[idx];
     setDeck(d => d.filter((_, i) => i !== idx));
+    // Drop one matching upgrade entry if this copy was upgraded
+    if (removed) {
+      const copyIndex = deck.slice(0, idx + 1).filter(id => id === removed).length;
+      const upgCount = upgrades.filter(u => u === removed).length;
+      if (copyIndex <= upgCount) {
+        setUpgrades(u => {
+          const i = u.indexOf(removed);
+          if (i < 0) return u;
+          return [...u.slice(0, i), ...u.slice(i + 1)];
+        });
+      }
+    }
+    setScores(null);
+  }
+
+  function addToDeck(id: string, isUpgraded = false) {
+    if (!id) return;
+    setDeck(d => [...d, id]);
+    if (isUpgraded) setUpgrades(u => [...u, id]);
+    setScores(null);
+  }
+
+  function addRelic(id: string) {
+    if (!id || relics.includes(id)) return;
+    setRelics(r => [...r, id]);
+    setScores(null);
+  }
+
+  function removeRelic(idx: number) {
+    setRelics(r => r.filter((_, i) => i !== idx));
     setScores(null);
   }
 
@@ -481,17 +615,29 @@ export default function Advisor() {
     // Keep previous scores visible until user re-runs — don't collapse
   }
 
-  function loadStarterDeck() {
-    // Common starter structures per character
+  function starterDeckFor(char: string): string[] {
     const starters: Record<string, string[]> = {
       'CHARACTER.IRONCLAD':    Array(5).fill('CARD.STRIKE_IRONCLAD').concat(Array(4).fill('CARD.DEFEND_IRONCLAD'), ['CARD.BASH']),
-      'CHARACTER.SILENT':      Array(5).fill('CARD.STRIKE_SILENT').concat(Array(5).fill('CARD.DEFEND_SILENT')),
+      'CHARACTER.SILENT':      Array(5).fill('CARD.STRIKE_SILENT').concat(Array(5).fill('CARD.DEFEND_SILENT'), ['CARD.NEUTRALIZE', 'CARD.SURVIVOR']),
       'CHARACTER.DEFECT':      Array(4).fill('CARD.STRIKE_DEFECT').concat(Array(4).fill('CARD.DEFEND_DEFECT'), ['CARD.ZAP', 'CARD.DUALCAST']),
-      'CHARACTER.NECROBINDER': Array(4).fill('CARD.STRIKE_NECROBINDER').concat(Array(4).fill('CARD.DEFEND_NECROBINDER')),
-      'CHARACTER.REGENT':      Array(4).fill('CARD.STRIKE_REGENT').concat(Array(4).fill('CARD.DEFEND_REGENT')),
+      'CHARACTER.NECROBINDER': Array(4).fill('CARD.STRIKE_NECROBINDER').concat(Array(4).fill('CARD.DEFEND_NECROBINDER'), ['CARD.UNLEASH', 'CARD.POKE']),
+      'CHARACTER.REGENT':      Array(4).fill('CARD.STRIKE_REGENT').concat(Array(4).fill('CARD.DEFEND_REGENT'), ['CARD.FALLING_STAR', 'CARD.VENERATE']),
       'CHARACTER.WATCHER':     Array(4).fill('CARD.STRIKE_WATCHER').concat(Array(4).fill('CARD.DEFEND_WATCHER'), ['CARD.ERUPTION', 'CARD.VIGILANCE']),
     };
-    setDeck(starters[character] ?? []);
+    return starters[char] ?? [];
+  }
+
+  function loadStarterDeck() {
+    setDeck(starterDeckFor(character));
+    setUpgrades([]);
+    setScores(null);
+  }
+
+  function pickCharacter(c: string) {
+    setCharacter(c);
+    setDeck(starterDeckFor(c));
+    setUpgrades([]);
+    setRelics([]);
     setScores(null);
   }
 
@@ -541,30 +687,36 @@ export default function Advisor() {
         <>
           {/* ── Controls row ── */}
           <div className="flex flex-wrap gap-4 items-end">
-            {/* Character — hidden once a run is synced (floor > 0) */}
-            {floor <= 0 && (
-              <div className="space-y-1">
-                <label className="text-xs text-gray-500 uppercase tracking-wide">Character</label>
+            <div>
+              {character ? (
+                <button
+                  type="button"
+                  title="Change character"
+                  onClick={() => {
+                    setCharacter('');
+                    setDeck([]);
+                    setUpgrades([]);
+                    setRelics([]);
+                    setScores(null);
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-spire-500 bg-spire-600 text-sm font-medium text-white hover:brightness-110 transition-all"
+                >
+                  {formatCharacter(character)}
+                </button>
+              ) : (
                 <div className="flex gap-1 flex-wrap">
-                  {CHARACTERS.map(c => {
-                    const isActive = character === c;
-                    return (
-                      <button
-                        key={c}
-                        onClick={() => { setCharacter(c); setDeck([]); setScores(null); }}
-                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
-                          isActive
-                            ? 'bg-spire-600 border-spire-500 text-white'
-                            : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500'
-                        }`}
-                      >
-                        <span className={isActive ? 'text-white' : charColorClass}>{formatCharacter(c)}</span>
-                      </button>
-                    );
-                  })}
+                  {CHARACTERS.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => pickCharacter(c)}
+                      className="px-3 py-1.5 rounded-lg border text-sm font-medium transition-all bg-gray-900/40 border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500"
+                    >
+                      {formatCharacter(c)}
+                    </button>
+                  ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Floor */}
             <div className="space-y-1">
@@ -605,7 +757,7 @@ export default function Advisor() {
                 </button>
                 {deck.length > 0 && (
                   <button
-                    onClick={() => { setDeck([]); setScores(null); }}
+                    onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}
                     className="text-xs px-2 py-1 bg-gray-800 border border-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors"
                   >
                     Clear
@@ -615,71 +767,137 @@ export default function Advisor() {
             </div>
 
             {/* Deck chips */}
-            <div className="min-h-[44px] p-2 bg-gray-900/50 border border-gray-800 rounded-lg">
-              {deck.length === 0 ? (
-                  <span className="text-xs text-gray-600">Empty — click Sync or load starter deck</span>
-              ) : (
-                <>
-                  {/* Rarity summary line */}
-                  {(() => {
-                    const counts: Record<string, number> = {};
-                    deck.forEach(id => {
-                      const rarity = cardMap.get(id)?.rarity ?? 'Unknown';
-                      counts[rarity] = (counts[rarity] ?? 0) + 1;
-                    });
-                    const order = ['Rare', 'Uncommon', 'Common', 'Starter', 'Special', 'Curse'];
-                    const parts = order.filter(r => counts[r]).map(r => ({ rarity: r, count: counts[r] }));
-                    return (
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mb-2 text-xs">
-                        {parts.map(({ rarity, count }) => (
-                          <span key={rarity} className={RARITY_COLOR[rarity] ?? 'text-gray-400'}>
-                            {count} {rarity}
-                          </span>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                  <div className="grid grid-cols-5 gap-x-2 gap-y-0.5">
-                  {deck.map((id, i) => {
-                    const ct = cardMap.get(id);
-                    const colorClass = RARITY_COLOR[ct?.rarity ?? ''] ?? 'text-gray-300';
-                    // nth copy of this card in the deck (1-indexed)
-                    const deckCopyIndex = deck.slice(0, i + 1).filter(d => d === id).length;
-                    // how many copies of this card are upgraded total
-                    const totalUpgraded = upgrades.filter(u => u === id).length;
-                    const isUpgraded = deckCopyIndex <= totalUpgraded;
-                    return (
-                      <div key={`${id}-${i}`} className="group flex items-center min-w-0">
-                        <CardNameCell
-                          id={id}
-                          cardTextMap={cardMap}
-                          className={`text-sm font-bold truncate ${colorClass}`}
-                        />
-                        {isUpgraded && <span className="text-xs text-cyan-400 font-bold shrink-0 ml-0.5">+</span>}
-                        <button
-                          onClick={() => removeFromDeck(i)}
-                          className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-gray-200 text-xs leading-none shrink-0 transition-opacity"
-                        >×</button>
-                      </div>
-                    );
-                  })}
+            <div className="relative flex gap-1.5 min-h-[44px] p-2 bg-gray-900/50 border border-gray-800 rounded-lg">
+              <div className="flex-1 min-w-0">
+                {deck.length === 0 ? (
+                  <span className="text-xs text-gray-600">Empty — pick a character, tap +, or Sync from a live run</span>
+                ) : (
+                  <>
+                    {/* Rarity summary line */}
+                    {(() => {
+                      const counts: Record<string, number> = {};
+                      deck.forEach(id => {
+                        const rarity = cardMap.get(id)?.rarity ?? 'Unknown';
+                        counts[rarity] = (counts[rarity] ?? 0) + 1;
+                      });
+                      const order = ['Rare', 'Uncommon', 'Common', 'Starter', 'Special', 'Curse'];
+                      const parts = order.filter(r => counts[r]).map(r => ({ rarity: r, count: counts[r] }));
+                      return (
+                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mb-2 text-xs">
+                          {parts.map(({ rarity, count }) => (
+                            <span key={rarity} className={RARITY_COLOR[rarity] ?? 'text-gray-400'}>
+                              {count} {rarity}
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                    <div className="grid grid-cols-5 gap-x-2 gap-y-0.5">
+                      {deck.map((id, i) => {
+                        const ct = cardMap.get(id);
+                        const colorClass = RARITY_COLOR[ct?.rarity ?? ''] ?? 'text-gray-300';
+                        // nth copy of this card in the deck (1-indexed)
+                        const deckCopyIndex = deck.slice(0, i + 1).filter(d => d === id).length;
+                        // how many copies of this card are upgraded total
+                        const totalUpgraded = upgrades.filter(u => u === id).length;
+                        const isUpgraded = deckCopyIndex <= totalUpgraded;
+                        return (
+                          <div key={`${id}-${i}`} className="group flex items-center min-w-0">
+                            <CardNameCell
+                              id={id}
+                              cardTextMap={cardMap}
+                              className={`text-sm font-bold truncate ${colorClass}`}
+                            />
+                            {isUpgraded && <span className="text-xs text-cyan-400 font-bold shrink-0 ml-0.5">+</span>}
+                            <button
+                              onClick={() => removeFromDeck(i)}
+                              className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-gray-200 text-xs leading-none shrink-0 transition-opacity"
+                            >×</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="relative shrink-0 flex items-end">
+                <button
+                  type="button"
+                  title={character ? 'Add card' : 'Pick a character first'}
+                  disabled={!character}
+                  onClick={() => setAddingToDeck(v => !v)}
+                  className="w-7 h-7 rounded-md bg-gray-800 border border-gray-600 text-gray-300 hover:text-white hover:border-spire-500 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-lg leading-none flex items-center justify-center transition-colors"
+                >
+                  +
+                </button>
+
+                {addingToDeck && character && (
+                  <div className="absolute bottom-full right-0 mb-1.5 z-50 w-72">
+                    <CardSearch
+                      cards={allCards}
+                      character={character}
+                      placeholder="Search card…"
+                      value=""
+                      upgraded={false}
+                      onChange={(id, isUpgraded) => {
+                        addToDeck(id, isUpgraded);
+                        setAddingToDeck(false);
+                      }}
+                      requestFocus
+                      onFocusHandled={() => {}}
+                    />
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* Relics (read-only, populated via Sync from Save) */}
+            {/* Relics */}
             <div className="space-y-1.5">
               <label className="text-xs text-gray-500 uppercase tracking-wide">Relics {relics.length > 0 && `(${relics.length})`}</label>
-              <div className="flex flex-wrap gap-1.5 min-h-[28px]">
-                {relics.length === 0 ? (
-                  <span className="text-xs text-gray-600 self-center">No relics — use Sync to load</span>
-                ) : relics.map(r => (
+              <div className="relative flex gap-1.5 min-h-[36px] p-2 bg-gray-900/50 border border-gray-800 rounded-lg">
+                <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+                  {relics.length === 0 ? (
+                    <span className="text-xs text-gray-600 self-center">Empty — tap + to add, or Sync from a live run</span>
+                  ) : relics.map((r, i) => (
+                    <span
+                      key={`${r}-${i}`}
+                      className="group inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-900/30 border border-yellow-700/40 rounded text-sm text-yellow-300"
+                    >
+                      {formatRelicId(r)}
+                      <button
+                        type="button"
+                        onClick={() => removeRelic(i)}
+                        className="opacity-0 group-hover:opacity-100 text-yellow-600 hover:text-yellow-200 text-xs leading-none transition-opacity"
+                      >×</button>
+                    </span>
+                  ))}
+                </div>
 
-                  <span key={r} className="px-2 py-0.5 bg-yellow-900/30 border border-yellow-700/40 rounded text-sm text-yellow-300">
-                    {formatRelicId(r)}
-                  </span>
-                ))}
+                <div className="relative shrink-0 flex items-end">
+                  <button
+                    type="button"
+                    title="Add relic"
+                    onClick={() => setAddingRelic(v => !v)}
+                    className="w-7 h-7 rounded-md bg-gray-800 border border-gray-600 text-gray-300 hover:text-white hover:border-yellow-500 hover:bg-gray-700 text-lg leading-none flex items-center justify-center transition-colors"
+                  >
+                    +
+                  </button>
+
+                  {addingRelic && (
+                    <div className="absolute bottom-full right-0 mb-1.5 z-50 w-72">
+                      <RelicSearch
+                        relics={allRelics}
+                        exclude={relics}
+                        requestFocus
+                        onPick={id => {
+                          addRelic(id);
+                          setAddingRelic(false);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -741,34 +959,6 @@ export default function Advisor() {
         {error && <span className="text-xs text-red-400">{error}</span>}
       </div>
 
-      {/* Damage pace — always visible when we have history for this character */}
-      {combatPace && combatPace.runs > 0 && (
-        <div
-          className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-2.5 text-xs text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1"
-          title="Average turns to clear fights in your past runs for this character. Lower ≈ stronger damage."
-        >
-          <span className="text-gray-500 font-medium uppercase tracking-wide">Clear pace</span>
-          <span>
-            <span className="text-gray-500">Normals</span>{' '}
-            <span className="text-gray-200 tabular-nums font-medium">{combatPace.monster.n ? combatPace.monster.avg : '—'}</span>
-            {combatPace.monster.n > 0 && <span className="text-gray-600">t</span>}
-          </span>
-          <span className="text-gray-700">·</span>
-          <span>
-            <span className="text-gray-500">Elites</span>{' '}
-            <span className="text-gray-200 tabular-nums font-medium">{combatPace.elite.n ? combatPace.elite.avg : '—'}</span>
-            {combatPace.elite.n > 0 && <span className="text-gray-600">t</span>}
-          </span>
-          <span className="text-gray-700">·</span>
-          <span>
-            <span className="text-gray-500">Bosses</span>{' '}
-            <span className="text-gray-200 tabular-nums font-medium">{combatPace.boss.n ? combatPace.boss.avg : '—'}</span>
-            {combatPace.boss.n > 0 && <span className="text-gray-600">t</span>}
-          </span>
-          <span className="text-gray-600">({combatPace.runs} runs · lower = better damage)</span>
-        </div>
-      )}
-
       {/* ── Results ── */}
       {scores && (
         <div className="space-y-3">
@@ -776,24 +966,59 @@ export default function Advisor() {
             <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Recommendation</h3>
             <span className="text-xs text-gray-600">Floor {floor} · Act {act}{currentBoss ? ` · ${formatEncounterId(currentBoss)}` : ''} · {deck.length} cards in deck</span>
           </div>
-          <div className={`grid gap-4 ${scores.length === 1 ? 'grid-cols-1 max-w-xs' : scores.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+          <div className={`grid gap-4 items-stretch ${scores.length === 1 ? 'grid-cols-1 max-w-xs' : scores.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {scores.map((s, i) => (
               <ScoreCard
                 key={s.card_id}
                 score={s}
                 rank={i + 1}
                 upgraded={offeredUpgrades[i] ?? false}
+                onPick={() => {
+                  addToDeck(s.card_id, offeredUpgrades[i] ?? false);
+                  setOffered(['', '', ''] as [string, string, string]);
+                  setOfferedUpgrades([false, false, false]);
+                  setScores(null);
+                }}
               />
             ))}
           </div>
 
-          {/* Act context tip */}
-          <div className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-3 text-xs text-gray-500 leading-relaxed">
-            <span className="text-gray-400 font-medium">Act {act} principle: </span>
-            {act === 1 && 'Increase energy efficiency — every energy spent should do more than 6 damage or 5 Block. Reduce wasted energy.'}
-            {act === 2 && 'Identify your win condition. Take key synergy pieces. Avoid random Commons that dilute focus.'}
-            {act === 3 && 'Your deck is mostly built. Only add clear upgrades. Rare > Uncommon > skip a Common.'}
-          </div>
+          {/* Act context tip — hidden for Act 1 */}
+          {act > 1 && (
+            <div className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-3 text-xs text-gray-500 leading-relaxed">
+              <span className="text-gray-400 font-medium">Act {act} principle: </span>
+              {act === 2 && 'Identify your win condition. Take key synergy pieces. Avoid random Commons that dilute focus.'}
+              {act === 3 && 'Your deck is mostly built. Only add clear upgrades. Rare > Uncommon > skip a Common.'}
+            </div>
+          )}
+
+          {/* Damage pace */}
+          {combatPace && combatPace.runs > 0 && (
+            <div
+              className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-2.5 text-xs text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1"
+              title="Average turns to clear fights in your past runs for this character. Lower ≈ stronger damage."
+            >
+              <span className="text-gray-500 font-medium uppercase tracking-wide">Clear pace</span>
+              <span>
+                <span className="text-gray-500">Normals</span>{' '}
+                <span className="text-gray-200 tabular-nums font-medium">{combatPace.monster.n ? combatPace.monster.avg : '—'}</span>
+                {combatPace.monster.n > 0 && <span className="text-gray-600">t</span>}
+              </span>
+              <span className="text-gray-700">·</span>
+              <span>
+                <span className="text-gray-500">Elites</span>{' '}
+                <span className="text-gray-200 tabular-nums font-medium">{combatPace.elite.n ? combatPace.elite.avg : '—'}</span>
+                {combatPace.elite.n > 0 && <span className="text-gray-600">t</span>}
+              </span>
+              <span className="text-gray-700">·</span>
+              <span>
+                <span className="text-gray-500">Bosses</span>{' '}
+                <span className="text-gray-200 tabular-nums font-medium">{combatPace.boss.n ? combatPace.boss.avg : '—'}</span>
+                {combatPace.boss.n > 0 && <span className="text-gray-600">t</span>}
+              </span>
+              <span className="text-gray-600">({combatPace.runs} runs · lower = better damage)</span>
+            </div>
+          )}
         </div>
       )}
     </div>
