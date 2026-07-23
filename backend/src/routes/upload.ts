@@ -36,7 +36,6 @@ router.post('/runs', (req: AuthRequest, res: Response) => {
     try {
       const db = getDb();
       // Always write to community_runs/<uuid>/ — UUID is globally unique across machines
-      const db = getDb();
       const userRow = db.prepare('SELECT username FROM users WHERE id = ?').get(req.userId!) as { username: string } | undefined;
       const userFolder = userRow?.username ?? String(req.userId);
       const userRunsDir = path.join(COMMUNITY_RUNS_DIR, userFolder);
