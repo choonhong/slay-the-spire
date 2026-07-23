@@ -44,6 +44,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
   const [selectedChar, setSelectedChar] = useState('');
   const [selectedBuild, setSelectedBuild] = useState('');
   const [minRuns, setMinRuns] = useState(3);
+  const [scope, setScope] = useState<'global' | 'mine'>('mine');
   const [sortBy, setSortBy] = useState<'win_rate' | 'lift' | 'runs'>('lift');
   const [cardSearch, setCardSearch] = useState('');
   const [cardTexts, setCardTexts] = useState<CardText[]>([]);
@@ -62,6 +63,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
           character: selectedChar || undefined,
           buildId: selectedBuild || undefined,
           minRuns,
+          scope,
         }),
         fetchCharacters(),
         fetchBuilds(),
@@ -82,7 +84,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
   // (keeps search state, but picks up newly synced runs)
   useEffect(() => {
     if (active) load();
-  }, [active, selectedChar, selectedBuild, minRuns]);
+  }, [active, selectedChar, selectedBuild, minRuns, scope]);
 
   const cardName = (id: string) =>
     (cardTextMap.get(id)?.name ?? id.replace(/^CARD\./, '').replace(/_/g, ' ')).toLowerCase();
@@ -144,6 +146,23 @@ export default function Synergies({ active = true }: { active?: boolean }) {
             </button>
           );
         })}
+      </div>
+
+      {/* Scope toggle */}
+      <div className="flex rounded-lg bg-gray-800/60 p-0.5 w-fit gap-0.5">
+        {(['global', 'mine'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setScope(s)}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              scope === s
+                ? 'bg-spire-600 text-white'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            {s === 'global' ? 'Global Stats' : 'My Stats'}
+          </button>
+        ))}
       </div>
 
       {/* Secondary filters */}

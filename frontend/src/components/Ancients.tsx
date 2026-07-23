@@ -64,6 +64,7 @@ export default function Ancients() {
   const [selectedChar, setSelectedChar] = useState('');
   const [selectedBuild, setSelectedBuild] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<string>('ALL');
+  const [scope, setScope] = useState<'global' | 'mine'>('mine');
 
   const load = async () => {
     setLoading(true);
@@ -73,6 +74,7 @@ export default function Ancients() {
         fetchAncients({
           character: selectedChar || undefined,
           buildId: selectedBuild || undefined,
+          scope,
         }),
         fetchCharacters(),
         fetchBuilds(),
@@ -87,7 +89,7 @@ export default function Ancients() {
     }
   };
 
-  useEffect(() => { load(); }, [selectedChar, selectedBuild]);
+  useEffect(() => { load(); }, [selectedChar, selectedBuild, scope]);
 
   const neowStats = useMemo(
     () => stats.filter(s => s.is_neow === 1).sort((a, b) => b.win_rate - a.win_rate || b.times_picked - a.times_picked),
@@ -156,6 +158,23 @@ export default function Ancients() {
             </button>
           );
         })}
+      </div>
+
+      {/* Scope toggle */}
+      <div className="flex rounded-lg bg-gray-800/60 p-0.5 w-fit gap-0.5">
+        {(['global', 'mine'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setScope(s)}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              scope === s
+                ? 'bg-spire-600 text-white'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            {s === 'global' ? 'Global Stats' : 'My Stats'}
+          </button>
+        ))}
       </div>
 
       {builds.length > 1 && (
