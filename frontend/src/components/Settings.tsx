@@ -4,8 +4,7 @@ import { useAuth } from '../AuthContext';
 import { THEMES, useTheme } from '../themes';
 import PageHeader from './PageHeader';
 
-const DEFAULT_SAVES_HINT =
-  '~/Library/Application Support/SlayTheSpire2';
+const DEFAULT_SAVES_HINT = 'Leave blank to use the default path for your OS';
 
 // Swatch colors per theme (bg, panel, accent)
 const SWATCHES: Record<string, [string, string, string]> = {
@@ -128,7 +127,8 @@ export default function Settings() {
           <p className="text-sm font-medium text-gray-300">Local saves directory</p>
           <p className="text-xs text-gray-500 mt-0.5">
             Backend reads <code className="text-gray-400">current_run.save</code> for Advisor and watches
-            for new <code className="text-gray-400">.run</code> files. Leave blank for the default Mac path.
+            for new <code className="text-gray-400">.run</code> files. Leave blank to use the default path
+            for your OS. On Windows, the default root is <code className="text-gray-400">%APPDATA%\SlayTheSpire2\steam</code>.
           </p>
         </div>
         <input
@@ -140,7 +140,7 @@ export default function Settings() {
           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 font-mono placeholder-gray-600 focus:outline-none focus:border-spire-500"
         />
         {resolvedSavesPath && (
-          <p className="text-[10px] text-gray-600 font-mono break-all">Active: {resolvedSavesPath}</p>
+          <p className="text-[10px] text-gray-600 font-mono break-all">Active root path: {resolvedSavesPath}</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
           <button

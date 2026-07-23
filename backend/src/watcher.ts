@@ -14,7 +14,16 @@ export function getSavesPath(): string {
   if (cfg.savesPath) return cfg.savesPath;
   if (process.env.STS2_SAVES_PATH) return process.env.STS2_SAVES_PATH;
 
-  // Default Mac path — recursive search finds profile*/saves/current_run.save and history/*.run
+  return getDefaultSavesRoot();
+}
+
+function getDefaultSavesRoot(): string {
+  if (process.platform === 'win32') {
+    const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+    return path.join(appData, 'SlayTheSpire2', 'steam');
+  }
+
+  // Recursive search finds profile*/saves/current_run.save and history/*.run.
   return path.join(os.homedir(), 'Library', 'Application Support', 'SlayTheSpire2');
 }
 
