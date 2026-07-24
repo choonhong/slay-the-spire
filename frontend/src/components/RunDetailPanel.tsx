@@ -15,6 +15,34 @@ interface Props {
   runId: number;
 }
 
+const RARITY_ORDER = ['Rare', 'Uncommon', 'Common', 'Starter', 'Special', 'Curse', 'Unknown'] as const;
+
+function groupFinalDeck(
+  finalDeck: Array<{ id: string; upgraded: boolean }>,
+  cardTextMap: Map<string, CardText>,
+) {
+  const grouped = new Map<string, { id: string; upgraded: boolean; count: number }>();
+  for (const card of finalDeck) {
+    const key = `${card.id}__${card.upgraded ? '+' : ''}`;
+    if (grouped.has(key)) grouped.get(key)!.count++;
+    else grouped.set(key, { id: card.id, upgraded: card.upgraded, count: 1 });
+  }
+  const entries = [...grouped.values()].sort((a, b) => {
+    const ra = RARITY_ORDER.indexOf((cardTextMap.get(a.id)?.rarity ?? 'Unknown') as typeof RARITY_ORDER[number]);
+    const rb = RARITY_ORDER.indexOf((cardTextMap.get(b.id)?.rarity ?? 'Unknown') as typeof RARITY_ORDER[number]);
+    return ra - rb;
+  });
+  const rarityCounts: Record<string, number> = {};
+  for (const { id, count } of entries) {
+    const r = cardTextMap.get(id)?.rarity ?? 'Unknown';
+    rarityCounts[r] = (rarityCounts[r] ?? 0) + count;
+  }
+  const rarityParts = ['Rare', 'Uncommon', 'Common', 'Starter', 'Special', 'Curse']
+    .filter(r => rarityCounts[r])
+    .map(r => ({ rarity: r, count: rarityCounts[r] }));
+  return { entries, rarityParts };
+}
+
 export default function RunDetailPanel({ runId }: Props) {
   const [details, setDetails] = useState<RunDetails | null>(null);
   const [cardTextMap, setCardTextMap] = useState<Map<string, CardText>>(new Map());
@@ -63,27 +91,7 @@ export default function RunDetailPanel({ runId }: Props) {
 
       {/* Final deck */}
       {details.final_deck.length > 0 && (() => {
-        // Group by id+upgraded key, preserving rarity order
-        const grouped = new Map<string, { id: string; upgraded: boolean; count: number }>();
-        for (const card of details.final_deck) {
-          const key = `${card.id}__${card.upgraded ? '+' : ''}`;
-          if (grouped.has(key)) grouped.get(key)!.count++;
-          else grouped.set(key, { id: card.id, upgraded: card.upgraded, count: 1 });
-        }
-        const rarityOrder = ['Rare', 'Uncommon', 'Common', 'Starter', 'Special', 'Curse', 'Unknown'];
-        const entries = [...grouped.values()].sort((a, b) => {
-          const ra = rarityOrder.indexOf(cardTextMap.get(a.id)?.rarity ?? 'Unknown');
-          const rb = rarityOrder.indexOf(cardTextMap.get(b.id)?.rarity ?? 'Unknown');
-          return ra - rb;
-        });
-        const rarityCounts: Record<string, number> = {};
-        for (const { id, count } of entries) {
-          const r = cardTextMap.get(id)?.rarity ?? 'Unknown';
-          rarityCounts[r] = (rarityCounts[r] ?? 0) + count;
-        }
-        const rarityParts = ['Rare','Uncommon','Common','Starter','Special','Curse']
-          .filter(r => rarityCounts[r])
-          .map(r => ({ rarity: r, count: rarityCounts[r] }));
+        const { entries, rarityParts } = groupFinalDeck(details.final_deck, cardTextMap);
         return (
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">

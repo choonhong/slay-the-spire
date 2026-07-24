@@ -22,6 +22,7 @@ export default function SlidingPill({ options, value, onChange, className = '', 
   const sliderRef    = useRef<HTMLDivElement>(null);
   const activeIdxRef = useRef(-1);
   const rafRef       = useRef<number | null>(null);
+  const roRafRef     = useRef<number | null>(null);
 
   const activeIdx = options.findIndex(o => o.id === value);
   const activeOpt = options[activeIdx];
@@ -104,14 +105,19 @@ export default function SlidingPill({ options, value, onChange, className = '', 
       slider.style.left       = `${btn.offsetLeft}px`;
       slider.style.width      = `${btn.offsetWidth}px`;
       slider.style.opacity    = '1';
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      if (roRafRef.current !== null) cancelAnimationFrame(roRafRef.current);
+      roRafRef.current = requestAnimationFrame(() => {
+        roRafRef.current = requestAnimationFrame(() => {
           if (sliderRef.current) sliderRef.current.style.transition = TRANSITION;
+          roRafRef.current = null;
         });
       });
     });
     ro.observe(container);
-    return () => ro.disconnect();
+    return () => {
+      if (roRafRef.current !== null) cancelAnimationFrame(roRafRef.current);
+      ro.disconnect();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

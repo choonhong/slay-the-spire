@@ -15,20 +15,11 @@ import {
 } from '@tanstack/react-table';
 import { fetchCardStats, fetchCharacters, fetchBuilds, fetchCommunityCards, fetchCardText, type CardStat, type CommunityCard, type CardText, type CopyWinRate } from '../api';
 import { formatCharacter } from '../utils';
+import { sortCharacters } from '../constants/characters';
 
 type CardRow = CardStat & { community_score: number; community_tier: string };
 const col = createColumnHelper<CardRow>();
 
-const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-};
-
-const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
 
 function winRateColor(value: number) {
   return value >= 70 ? 'text-green-400' :
@@ -109,14 +100,6 @@ const TIER_COLOR: Record<string, string> = {
   D: 'bg-red-900 text-gray-300',
 };
 
-const ENERGY_COLOR: Record<string, string> = {
-  '0': 'bg-green-700 text-green-100',
-  '1': 'bg-blue-700 text-blue-100',
-  '2': 'bg-yellow-700 text-yellow-100',
-  '3': 'bg-red-800 text-red-100',
-  'X': 'bg-purple-700 text-purple-100',
-  'N/A': 'bg-gray-700 text-gray-300',
-};
 
 
 function TierBadge({ tier, score }: { tier: string; score: number }) {
@@ -192,7 +175,7 @@ export default function CardStatsTable() {
     }
   };
 
-  useEffect(() => { loadData(); }, [selectedChar, selectedBuild, colorlessOnly, scope]);
+  useEffect(() => { loadData(); }, [selectedChar, selectedBuild, scope]);
 
   const filtered = useMemo(
     () => data.filter(d => {
@@ -251,7 +234,7 @@ export default function CardStatsTable() {
           : <span className="text-gray-600">—</span>;
       },
     }),
-  ], [communityMap, cardTextMap]);
+  ], [cardTextMap]);
 
   const table = useReactTable({
     data: filtered,
@@ -263,8 +246,6 @@ export default function CardStatsTable() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
-
-  const activeCharKey = selectedChar.replace(/^CHARACTER\./, '');
 
   return (
     <div className="space-y-5">
@@ -279,11 +260,7 @@ export default function CardStatsTable() {
         <SlidingPill
           options={[
             { id: '__all__', label: 'All' },
-            ...[...characters].sort((a, b) => {
-              const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
-              const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
-              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-            }).map(c => ({ id: c, label: formatCharacter(c) })),
+            ...sortCharacters(characters).map(c => ({ id: c, label: formatCharacter(c) })),
             { id: '__colorless__', label: 'Colorless' },
           ]}
           value={colorlessOnly ? '__colorless__' : (selectedChar || '__all__')}
@@ -377,13 +354,13 @@ export default function CardStatsTable() {
           <tbody>
             {initialLoading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
                   Loading...
                 </td>
               </tr>
             ) : table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
                   No data found
                 </td>
               </tr>

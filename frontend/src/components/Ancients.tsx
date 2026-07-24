@@ -1,18 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchAncients, fetchCharacters, fetchBuilds, type AncientStat } from '../api';
 import { formatRelicId, formatEventName, formatCharacter } from '../utils';
+import { sortCharacters } from '../constants/characters';
 import PageHeader from './PageHeader';
 import SlidingPill from './SlidingPill';
-
-const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT'];
-const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-};
 
 function WinRateBar({ value, runs }: { value: number; runs: number }) {
   const color = value >= 70 ? 'bg-green-500' : value >= 50 ? 'bg-yellow-500' : 'bg-red-500';
@@ -42,7 +33,7 @@ function RelicTable({ rows }: { rows: AncientStat[] }) {
         <tbody>
           {rows.map((row, i) => (
             <tr
-              key={i}
+              key={row.relic_id}
               className={`border-t border-gray-800/50 hover:bg-gray-800/40 transition-colors ${i % 2 === 0 ? 'bg-gray-900/20' : ''}`}
             >
               <td className="px-4 py-2.5 text-gray-200 font-bold">{formatRelicId(row.relic_id)}</td>
@@ -115,11 +106,7 @@ export default function Ancients() {
 
   const eventNames = useMemo(() => Array.from(ancientEvents.keys()).sort(), [ancientEvents]);
 
-  const orderedChars = [...characters].sort((a, b) => {
-    const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
-    const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
-    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-  });
+  const orderedChars = sortCharacters(characters);
 
   return (
     <div className="space-y-5">

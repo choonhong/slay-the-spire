@@ -1,20 +1,11 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { fetchSynergies, fetchCharacters, fetchBuilds, fetchCardText, type SynergyPair, type CardText } from '../api';
 import { formatCharacter } from '../utils';
+import { sortCharacters } from '../constants/characters';
 import { CardNameCell } from './CardNameCell';
 import ClearableInput from './ClearableInput';
 import PageHeader from './PageHeader';
 import SlidingPill from './SlidingPill';
-
-const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
-const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-};
 
 function LiftBadge({ value }: { value: number }) {
   if (value >= 15) return <span className="text-green-400 font-semibold">+{value}%</span>;
@@ -102,6 +93,9 @@ export default function Synergies({ active = true }: { active?: boolean }) {
     });
   }, [pairs, sortBy, cardSearch, cardTextMap]);
 
+  const searchQuery = cardSearch.trim().toLowerCase();
+  const matchesSearch = (id: string): boolean => !!searchQuery && cardName(id).includes(searchQuery);
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -115,11 +109,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
         <SlidingPill
           options={[
             { id: '__all__', label: 'All' },
-            ...[...characters].sort((a, b) => {
-              const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
-              const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
-              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-            }).map(c => ({ id: c, label: formatCharacter(c) })),
+            ...sortCharacters(characters).map(c => ({ id: c, label: formatCharacter(c) })),
           ]}
           value={selectedChar || '__all__'}
           onChange={id => setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id))}
@@ -158,7 +148,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
             type="number"
             min={2}
             value={minRuns}
-            onChange={e => setMinRuns(Number(e.target.value))}
+            onChange={e => setMinRuns(Math.max(2, Number(e.target.value)))}
             className="w-16 px-3 py-1.5 rounded-full text-gray-100 glass-input text-center"
           />
         </div>
@@ -210,14 +200,14 @@ export default function Synergies({ active = true }: { active?: boolean }) {
                 >
                   <td className="px-4 py-2.5">
                     <CardNameCell id={p.card_a} cardTextMap={cardTextMap}
-                      colorByRarity={!(cardSearch && cardName(p.card_a).includes(cardSearch.toLowerCase()))}
-                      className={cardSearch && cardName(p.card_a).includes(cardSearch.toLowerCase()) ? 'font-bold text-spire-400' : 'font-bold'}
+                      colorByRarity={!matchesSearch(p.card_a)}
+                      className={matchesSearch(p.card_a) ? 'font-bold text-spire-400' : 'font-bold'}
                     />
                   </td>
                   <td className="px-4 py-2.5">
                     <CardNameCell id={p.card_b} cardTextMap={cardTextMap}
-                      colorByRarity={!(cardSearch && cardName(p.card_b).includes(cardSearch.toLowerCase()))}
-                      className={cardSearch && cardName(p.card_b).includes(cardSearch.toLowerCase()) ? 'font-bold text-spire-400' : 'font-bold'}
+                      colorByRarity={!matchesSearch(p.card_b)}
+                      className={matchesSearch(p.card_b) ? 'font-bold text-spire-400' : 'font-bold'}
                     />
                   </td>
                   <td className="px-4 py-2.5 text-gray-400 tabular-nums">

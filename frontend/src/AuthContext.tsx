@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import axios from 'axios';
 
 export interface AuthUser { id: number; username: string }
@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const token = localStorage.getItem('token');
 
     if (token) {
@@ -40,31 +41,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(r => {
+          if (cancelled) return;
           if (r.data.token) localStorage.setItem('token', r.data.token);
           setUser({ id: r.data.id, username: r.data.username });
         })
         .catch(() => {
+          if (cancelled) return;
           // Token invalid — re-init
           localStorage.removeItem('token');
           return initAuth().then(({ token: t, user: u }) => {
+            if (cancelled) return;
             localStorage.setItem('token', t);
             setUser(u);
           });
         })
-        .finally(() => setLoading(false));
+        .finally(() => { if (!cancelled) setLoading(false); });
     } else {
       // First visit — auto-create identity
       initAuth()
         .then(({ token: t, user: u }) => {
+          if (cancelled) return;
           localStorage.setItem('token', t);
           setUser(u);
         })
         .catch(() => {/* server unreachable */})
-        .finally(() => setLoading(false));
+        .finally(() => { if (!cancelled) setLoading(false); });
     }
+
+    return () => { cancelled = true; };
   }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('clientId');
     setUser(null);
@@ -73,10 +80,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('token', t);
       setUser(u);
     });
-  };
+  }, []);
+
+  const ctxValue = useMemo(() => ({ user, loading, logout }), [user, loading, logout]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={ctxValue}>
       {children}
     </AuthContext.Provider>
   );
