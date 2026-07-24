@@ -6,6 +6,7 @@ import Synergies from './components/Synergies';
 import Ancients from './components/Ancients';
 import Advisor from './components/Advisor';
 import Settings from './components/Settings';
+import SlidingPill from './components/SlidingPill';
 import { useTheme } from './themes';
 
 type Tab = 'stats' | 'synergies' | 'ancients' | 'runs' | 'advisor' | 'settings';
@@ -26,32 +27,35 @@ function AppInner() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-900/80 backdrop-blur sticky top-0 z-10">
+      <header className="sticky top-0 z-10" style={{
+        background: 'rgba(8, 11, 20, 0.75)',
+        backdropFilter: 'blur(32px) saturate(1.5)',
+        WebkitBackdropFilter: 'blur(32px) saturate(1.5)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)',
+      }}>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 py-3 flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-2xl tracking-tight text-spire-400">
+            <span className="font-bold text-2xl tracking-tight text-spire-400" style={{
+              textShadow: '0 0 20px rgba(255,180,84,0.35)',
+            }}>
               STS2 Advisor
             </span>
           </div>
-          <nav className="flex gap-1 ml-4">
-            {(['stats', 'synergies', 'ancients', 'runs', 'advisor', 'settings'] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-colors ${
-                  tab === t
-                    ? 'bg-spire-600 text-white'
-                    : 'text-gray-400 hover:text-gray-100 hover:bg-gray-800'
-                }`}
-              >
-                {t === 'stats' ? 'Card Stats'
-                  : t === 'synergies' ? 'Synergies'
-                  : t === 'ancients' ? 'Ancient Relics'
-                  : t === 'runs' ? 'Run History'
-                  : t === 'advisor' ? 'Advisor'
-                  : 'Settings'}
-              </button>
-            ))}
+          <nav className="ml-4">
+            <SlidingPill
+              options={([
+                { id: 'stats',     label: 'Card Stats' },
+                { id: 'synergies', label: 'Synergies' },
+                { id: 'ancients',  label: 'Ancient Relics' },
+                { id: 'runs',      label: 'Run History' },
+                { id: 'advisor',   label: 'Advisor' },
+                { id: 'settings',  label: 'Settings' },
+              ] as const).map(o => ({ ...o, activeClass: 'bg-white/10 border border-white/20' }))}
+              value={tab}
+              onChange={id => setTab(id as Tab)}
+              bare
+            />
           </nav>
         </div>
       </header>

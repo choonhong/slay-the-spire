@@ -12,6 +12,7 @@ import {
 import { CardNameCell } from './CardNameCell';
 import { formatCharacter, formatRelicId, formatEncounterId } from '../utils';
 import PageHeader from './PageHeader';
+import SlidingPill from './SlidingPill';
 
 // ─── Search helpers ───────────────────────────────────────────────────────────
 /** 0 = exact · 1 = name starts-with · 2 = word starts-with · 3 = contains */
@@ -50,10 +51,10 @@ const CHARACTER_COLOR: Record<string, string> = {
   REGENT:      'text-gray-200',
 };
 
-const SCORE_COLORS: Record<CardScore['recommendation'], { ring: string; badge: string; label: string }> = {
-  strong:   { ring: 'ring-2 ring-green-500',  badge: 'bg-green-600 text-white',  label: '✦ Strong Pick' },
-  consider: { ring: 'ring-2 ring-yellow-500', badge: 'bg-yellow-600 text-white', label: '◈ Consider' },
-  skip:     { ring: 'ring-2 ring-gray-600',   badge: 'bg-gray-700 text-gray-300', label: '✕ Skip' },
+const SCORE_COLORS: Record<CardScore['recommendation'], { glassClass: string; badge: string; label: string; scoreColor: string }> = {
+  strong:   { glassClass: 'glass-card-strong',   badge: 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30',  label: '✦ Strong Pick', scoreColor: 'text-emerald-300' },
+  consider: { glassClass: 'glass-card-consider', badge: 'bg-amber-500/20 text-amber-300 border border-amber-400/30',       label: '◈ Consider',    scoreColor: 'text-amber-300' },
+  skip:     { glassClass: 'glass-card-skip',     badge: 'bg-white/5 text-gray-400 border border-white/10',                label: '✕ Skip',        scoreColor: 'text-gray-400' },
 };
 
 const FACTOR_LABELS: Record<string, { label: string; max: number; color: string }> = {
@@ -233,7 +234,7 @@ function CardSearch({
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 pr-8 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-spire-500"
+            className="w-full px-4 py-2 pr-8 rounded-full text-sm text-gray-100 placeholder-gray-500 glass-input"
           />
           {query && (
             <button
@@ -251,13 +252,14 @@ function CardSearch({
       )}
 
       {open && filtered.length > 0 && (
-        <div ref={listRef} className="absolute z-50 top-full mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-56 overflow-y-auto">
+        <div ref={listRef} className="absolute z-50 top-full mt-1 w-full rounded-xl shadow-2xl max-h-56 overflow-y-auto glass"
+          style={{ background: 'rgba(12, 15, 28, 0.92)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.1)' }}>
           {filtered.map((entry, i) => (
             <button
               key={`${entry.card.id}-${entry.upgraded}`}
               onMouseDown={() => selectItem(entry)}
               onMouseEnter={() => setHighlightedIdx(i)}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${i === highlightedIdx ? 'bg-gray-700' : 'hover:bg-gray-800'}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${i === highlightedIdx ? 'bg-white/10' : 'hover:bg-white/5'}`}
             >
               <span className={`text-xs font-bold w-5 h-5 flex items-center justify-center rounded ${COST_COLORS[entry.card.cost] ?? 'bg-gray-700'} text-white shrink-0`}>
                 {entry.card.cost}
@@ -310,7 +312,7 @@ function RelicSearch({
   }, [requestFocus]);
 
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+    <div className="rounded-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(12, 15, 28, 0.92)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.1)' }}>
       <input
         ref={inputRef}
         type="text"
@@ -332,7 +334,8 @@ function RelicSearch({
             setQuery('');
           }
         }}
-        className="w-full px-3 py-2 bg-gray-800 border-b border-gray-700 text-sm text-gray-100 placeholder-gray-500 focus:outline-none"
+        className="w-full px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none"
+        style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       />
       <div className="max-h-48 overflow-y-auto">
         {filtered.length === 0 ? (
@@ -344,7 +347,7 @@ function RelicSearch({
             onMouseDown={() => onPick(id)}
             onMouseEnter={() => setHighlightedIdx(i)}
             className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-              i === highlightedIdx ? 'bg-gray-700 text-yellow-200' : 'text-yellow-300/90 hover:bg-gray-800'
+              i === highlightedIdx ? 'bg-white/10 text-yellow-200' : 'text-yellow-300/90 hover:bg-white/5'
             }`}
           >
             {formatRelicId(id)}
@@ -359,9 +362,15 @@ function ScoreCard({ score, rank, upgraded, onPick }: { score: CardScore; rank: 
   const style = SCORE_COLORS[score.recommendation];
 
   return (
-    <div className={`relative flex flex-col rounded-xl bg-gray-900 border border-gray-800 p-4 ${style.ring} transition-all`}>
+    <div className={`relative flex flex-col rounded-2xl p-4 transition-all ${style.glassClass}`}>
       {/* Rank badge */}
-      <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center text-xs font-bold text-gray-300">
+      <div className="absolute -top-2.5 -left-2.5 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-gray-300"
+        style={{
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        }}>
         {rank}
       </div>
 
@@ -376,8 +385,8 @@ function ScoreCard({ score, rank, upgraded, onPick }: { score: CardScore; rank: 
           </span>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-3xl font-bold text-white leading-none">{score.score}</div>
-          <div className="text-xs text-gray-500 mt-0.5">/ 100</div>
+          <div className={`text-3xl font-bold leading-none ${style.scoreColor}`} style={{ textShadow: '0 0 16px currentColor' }}>{score.score}</div>
+          <div className="text-xs text-gray-600 mt-0.5">/ 100</div>
         </div>
       </div>
 
@@ -391,8 +400,8 @@ function ScoreCard({ score, rank, upgraded, onPick }: { score: CardScore; rank: 
           return (
             <div key={key} className="flex items-center gap-2">
               <span className="text-xs text-gray-500 w-16 shrink-0">{meta.label}</span>
-              <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                <div className={`h-full ${isNegative ? 'bg-red-500' : meta.color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className={`h-full ${isNegative ? 'bg-red-500' : meta.color} rounded-full transition-all`} style={{ width: `${pct}%`, opacity: 0.85 }} />
               </div>
               <span className={`text-xs w-6 text-right tabular-nums ${isNegative ? 'text-red-400' : 'text-gray-400'}`}>{val}</span>
             </div>
@@ -403,7 +412,7 @@ function ScoreCard({ score, rank, upgraded, onPick }: { score: CardScore; rank: 
       {/* Reasons — grows to fill space so button stays at bottom */}
       <div className="flex-1">
         {score.reasons.length > 0 && (
-          <ul className="space-y-1 border-t border-gray-800 pt-2">
+          <ul className="space-y-1 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             {score.reasons.map((r, i) => (
               <li key={i} className="text-xs text-gray-400 flex gap-1.5">
                 <span className="text-gray-600 shrink-0">•</span>
@@ -418,7 +427,7 @@ function ScoreCard({ score, rank, upgraded, onPick }: { score: CardScore; rank: 
       {onPick && (
         <button
           onClick={onPick}
-          className="w-full mt-3 py-1.5 rounded-md bg-gray-800 border border-gray-700 text-xs text-gray-400 hover:text-white hover:border-spire-500 hover:bg-gray-700 transition-colors"
+          className="w-full mt-3 py-1.5 rounded-xl text-xs text-gray-400 hover:text-white transition-all glass-button"
         >
           + Add to deck
         </button>
@@ -656,7 +665,7 @@ export default function Advisor() {
       {/* ── Setup section (collapsible) ── */}
       {setupCollapsed ? (
         /* Collapsed summary bar */
-        <div className="flex items-center justify-between px-4 py-2.5 bg-gray-900/60 border border-gray-800 rounded-lg">
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl glass-sm">
           <div className="flex items-center gap-3 text-sm flex-wrap">
             <span className={`font-semibold ${charColorClass}`}>{formatCharacter(character)}</span>
             <span className="text-gray-400">·</span>
@@ -678,7 +687,7 @@ export default function Advisor() {
           </div>
           <button
             onClick={() => setSetupCollapsed(false)}
-            className="text-xs px-3 py-1 bg-gray-800 border border-gray-700 rounded text-gray-400 hover:text-gray-200 transition-colors shrink-0"
+            className="text-xs px-3 py-1 rounded-lg text-gray-400 hover:text-gray-200 transition-all glass-button shrink-0"
           >
             Edit
           </button>
@@ -688,34 +697,21 @@ export default function Advisor() {
           {/* ── Controls row ── */}
           <div className="flex flex-wrap gap-4 items-end">
             <div>
-              {character ? (
-                <button
-                  type="button"
-                  title="Change character"
-                  onClick={() => {
+              <SlidingPill
+                options={CHARACTERS.map(c => ({ id: c, label: formatCharacter(c) }))}
+                value={character}
+                onChange={c => {
+                  if (c === character) {
                     setCharacter('');
                     setDeck([]);
                     setUpgrades([]);
                     setRelics([]);
                     setScores(null);
-                  }}
-                  className="px-3 py-1.5 rounded-lg border border-spire-500 bg-spire-600 text-sm font-medium text-white hover:brightness-110 transition-all"
-                >
-                  {formatCharacter(character)}
-                </button>
-              ) : (
-                <div className="flex gap-1 flex-wrap">
-                  {CHARACTERS.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => pickCharacter(c)}
-                      className="px-3 py-1.5 rounded-lg border text-sm font-medium transition-all bg-gray-900/40 border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500"
-                    >
-                      {formatCharacter(c)}
-                    </button>
-                  ))}
-                </div>
-              )}
+                  } else {
+                    pickCharacter(c);
+                  }
+                }}
+              />
             </div>
 
             {/* Floor */}
@@ -728,7 +724,7 @@ export default function Advisor() {
                   max={55}
                   value={floor}
                   onChange={e => setFloor(Math.max(1, Math.min(55, Number(e.target.value))))}
-                  className="w-16 px-2 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 text-sm focus:outline-none focus:border-spire-500"
+                  className="w-16 px-2 py-1.5 rounded-full text-gray-100 text-sm glass-input text-center"
                 />
                 <span className={`text-sm font-medium px-2 py-1 rounded ${
                   act === 1 ? 'bg-blue-900/40 text-blue-300' :
@@ -751,14 +747,14 @@ export default function Advisor() {
               <div className="flex gap-2">
                 <button
                   onClick={loadStarterDeck}
-                  className="text-xs px-2 py-1 bg-gray-800 border border-gray-700 rounded text-gray-400 hover:text-gray-200 transition-colors"
+                  className="text-xs px-3 py-1 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
                 >
                   Load Starter Deck
                 </button>
                 {deck.length > 0 && (
                   <button
                     onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}
-                    className="text-xs px-2 py-1 bg-gray-800 border border-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors"
+                    className="text-xs px-3 py-1 rounded-full text-gray-400 hover:text-red-400 transition-all glass-button"
                   >
                     Clear
                   </button>
@@ -767,7 +763,7 @@ export default function Advisor() {
             </div>
 
             {/* Deck chips */}
-            <div className="relative flex gap-1.5 min-h-[44px] p-2 bg-gray-900/50 border border-gray-800 rounded-lg">
+            <div className="relative flex gap-1.5 min-h-[44px] p-2 rounded-xl glass-sm">
               <div className="flex-1 min-w-0">
                 {deck.length === 0 ? (
                   <span className="text-xs text-gray-600">Empty — pick a character, tap +, or Sync from a live run</span>
@@ -827,7 +823,7 @@ export default function Advisor() {
                   title={character ? 'Add card' : 'Pick a character first'}
                   disabled={!character}
                   onClick={() => setAddingToDeck(v => !v)}
-                  className="w-7 h-7 rounded-md bg-gray-800 border border-gray-600 text-gray-300 hover:text-white hover:border-spire-500 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-lg leading-none flex items-center justify-center transition-colors"
+                  className="w-7 h-7 rounded-lg text-gray-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed text-lg leading-none flex items-center justify-center transition-all glass-button"
                 >
                   +
                 </button>
@@ -855,14 +851,15 @@ export default function Advisor() {
             {/* Relics */}
             <div className="space-y-1.5">
               <label className="text-xs text-gray-500 uppercase tracking-wide">Relics {relics.length > 0 && `(${relics.length})`}</label>
-              <div className="relative flex gap-1.5 min-h-[36px] p-2 bg-gray-900/50 border border-gray-800 rounded-lg">
+              <div className="relative flex gap-1.5 min-h-[36px] p-2 rounded-xl glass-sm">
                 <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
                   {relics.length === 0 ? (
                     <span className="text-xs text-gray-600 self-center">Empty — tap + to add, or Sync from a live run</span>
                   ) : relics.map((r, i) => (
                     <span
                       key={`${r}-${i}`}
-                      className="group inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-900/30 border border-yellow-700/40 rounded text-sm text-yellow-300"
+                      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm text-yellow-300"
+                      style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.2)' }}
                     >
                       {formatRelicId(r)}
                       <button
@@ -879,7 +876,7 @@ export default function Advisor() {
                     type="button"
                     title="Add relic"
                     onClick={() => setAddingRelic(v => !v)}
-                    className="w-7 h-7 rounded-md bg-gray-800 border border-gray-600 text-gray-300 hover:text-white hover:border-yellow-500 hover:bg-gray-700 text-lg leading-none flex items-center justify-center transition-colors"
+                    className="w-7 h-7 rounded-lg text-gray-300 hover:text-white text-lg leading-none flex items-center justify-center transition-all glass-button"
                   >
                     +
                   </button>
@@ -935,7 +932,8 @@ export default function Advisor() {
         <button
           onClick={score}
           disabled={!canScore || scoring}
-          className="px-5 py-2.5 bg-spire-600 hover:bg-spire-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+          className="px-5 py-2.5 bg-spire-600 hover:bg-spire-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-lg"
+          style={{ boxShadow: '0 4px 20px rgba(232,136,42,0.3), 0 0 0 1px rgba(255,180,84,0.15)' }}
         >
           {scoring ? 'Scoring…' : 'Get Recommendation'}
         </button>
@@ -948,7 +946,7 @@ export default function Advisor() {
               syncFromSave(true);
             }}
             disabled={syncing}
-            className="px-5 py-2.5 rounded-lg bg-gray-700 hover:bg-gray-600 border border-gray-500 text-sm font-semibold text-gray-200 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 rounded-full text-sm font-semibold text-gray-200 transition-all disabled:opacity-50 glass-button"
           >
             {syncing ? '⟳ Syncing…' : 'Next Floor →'}
           </button>
@@ -985,7 +983,7 @@ export default function Advisor() {
 
           {/* Act context tip — hidden for Act 1 */}
           {act > 1 && (
-            <div className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-3 text-xs text-gray-500 leading-relaxed">
+            <div className="rounded-xl px-4 py-3 text-xs text-gray-500 leading-relaxed glass-sm">
               <span className="text-gray-400 font-medium">Act {act} principle: </span>
               {act === 2 && 'Identify your win condition. Take key synergy pieces. Avoid random Commons that dilute focus.'}
               {act === 3 && 'Your deck is mostly built. Only add clear upgrades. Rare > Uncommon > skip a Common.'}
@@ -995,7 +993,7 @@ export default function Advisor() {
           {/* Damage pace */}
           {combatPace && combatPace.runs > 0 && (
             <div
-              className="rounded-lg bg-gray-900/50 border border-gray-800 px-4 py-2.5 text-xs text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1"
+              className="rounded-xl px-4 py-2.5 text-xs text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1 glass-sm"
               title="Average turns to clear fights in your past runs for this character. Lower ≈ stronger damage."
             >
               <span className="text-gray-500 font-medium uppercase tracking-wide">Clear pace</span>

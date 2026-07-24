@@ -110,19 +110,19 @@ export default function Settings() {
       <PageHeader title="Settings" />
 
       {/* Account info */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+      <div className="rounded-xl p-5 glass-sm">
         <p className="text-sm font-medium text-gray-300">Signed in as</p>
         <p className="text-base font-semibold text-spire-400 mt-0.5 break-all">{user?.username}</p>
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-900/30 border border-red-800 p-3 text-red-300 text-sm">
+        <div className="rounded-xl p-3 text-red-300 text-sm glass-sm" style={{ borderColor: 'rgba(239,68,68,0.3)' }}>
           {error}
         </div>
       )}
 
-      {/* Local saves path — backend watches this on make dev */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-4">
+      {/* Local saves path */}
+      <div className="rounded-xl p-5 space-y-4 glass-sm">
         <div>
           <p className="text-sm font-medium text-gray-300">Local saves directory</p>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -137,7 +137,7 @@ export default function Settings() {
           onChange={e => setSavesPath(e.target.value)}
           spellCheck={false}
           placeholder={DEFAULT_SAVES_HINT}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 font-mono placeholder-gray-600 focus:outline-none focus:border-spire-500"
+          className="w-full px-4 py-2 rounded-full text-sm text-gray-100 font-mono placeholder-gray-600 glass-input"
         />
         {resolvedSavesPath && (
           <p className="text-[10px] text-gray-600 font-mono break-all">Active root path: {resolvedSavesPath}</p>
@@ -147,14 +147,14 @@ export default function Settings() {
             type="button"
             onClick={handleSavePath}
             disabled={savingPath}
-            className="px-4 py-2 bg-spire-600 hover:bg-spire-500 disabled:opacity-50 text-white text-sm font-medium rounded-md transition-colors"
+            className="px-5 py-2 bg-spire-600 hover:bg-spire-500 disabled:opacity-50 text-white text-sm font-medium rounded-full transition-colors"
           >
             {savingPath ? 'Saving…' : 'Save & Restart Watcher'}
           </button>
           <button
             type="button"
             onClick={() => setSavesPath('')}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-md transition-colors"
+            className="px-5 py-2 rounded-full text-gray-300 text-sm transition-all glass-button"
           >
             Reset to Default
           </button>
@@ -162,8 +162,8 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Manual upload (optional / remote) */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-4">
+      {/* Manual upload */}
+      <div className="rounded-xl p-5 space-y-4 glass-sm">
         <div>
           <p className="text-sm font-medium text-gray-300">Upload run history</p>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -173,36 +173,24 @@ export default function Settings() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <input
-            ref={folderInputRef}
-            type="file"
-            multiple
+          <input ref={folderInputRef} type="file" multiple
             // @ts-expect-error webkitdirectory is a non-standard attribute
-            webkitdirectory=""
-            directory=""
-            onChange={handleUpload}
-            className="hidden"
-            id="run-folder-input"
+            webkitdirectory="" directory=""
+            onChange={handleUpload} className="hidden" id="run-folder-input"
           />
           <label
             htmlFor="run-folder-input"
-            className={`cursor-pointer px-4 py-2 bg-spire-600 hover:bg-spire-500 text-white text-sm font-medium rounded-md transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`cursor-pointer px-5 py-2 bg-spire-600 hover:bg-spire-500 text-white text-sm font-medium rounded-full transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
           >
             {uploading ? 'Uploading…' : 'Choose history folder…'}
           </label>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".run"
-            multiple
-            onChange={handleUpload}
-            className="hidden"
-            id="run-file-input"
+          <input ref={fileInputRef} type="file" accept=".run" multiple
+            onChange={handleUpload} className="hidden" id="run-file-input"
           />
           <label
             htmlFor="run-file-input"
-            className={`cursor-pointer px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 text-sm font-medium rounded-md transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`cursor-pointer px-5 py-2 rounded-full text-gray-200 text-sm font-medium transition-all glass-button ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
           >
             Choose .run files…
           </label>
@@ -210,35 +198,31 @@ export default function Settings() {
           {uploadResult && (
             <span className="text-sm text-green-400">
               +{uploadResult.added} new run{uploadResult.added !== 1 ? 's' : ''} added
-              {uploadResult.skipped > 0 && (
-                <span className="text-gray-500">, {uploadResult.skipped} already synced</span>
-              )}
-              {(uploadResult.failed ?? 0) > 0 && (
-                <span className="text-red-400">, {uploadResult.failed} failed</span>
-              )}
+              {uploadResult.skipped > 0 && <span className="text-gray-500">, {uploadResult.skipped} already synced</span>}
+              {(uploadResult.failed ?? 0) > 0 && <span className="text-red-400">, {uploadResult.failed} failed</span>}
             </span>
           )}
         </div>
       </div>
 
       {/* How it works */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-4 text-sm text-gray-400">
+      <div className="rounded-xl p-5 space-y-4 text-sm text-gray-400 glass-sm">
         <p className="font-medium text-gray-300">How live sync works</p>
         <ul className="space-y-1 text-xs list-disc list-inside">
           <li><code className="text-gray-400">make dev</code> starts a watcher on your STS2 saves folder</li>
           <li>Advisor Sync re-reads <code className="text-gray-400">current_run.save</code> from disk</li>
           <li>New <code className="text-gray-400">.run</code> files are imported into your account automatically</li>
         </ul>
-        <div className="border-t border-gray-800 pt-4 space-y-2">
+        <div className="pt-4 space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <p className="font-medium text-gray-300 text-xs">Default Mac path</p>
-          <code className="block text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-gray-300 break-all">
+          <code className="block text-xs rounded-xl px-3 py-2 text-gray-300 break-all glass-sm">
             {DEFAULT_SAVES_HINT}
           </code>
         </div>
       </div>
 
       {/* Theme picker */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+      <div className="rounded-xl p-5 glass-sm">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-gray-300">Theme</p>
@@ -251,16 +235,16 @@ export default function Settings() {
               const [c1, c2, c3] = SWATCHES[themeId] ?? ['#222', '#333', '#888'];
               return (
                 <span className="flex gap-1">
-                  <span className="w-4 h-4 rounded-sm" style={{ background: c1, border: '1px solid rgba(255,255,255,0.12)' }} />
-                  <span className="w-4 h-4 rounded-sm" style={{ background: c2 }} />
-                  <span className="w-4 h-4 rounded-sm" style={{ background: c3 }} />
+                  <span className="w-4 h-4 rounded-full" style={{ background: c1, border: '1px solid rgba(255,255,255,0.12)' }} />
+                  <span className="w-4 h-4 rounded-full" style={{ background: c2 }} />
+                  <span className="w-4 h-4 rounded-full" style={{ background: c3 }} />
                 </span>
               );
             })()}
             <select
               value={themeId}
               onChange={e => setThemeId(e.target.value)}
-              className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
+              className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
             >
               {THEMES.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>

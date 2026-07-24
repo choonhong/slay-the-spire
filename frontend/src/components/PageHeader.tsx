@@ -33,7 +33,7 @@ export default function PageHeader({
         {onRefresh && (
           <button
             onClick={onRefresh}
-            className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+            className="px-4 py-1.5 rounded-full text-sm text-gray-300 hover:text-white transition-all glass-button"
           >
             {refreshLabel}
           </button>

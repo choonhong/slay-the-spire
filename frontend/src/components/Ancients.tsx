@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchAncients, fetchCharacters, fetchBuilds, type AncientStat } from '../api';
 import { formatRelicId, formatEventName, formatCharacter } from '../utils';
 import PageHeader from './PageHeader';
+import SlidingPill from './SlidingPill';
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT'];
 const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
@@ -17,7 +18,7 @@ function WinRateBar({ value, runs }: { value: number; runs: number }) {
   const color = value >= 70 ? 'bg-green-500' : value >= 50 ? 'bg-yellow-500' : 'bg-red-500';
   return (
     <div className="flex items-center gap-2">
-      <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
         <div className={`h-full ${color} rounded-full`} style={{ width: `${Math.min(value, 100)}%` }} />
       </div>
       <span className="text-sm text-gray-200 tabular-nums">{value.toFixed(1)}%</span>
@@ -29,29 +30,31 @@ function WinRateBar({ value, runs }: { value: number; runs: number }) {
 function RelicTable({ rows }: { rows: AncientStat[] }) {
   if (rows.length === 0) return <p className="text-sm text-gray-500 italic">No data yet.</p>;
   return (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="text-left text-xs text-gray-500 border-b border-gray-800">
-          <th className="pb-2 font-medium">Relic</th>
-          <th className="pb-2 font-medium text-right pr-8">Picked</th>
-          <th className="pb-2 font-medium">Win Rate</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, i) => (
-          <tr
-            key={i}
-            className="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors"
-          >
-            <td className="py-2 pr-4 text-gray-200 font-bold">{formatRelicId(row.relic_id)}</td>
-            <td className="py-2 pr-8 text-right text-gray-400 tabular-nums">{row.times_picked}</td>
-            <td className="py-2">
-              <WinRateBar value={row.win_rate} runs={row.times_picked} />
-            </td>
+    <div className="rounded-xl overflow-hidden glass-sm">
+      <table className="w-full text-sm">
+        <thead style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <tr className="text-left">
+            <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Relic</th>
+            <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Picked</th>
+            <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Win Rate</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr
+              key={i}
+              className={`border-t border-gray-800/50 hover:bg-gray-800/40 transition-colors ${i % 2 === 0 ? 'bg-gray-900/20' : ''}`}
+            >
+              <td className="px-4 py-2.5 text-gray-200 font-bold">{formatRelicId(row.relic_id)}</td>
+              <td className="px-4 py-2.5 text-right text-gray-400 tabular-nums">{row.times_picked}</td>
+              <td className="px-4 py-2.5">
+                <WinRateBar value={row.win_rate} runs={row.times_picked} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -125,56 +128,26 @@ export default function Ancients() {
         onRefresh={load}
       />
 
-      {/* Character filter */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setSelectedChar('')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-            !selectedChar
-              ? 'bg-spire-600 border-gray-700 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
-          }`}
-        >
-          All
-        </button>
-        {orderedChars.map(c => {
-          const key = c.replace(/^CHARACTER\./, '');
-          const style = CHARACTER_STYLE[key] ?? {
-            bg: 'bg-gray-900/40', border: 'border-gray-700',
-            text: 'text-gray-300', activeBg: 'bg-spire-600',
-          };
-          const isActive = selectedChar === c;
-          return (
-            <button
-              key={c}
-              onClick={() => setSelectedChar(isActive ? '' : c)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                isActive
-                  ? `${style.activeBg} ${style.border} text-white`
-                  : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
-              }`}
-            >
-              {formatCharacter(c)}
-            </button>
-          );
-        })}
-      </div>
+      {/* Character filter + scope toggle */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <SlidingPill
+          options={[
+            { id: '__all__', label: 'All' },
+            ...orderedChars.map(c => ({ id: c, label: formatCharacter(c) })),
+          ]}
+          value={selectedChar || '__all__'}
+          onChange={id => setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id))}
+        />
 
-      {/* Scope toggle */}
-      <div className="flex rounded-lg bg-gray-800/60 p-0.5 w-fit gap-0.5">
-        {(['global', 'mine'] as const).map(s => (
-          <button
-            key={s}
-            onClick={() => setScope(s)}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              scope === s
-                ? 'bg-spire-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            {s === 'global' ? 'Global Stats' : 'My Stats'}
-          </button>
-        ))}
+        <SlidingPill
+          className="ml-auto"
+          options={[
+            { id: 'global', label: 'Global Stats' },
+            { id: 'mine',   label: 'My Stats' },
+          ]}
+          value={scope}
+          onChange={id => setScope(id as 'global' | 'mine')}
+        />
       </div>
 
       {builds.length > 1 && (
@@ -182,7 +155,7 @@ export default function Ancients() {
           <select
             value={selectedBuild}
             onChange={e => setSelectedBuild(e.target.value)}
-            className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
+            className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
           >
             <option value="">All Patches</option>
             {builds.map(b => <option key={b} value={b}>{b}</option>)}
@@ -204,9 +177,7 @@ export default function Ancients() {
             {neowStats.length === 0 ? (
               <p className="text-sm text-gray-500 italic">No Neow data yet.</p>
             ) : (
-              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4">
-                <RelicTable rows={neowStats} />
-              </div>
+              <RelicTable rows={neowStats} />
             )}
           </section>
 
@@ -219,30 +190,15 @@ export default function Ancients() {
 
             {/* Event tabs */}
             {eventNames.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                <button
-                  onClick={() => setSelectedEvent('ALL')}
-                  className={`px-3 py-1.5 rounded-md border text-sm font-semibold transition-colors ${
-                    selectedEvent === 'ALL'
-                      ? 'bg-spire-600 border-gray-700 text-white'
-                      : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  All
-                </button>
-                {eventNames.map(name => (
-                  <button
-                    key={name}
-                    onClick={() => setSelectedEvent(selectedEvent === name ? 'ALL' : name)}
-                    className={`px-3 py-1.5 rounded-md border text-sm font-semibold transition-colors ${
-                      selectedEvent === name
-                        ? 'bg-purple-900/70 border-purple-700 text-purple-200'
-                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-200'
-                    }`}
-                  >
-                    {formatEventName(name)}
-                  </button>
-                ))}
+              <div className="mb-4">
+                <SlidingPill
+                  options={[
+                    { id: 'ALL', label: 'All' },
+                    ...eventNames.map(n => ({ id: n, label: formatEventName(n), activeClass: 'bg-purple-600' })),
+                  ]}
+                  value={selectedEvent}
+                  onChange={id => setSelectedEvent(selectedEvent === id && id !== 'ALL' ? 'ALL' : id)}
+                />
               </div>
             )}
 
@@ -251,16 +207,16 @@ export default function Ancients() {
                 {eventNames.map(name => {
                   const rows = ancientEvents.get(name) ?? [];
                   return (
-                    <div key={name} className="bg-gray-900/50 border border-gray-800 rounded-xl p-4">
-                      <h3 className="text-lg font-bold text-purple-300 mb-3">{formatEventName(name)}</h3>
+                    <div key={name} className="space-y-2">
+                      <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wide px-1">{formatEventName(name)}</h3>
                       <RelicTable rows={rows} />
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-purple-300 mb-3">{formatEventName(selectedEvent)}</h3>
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wide px-1">{formatEventName(selectedEvent)}</h3>
                 <RelicTable rows={ancientEvents.get(selectedEvent) ?? []} />
               </div>
             )}

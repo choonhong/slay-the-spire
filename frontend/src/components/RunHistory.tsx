@@ -3,6 +3,7 @@ import { fetchRuns, fetchCharacters, fetchBuilds, type RunRow } from '../api';
 import { formatCharacter } from '../utils';
 import RunDetailPanel from './RunDetailPanel';
 import PageHeader from './PageHeader';
+import SlidingPill from './SlidingPill';
 
 function formatRunDate(run: RunRow): string {
   const d = run.start_time
@@ -32,28 +33,6 @@ function formatActs(actsJson: string): string {
 }
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
-const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
-  IRONCLAD:    { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  SILENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  NECROBINDER: { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  REGENT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  DEFECT:      { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-  WATCHER:     { bg: 'bg-gray-800/40', border: 'border-gray-700', text: 'text-gray-300', activeBg: 'bg-spire-600' },
-};
-
-function CharBadge({ character }: { character: string }) {
-  const key = character.replace(/^CHARACTER\./, '');
-  const label = formatCharacter(character);
-  const style = CHARACTER_STYLE[key];
-  const cls = style
-    ? `${style.bg} ${style.text} ${style.border}`
-    : 'bg-gray-800 text-gray-300 border-gray-700';
-  return (
-    <span className={`px-2 py-0.5 text-xs rounded border font-medium ${cls}`}>
-      {label}
-    </span>
-  );
-}
 
 const PAGE_SIZE = 20;
 
@@ -106,6 +85,12 @@ export default function RunHistory() {
     return next;
   });
 
+  const sortedChars = [...characters].sort((a, b) => {
+    const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
+    const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -115,60 +100,30 @@ export default function RunHistory() {
       />
 
       {/* Character filter */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setSelectedChar('')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-            !selectedChar
-              ? 'bg-spire-600 border-gray-700 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
-          }`}
-        >
-          All
-        </button>
-        {[...characters].sort((a, b) => {
-          const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
-          const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
-          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-        }).map(c => {
-          const key = c.replace(/^CHARACTER\./, '');
-          const style = CHARACTER_STYLE[key] ?? {
-            bg: 'bg-gray-900/40', border: 'border-gray-700',
-            text: 'text-gray-300', activeBg: 'bg-spire-600',
-          };
-          const isActive = selectedChar === c;
-          return (
-            <button
-              key={c}
-              onClick={() => setSelectedChar(isActive ? '' : c)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                isActive
-                  ? `${style.activeBg} ${style.border} text-white`
-                  : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
-              }`}
-            >
-              {formatCharacter(c)}
-            </button>
-          );
-        })}
-      </div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <SlidingPill
+          options={[
+            { id: '__all__', label: 'All' },
+            ...sortedChars.map(c => ({ id: c, label: formatCharacter(c) })),
+          ]}
+          value={selectedChar || '__all__'}
+          onChange={id => setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id))}
+        />
 
-      {/* Secondary filter bar */}
-      <div className="flex flex-wrap items-center gap-3">
-        <select
-          value={selectedBuild}
-          onChange={e => setSelectedBuild(e.target.value)}
-          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
-        >
-          <option value="">All Patches</option>
-          {builds.map(b => (
-            <option key={b} value={b}>{b}</option>
-          ))}
-        </select>
+        {builds.length > 1 && (
+          <select
+            value={selectedBuild}
+            onChange={e => setSelectedBuild(e.target.value)}
+            className="ml-auto px-3 py-1.5 rounded-md text-sm text-gray-100 glass-input"
+          >
+            <option value="">All Patches</option>
+            {builds.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
+        )}
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-900/30 border border-red-800 p-4 text-red-300 text-sm">
+        <div className="rounded-xl px-4 py-3 text-red-300 text-sm glass-sm" style={{ borderColor: 'rgba(239,68,68,0.3)' }}>
           {error}
         </div>
       )}
@@ -179,19 +134,22 @@ export default function RunHistory() {
       ) : runs.length === 0 ? (
         <div className="text-center py-12 text-gray-500">No runs found</div>
       ) : (
-        <div className="space-y-2">
-          {runs.map(run => (
+        <div className="rounded-xl overflow-hidden glass-sm">
+          {runs.map((run, i) => (
             <div
               key={run.id}
-              className="rounded-lg border border-gray-800 bg-gray-900/40 transition-colors"
+              className={`border-t border-gray-800/50 ${i === 0 ? 'border-t-0' : ''}`}
             >
               {/* Row */}
               <button
                 onClick={() => toggle(run.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors rounded-lg"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
               >
-                  {/* Character */}
-                <CharBadge character={run.character} />
+                {/* Character badge */}
+                <span className="px-2 py-0.5 text-xs rounded-full font-medium text-gray-300"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  {formatCharacter(run.character)}
+                </span>
 
                 {/* Ascension */}
                 <span className="text-xs text-gray-400 font-mono shrink-0">A{run.ascension}</span>
@@ -201,18 +159,19 @@ export default function RunHistory() {
                   {formatActs(run.acts)}
                 </span>
 
-                {/* Win pill OR Floor X — right next to acts */}
+                {/* Win / Loss pill */}
                 {run.win ? (
-                  <span className="px-2 py-0.5 bg-green-700 text-white text-xs font-bold rounded shrink-0">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded-full shrink-0"
+                    style={{ background: 'rgba(16,185,129,0.2)', border: '1px solid rgba(52,211,153,0.3)', color: '#6ee7b7' }}>
                     Win
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 bg-red-900/60 text-red-300 border border-red-800 text-xs font-medium rounded shrink-0">
+                  <span className="px-2 py-0.5 text-xs font-medium rounded-full shrink-0"
+                    style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5' }}>
                     Floor {run.floor_reached}
                   </span>
                 )}
 
-                {/* Spacer */}
                 <span className="flex-1" />
 
                 {/* Date */}
@@ -221,14 +180,16 @@ export default function RunHistory() {
                 </span>
 
                 {/* Chevron */}
-                <span className={`text-gray-600 text-xs transition-transform shrink-0 ${expandedIds.has(run.id) ? 'rotate-180' : ''}`}>
+                <span className={`text-gray-600 text-xs transition-transform duration-200 shrink-0 ${expandedIds.has(run.id) ? 'rotate-180' : ''}`}>
                   ▼
                 </span>
               </button>
 
               {/* Detail panel */}
               {expandedIds.has(run.id) && (
-                <RunDetailPanel runId={run.id} />
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <RunDetailPanel runId={run.id} />
+                </div>
               )}
             </div>
           ))}
@@ -241,7 +202,7 @@ export default function RunHistory() {
           <button
             onClick={() => setPage(p => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="px-3 py-1.5 text-sm bg-gray-800 border border-gray-700 rounded-md disabled:opacity-40 hover:bg-gray-700 transition-colors"
+            className="px-3 py-1.5 text-sm rounded-lg disabled:opacity-40 transition-all glass-button text-gray-300 hover:text-white"
           >
             Previous
           </button>
@@ -251,7 +212,7 @@ export default function RunHistory() {
           <button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 text-sm bg-gray-800 border border-gray-700 rounded-md disabled:opacity-40 hover:bg-gray-700 transition-colors"
+            className="px-3 py-1.5 text-sm rounded-lg disabled:opacity-40 transition-all glass-button text-gray-300 hover:text-white"
           >
             Next
           </button>

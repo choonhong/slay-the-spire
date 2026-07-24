@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { CardNameCell } from './CardNameCell';
 import ClearableInput from './ClearableInput';
 import PageHeader from './PageHeader';
+import SlidingPill from './SlidingPill';
 import {
   useReactTable,
   getCoreRowModel,
@@ -63,7 +64,7 @@ function WinRateBadge({ value, byCopies }: { value: number; byCopies?: CopyWinRa
           className="fixed z-[9999] -translate-x-1/2 -translate-y-full pointer-events-none"
           style={{ top: pos.top, left: pos.left }}
         >
-          <div className="min-w-[180px] rounded-lg border border-gray-600 bg-gray-950 px-3.5 py-3 shadow-2xl">
+          <div className="min-w-[180px] rounded-xl px-3.5 py-3 glass" style={{ background: 'rgba(10,13,26,0.92)' }}>
             <div className="text-[10px] font-medium uppercase tracking-wider text-gray-400 mb-2.5">
               By copies in deck
             </div>
@@ -273,71 +274,35 @@ export default function CardStatsTable() {
         onRefresh={loadData}
       />
 
-      {/* Character picker */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => { setSelectedChar(''); setColorlessOnly(false); }}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-            selectedChar === '' && !colorlessOnly
-              ? 'bg-spire-600 border-gray-700 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
-          }`}
-        >
-          All
-        </button>
-        {[...characters].sort((a, b) => {
-            const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
-            const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
-            return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-          }).map(c => {
-          const key = c.replace(/^CHARACTER\./, '');
-          const style = CHARACTER_STYLE[key] ?? {
-            bg: 'bg-gray-900/40', border: 'border-gray-700',
-            text: 'text-gray-300', activeBg: 'bg-spire-600',
-          };
-          const isActive = selectedChar === c;
-          return (
-            <button
-              key={c}
-              onClick={() => { setColorlessOnly(false); setSelectedChar(isActive ? '' : c); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                isActive
-                  ? `${style.activeBg} ${style.border} text-white`
-                  : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
-              }`}
-            >
-              {formatCharacter(c)}
-            </button>
-          );
-          })}
+      {/* Character picker + scope toggle */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <SlidingPill
+          options={[
+            { id: '__all__', label: 'All' },
+            ...[...characters].sort((a, b) => {
+              const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
+              const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
+              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            }).map(c => ({ id: c, label: formatCharacter(c) })),
+            { id: '__colorless__', label: 'Colorless' },
+          ]}
+          value={colorlessOnly ? '__colorless__' : (selectedChar || '__all__')}
+          onChange={id => {
+            if (id === '__all__') { setSelectedChar(''); setColorlessOnly(false); }
+            else if (id === '__colorless__') { setSelectedChar(''); setColorlessOnly(c => !c); }
+            else { setColorlessOnly(false); setSelectedChar(prev => prev === id ? '' : id); }
+          }}
+        />
 
-        <button
-          onClick={() => { setSelectedChar(''); setColorlessOnly(c => !c); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-            colorlessOnly
-              ? 'bg-spire-600 border-gray-700 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
-          }`}
-        >
-          Colorless
-        </button>
-      </div>
-
-{/* Scope toggle */}
-      <div className="flex rounded-lg bg-gray-800/60 p-0.5 w-fit gap-0.5">
-        {(['global', 'mine'] as const).map(s => (
-          <button
-            key={s}
-            onClick={() => setScope(s)}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              scope === s
-                ? 'bg-spire-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            {s === 'global' ? 'Global Stats' : 'My Stats'}
-          </button>
-        ))}
+        <SlidingPill
+          className="ml-auto"
+          options={[
+            { id: 'global', label: 'Global Stats' },
+            { id: 'mine',   label: 'My Stats' },
+          ]}
+          value={scope}
+          onChange={id => setScope(id as 'global' | 'mine')}
+        />
       </div>
 
 {/* Secondary filters */}
@@ -346,12 +311,12 @@ export default function CardStatsTable() {
           placeholder="Search cards..."
           value={globalFilter}
           onChange={setGlobalFilter}
-          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-spire-500 w-48"
+          className="px-4 py-1.5 rounded-full text-sm text-gray-100 placeholder-gray-500 glass-input w-48"
         />
         <select
           value={selectedBuild}
           onChange={e => setSelectedBuild(e.target.value)}
-          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
+          className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
         >
           <option value="">All Patches</option>
           {builds.map(b => (
@@ -365,7 +330,7 @@ export default function CardStatsTable() {
             min={0}
             value={minRuns}
             onChange={e => setMinRuns(Math.max(0, Number(e.target.value)))}
-            className="w-14 px-2 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-gray-100 focus:outline-none focus:border-spire-500"
+            className="w-14 px-3 py-1.5 rounded-full text-gray-100 glass-input text-center"
           />
         </div>
       </div>
@@ -379,12 +344,12 @@ export default function CardStatsTable() {
 
       {/* Table — keep previous rows while refetching; only blank on first load */}
       <div
-        className={`rounded-lg border border-gray-800 overflow-visible transition-opacity duration-200 ${
+        className={`rounded-xl overflow-visible transition-opacity duration-200 glass-sm ${
           refreshing ? 'opacity-55' : 'opacity-100'
         }`}
       >
         <table className="w-full text-sm">
-          <thead className="bg-gray-900 border-b border-gray-800">
+          <thead style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             {table.getHeaderGroups().map(hg => (
               <tr key={hg.id}>
                 {hg.headers.map(header => (

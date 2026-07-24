@@ -4,6 +4,7 @@ import { formatCharacter } from '../utils';
 import { CardNameCell } from './CardNameCell';
 import ClearableInput from './ClearableInput';
 import PageHeader from './PageHeader';
+import SlidingPill from './SlidingPill';
 
 const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
 const CHARACTER_STYLE: Record<string, { bg: string; border: string; text: string; activeBg: string }> = {
@@ -26,7 +27,7 @@ function WinBar({ value }: { value: number }) {
   const color = value >= 70 ? 'bg-green-500' : value >= 50 ? 'bg-yellow-500' : 'bg-red-500';
   return (
     <div className="flex items-center gap-2">
-      <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
         <div className={`h-full ${color} rounded-full`} style={{ width: `${value}%` }} />
       </div>
       <span className="text-sm text-gray-200 tabular-nums">{value.toFixed(1)}%</span>
@@ -109,60 +110,30 @@ export default function Synergies({ active = true }: { active?: boolean }) {
         onRefresh={load}
       />
 
-      {/* Character filter */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setSelectedChar('')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-            !selectedChar
-              ? 'bg-spire-600 border-gray-700 text-white'
-              : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:brightness-125'
-          }`}
-        >
-          All
-        </button>
-        {[...characters].sort((a, b) => {
-          const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
-          const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
-          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-        }).map(c => {
-          const key = c.replace(/^CHARACTER\./, '');
-          const style = CHARACTER_STYLE[key] ?? {
-            bg: 'bg-gray-900/40', border: 'border-gray-700',
-            text: 'text-gray-300', activeBg: 'bg-spire-600',
-          };
-          const isActive = selectedChar === c;
-          return (
-            <button
-              key={c}
-              onClick={() => setSelectedChar(isActive ? '' : c)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                isActive
-                  ? `${style.activeBg} ${style.border} text-white`
-                  : `${style.bg} ${style.border} ${style.text} hover:brightness-125`
-              }`}
-            >
-              {formatCharacter(c)}
-            </button>
-          );
-        })}
-      </div>
+      {/* Character filter + scope toggle */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <SlidingPill
+          options={[
+            { id: '__all__', label: 'All' },
+            ...[...characters].sort((a, b) => {
+              const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
+              const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
+              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            }).map(c => ({ id: c, label: formatCharacter(c) })),
+          ]}
+          value={selectedChar || '__all__'}
+          onChange={id => setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id))}
+        />
 
-      {/* Scope toggle */}
-      <div className="flex rounded-lg bg-gray-800/60 p-0.5 w-fit gap-0.5">
-        {(['global', 'mine'] as const).map(s => (
-          <button
-            key={s}
-            onClick={() => setScope(s)}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              scope === s
-                ? 'bg-spire-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            {s === 'global' ? 'Global Stats' : 'My Stats'}
-          </button>
-        ))}
+        <SlidingPill
+          className="ml-auto"
+          options={[
+            { id: 'global', label: 'Global Stats' },
+            { id: 'mine',   label: 'My Stats' },
+          ]}
+          value={scope}
+          onChange={id => setScope(id as 'global' | 'mine')}
+        />
       </div>
 
       {/* Secondary filters */}
@@ -171,12 +142,12 @@ export default function Synergies({ active = true }: { active?: boolean }) {
           placeholder="Search card…"
           value={cardSearch}
           onChange={setCardSearch}
-          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-spire-500 w-44"
+          className="px-4 py-1.5 rounded-full text-sm text-gray-100 placeholder-gray-500 glass-input w-44"
         />
         <select
           value={selectedBuild}
           onChange={e => setSelectedBuild(e.target.value)}
-          className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
+          className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
         >
           <option value="">All Patches</option>
           {builds.map(b => <option key={b} value={b}>{b}</option>)}
@@ -188,7 +159,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
             min={2}
             value={minRuns}
             onChange={e => setMinRuns(Number(e.target.value))}
-            className="w-16 px-2 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-gray-100 focus:outline-none focus:border-spire-500"
+            className="w-16 px-3 py-1.5 rounded-full text-gray-100 glass-input text-center"
           />
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -196,7 +167,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as typeof sortBy)}
-            className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-100 focus:outline-none focus:border-spire-500"
+            className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
           >
             <option value="lift">Synergy Lift</option>
             <option value="win_rate">Win Rate Together</option>
@@ -211,12 +182,12 @@ export default function Synergies({ active = true }: { active?: boolean }) {
 
       {/* Table — keep previous rows while refetching; only blank on first load */}
       <div
-        className={`rounded-lg border border-gray-800 overflow-hidden transition-opacity duration-200 ${
+        className={`rounded-xl overflow-hidden transition-opacity duration-200 glass-sm ${
           refreshing ? 'opacity-55' : 'opacity-100'
         }`}
       >
         <table className="w-full text-sm">
-          <thead className="bg-gray-900 border-b border-gray-800">
+          <thead style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Card A</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Card B</th>
