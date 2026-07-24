@@ -472,7 +472,7 @@ export default function Advisor() {
   const [scores, setScores] = useState<CardScore[] | null>(null);
   const [scoring, setScoring] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [syncEnabled, setSyncEnabled] = useState(true);
+  const [syncEnabled, setSyncEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [setupCollapsed, setSetupCollapsed] = useState(false);
   const [combatPace, setCombatPace] = useState<CombatPace | null>(null);
@@ -720,9 +720,9 @@ export default function Advisor() {
 
             {/* Floor — read-only, auto-synced */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 uppercase tracking-wide">Floor</span>
-              <span className="text-sm font-semibold text-gray-200">{floor}</span>
-              <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+              <span className="text-sm text-gray-500">Floor</span>
+              <span className="text-base font-bold text-gray-200">{floor}</span>
+              <span className={`text-sm font-semibold px-4 py-1.5 rounded-full ${
                 act === 1 ? 'bg-blue-900/40 text-blue-300' :
                 act === 2 ? 'bg-yellow-900/40 text-yellow-300' :
                 'bg-red-900/40 text-red-300'
@@ -736,7 +736,7 @@ export default function Advisor() {
               {deck.length === 0 && (
                 <button
                   onClick={loadStarterDeck}
-                  className="text-xs px-3 py-1.5 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
+                  className="text-sm px-4 py-1.5 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
                 >
                   Load Starter Deck
                 </button>
@@ -744,7 +744,7 @@ export default function Advisor() {
               {deck.length > 0 && (
                 <button
                   onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}
-                  className="text-xs px-3 py-1.5 rounded-full text-gray-400 hover:text-red-400 transition-all glass-button"
+                  className="text-sm px-4 py-1.5 rounded-full text-gray-400 hover:text-red-400 transition-all glass-button"
                 >
                   Clear
                 </button>
@@ -754,7 +754,7 @@ export default function Advisor() {
 
           {/* ── Deck builder ── */}
           <div className="space-y-2">
-            <label className="text-xs text-gray-500 uppercase tracking-wide">
+            <label className="text-xs text-gray-500">
               Current Deck <span className="text-gray-600">({deck.length} cards)</span>
             </label>
 
@@ -849,7 +849,7 @@ export default function Advisor() {
 
             {/* Relics */}
             <div className="space-y-1.5">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Relics {relics.length > 0 && `(${relics.length})`}</label>
+              <label className="text-xs text-gray-500">Relics {relics.length > 0 && `(${relics.length})`}</label>
               <div className="relative flex gap-1.5 min-h-[36px] p-2 rounded-xl glass-sm">
                 <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
                   {relics.length === 0 ? (
@@ -903,7 +903,7 @@ export default function Advisor() {
 
       {/* ── Offered cards ── */}
       <div className="space-y-2">
-        <label className="text-xs text-gray-500 uppercase tracking-wide">Offered Cards</label>
+        <label className="text-xs text-gray-500">Offered Cards</label>
         <div className="grid grid-cols-3 gap-3">
           {([0, 1, 2] as const).map(slot => (
             <div key={slot} className="space-y-1">

@@ -115,7 +115,7 @@ export default function Ancients() {
         onRefresh={load}
       />
 
-      {/* Character filter + scope toggle */}
+      {/* Character filter + version + scope toggle — all one row */}
       <div className="flex flex-wrap gap-2 items-center">
         <SlidingPill
           options={[
@@ -125,6 +125,17 @@ export default function Ancients() {
           value={selectedChar || '__all__'}
           onChange={id => setSelectedChar(id === '__all__' ? '' : id)}
         />
+
+        {builds.length > 1 && (
+          <select
+            value={selectedBuild}
+            onChange={e => setSelectedBuild(e.target.value)}
+            className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
+          >
+            <option value="">All Versions</option>
+            {builds.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
+        )}
 
         <SlidingPill
           className="ml-auto"
@@ -136,19 +147,6 @@ export default function Ancients() {
           onChange={id => setScope(id as 'global' | 'mine')}
         />
       </div>
-
-      {builds.length > 1 && (
-        <div className="flex flex-wrap items-center gap-3">
-          <select
-            value={selectedBuild}
-            onChange={e => setSelectedBuild(e.target.value)}
-            className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
-          >
-            <option value="">All Versions</option>
-            {builds.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </div>
-      )}
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
       {loading && <p className="text-gray-500 text-sm">Loading…</p>}
