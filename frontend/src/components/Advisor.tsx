@@ -80,6 +80,7 @@ function CardSearch({
   upgraded,
   onChange,
   onSelected,
+  onCancel,
   requestFocus,
   onFocusHandled,
 }: {
@@ -90,6 +91,7 @@ function CardSearch({
   upgraded: boolean;
   onChange: (id: string, upgraded: boolean) => void;
   onSelected?: () => void;
+  onCancel?: () => void;
   requestFocus?: boolean;
   onFocusHandled?: () => void;
 }) {
@@ -100,6 +102,8 @@ function CardSearch({
   const ref = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const onFocusHandledRef = useRef(onFocusHandled);
+  useEffect(() => { onFocusHandledRef.current = onFocusHandled; });
 
   const charColor = character.replace('CHARACTER.', '').toLowerCase();
 
@@ -122,7 +126,9 @@ function CardSearch({
     item?.scrollIntoView({ block: 'nearest' });
   }, [highlightedIdx]);
 
-  // Parent asked us to start typing (after previous slot was confirmed)
+  // Parent asked us to start typing (after previous slot was confirmed).
+  // We intentionally exclude onFocusHandled from deps — it's captured via ref
+  // so a new inline function on every parent re-render doesn't retrigger this effect.
   useEffect(() => {
     if (!requestFocus) return;
     setQuery('');
@@ -130,10 +136,11 @@ function CardSearch({
     setOpen(false);
     const t = window.setTimeout(() => {
       inputRef.current?.focus();
-      onFocusHandled?.();
+      onFocusHandledRef.current?.();
     }, 0);
     return () => window.clearTimeout(t);
-  }, [requestFocus, onFocusHandled]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestFocus]);
 
   const selectItem = useCallback((e: SearchEntry, advance = false) => {
     onChange(e.card.id, e.upgraded);
@@ -164,21 +171,7 @@ function CardSearch({
     }
   }, [open, filtered, highlightedIdx, selectItem]);
 
-  // Outside click — auto-select first result if dropdown is open, otherwise just close
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        if (open && filtered.length > 0) {
-          const target = filtered[highlightedIdx] ?? filtered[0];
-          if (target) selectItem(target);
-        } else {
-          setOpen(false);
-        }
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open, filtered, highlightedIdx, selectItem]);
+  // Dropdown only closes via X button, Escape key, or selecting a card — no outside-click dismissal.
 
   // Focus input when entering edit mode
   useEffect(() => {
@@ -234,7 +227,8 @@ function CardSearch({
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            className="w-full px-4 py-2 pr-8 rounded-full text-sm text-gray-100 placeholder-gray-500 glass-input"
+            className="w-full px-4 py-2 pr-8 rounded-full text-sm text-gray-100 placeholder-gray-500"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }}
           />
           {query && (
             <button
@@ -243,7 +237,7 @@ function CardSearch({
                 setQuery('');
                 setEditing(false);
                 setOpen(false);
-                inputRef.current?.focus();
+                onCancel?.();
               }}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-200 text-lg leading-none"
             >×</button>
@@ -252,8 +246,8 @@ function CardSearch({
       )}
 
       {open && filtered.length > 0 && (
-        <div ref={listRef} className="absolute z-50 top-full mt-1 w-full rounded-xl shadow-2xl max-h-56 overflow-y-auto glass"
-          style={{ background: 'rgba(12, 15, 28, 0.92)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div ref={listRef} className="absolute z-50 top-full mt-1 w-full rounded-xl shadow-2xl max-h-56 overflow-y-auto"
+          style={{ background: 'rgba(10, 12, 22, 0.98)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
           {filtered.map((entry, i) => (
             <button
               key={`${entry.card.id}-${entry.upgraded}`}
@@ -312,7 +306,7 @@ function RelicSearch({
   }, [requestFocus]);
 
   return (
-    <div className="rounded-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(12, 15, 28, 0.92)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+    <div className="rounded-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(10, 12, 22, 0.98)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
       <input
         ref={inputRef}
         type="text"
@@ -455,6 +449,7 @@ export default function Advisor() {
 
   const [character, setCharacter] = useState('');
   const [floor, setFloor] = useState(1);
+  const [addingToDeck, setAddingToDeck] = useState(false);
   const [deck, setDeck] = useState<string[]>([]);
   const [relics, setRelics] = useState<string[]>([]);
   const [upgrades, setUpgrades] = useState<string[]>([]);
@@ -470,7 +465,6 @@ export default function Advisor() {
   const [error, setError] = useState<string | null>(null);
   const [setupCollapsed, setSetupCollapsed] = useState(false);
   const [combatPace, setCombatPace] = useState<CombatPace | null>(null);
-  const [addingToDeck, setAddingToDeck] = useState(false);
   const [addingRelic, setAddingRelic] = useState(false);
 
   // Load card text + relic list once, then immediately sync
@@ -695,6 +689,7 @@ export default function Advisor() {
       ) : (
         <>
           {/* ── Controls row ── */}
+          {/* ── Controls row: character + floor + deck actions ── */}
           <div className="flex flex-wrap gap-4 items-end">
             <div>
               <SlidingPill
@@ -726,7 +721,7 @@ export default function Advisor() {
                   onChange={e => setFloor(Math.max(1, Math.min(55, Number(e.target.value))))}
                   className="w-16 px-2 py-1.5 rounded-full text-gray-100 text-sm glass-input text-center"
                 />
-                <span className={`text-sm font-medium px-2 py-1 rounded ${
+                <span className={`text-sm font-medium px-3 py-1 rounded-full ${
                   act === 1 ? 'bg-blue-900/40 text-blue-300' :
                   act === 2 ? 'bg-yellow-900/40 text-yellow-300' :
                   'bg-red-900/40 text-red-300'
@@ -736,37 +731,37 @@ export default function Advisor() {
               </div>
             </div>
 
+            {/* Deck action buttons — same row as character + floor */}
+            <div className="flex gap-2 pb-0.5">
+              <button
+                onClick={loadStarterDeck}
+                className="text-xs px-3 py-1.5 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
+              >
+                Load Starter Deck
+              </button>
+              {deck.length > 0 && (
+                <button
+                  onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}
+                  className="text-xs px-3 py-1.5 rounded-full text-gray-400 hover:text-red-400 transition-all glass-button"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
           {/* ── Deck builder ── */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">
-                Current Deck <span className="text-gray-600">({deck.length} cards)</span>
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={loadStarterDeck}
-                  className="text-xs px-3 py-1 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
-                >
-                  Load Starter Deck
-                </button>
-                {deck.length > 0 && (
-                  <button
-                    onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}
-                    className="text-xs px-3 py-1 rounded-full text-gray-400 hover:text-red-400 transition-all glass-button"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </div>
+            <label className="text-xs text-gray-500 uppercase tracking-wide">
+              Current Deck <span className="text-gray-600">({deck.length} cards)</span>
+            </label>
 
             {/* Deck chips */}
-            <div className="relative flex gap-1.5 min-h-[44px] p-2 rounded-xl glass-sm">
+            <div className="relative"> {/* outer wrapper — no stacking context, so popup can paint above relic section */}
+            <div className="flex gap-1.5 min-h-[44px] p-2 rounded-xl glass-sm">
               <div className="flex-1 min-w-0">
                 {deck.length === 0 ? (
-                  <span className="text-xs text-gray-600">Empty — pick a character, tap +, or Sync from a live run</span>
+                  <span className="text-xs text-gray-600">Empty — pick a character, load a starter deck, or Sync from a live run</span>
                 ) : (
                   <>
                     {/* Rarity summary line */}
@@ -792,9 +787,7 @@ export default function Advisor() {
                       {deck.map((id, i) => {
                         const ct = cardMap.get(id);
                         const colorClass = RARITY_COLOR[ct?.rarity ?? ''] ?? 'text-gray-300';
-                        // nth copy of this card in the deck (1-indexed)
                         const deckCopyIndex = deck.slice(0, i + 1).filter(d => d === id).length;
-                        // how many copies of this card are upgraded total
                         const totalUpgraded = upgrades.filter(u => u === id).length;
                         const isUpgraded = deckCopyIndex <= totalUpgraded;
                         return (
@@ -817,7 +810,8 @@ export default function Advisor() {
                 )}
               </div>
 
-              <div className="relative shrink-0 flex items-end">
+              {/* + button on the right, same pattern as Relics */}
+              <div className="shrink-0 flex items-end">
                 <button
                   type="button"
                   title={character ? 'Add card' : 'Pick a character first'}
@@ -827,26 +821,29 @@ export default function Advisor() {
                 >
                   +
                 </button>
-
-                {addingToDeck && character && (
-                  <div className="absolute bottom-full right-0 mb-1.5 z-50 w-72">
-                    <CardSearch
-                      cards={allCards}
-                      character={character}
-                      placeholder="Search card…"
-                      value=""
-                      upgraded={false}
-                      onChange={(id, isUpgraded) => {
-                        addToDeck(id, isUpgraded);
-                        setAddingToDeck(false);
-                      }}
-                      requestFocus
-                      onFocusHandled={() => {}}
-                    />
-                  </div>
-                )}
               </div>
-            </div>
+            </div> {/* end glass-sm */}
+
+            {/* Popup lives OUTSIDE glass-sm so backdrop-filter doesn't trap its z-index */}
+            {addingToDeck && character && (
+              <div className="absolute bottom-full right-0 mb-1.5 z-[200] w-72">
+                <CardSearch
+                  cards={allCards}
+                  character={character}
+                  placeholder="Search card…"
+                  value=""
+                  upgraded={false}
+                  onChange={(id, isUpgraded) => {
+                    addToDeck(id, isUpgraded);
+                    setAddingToDeck(false);
+                  }}
+                  onCancel={() => setAddingToDeck(false)}
+                  requestFocus
+                  onFocusHandled={() => {}}
+                />
+              </div>
+            )}
+            </div> {/* end outer wrapper */}
 
             {/* Relics */}
             <div className="space-y-1.5">
