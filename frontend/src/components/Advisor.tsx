@@ -42,6 +42,15 @@ const CHARACTERS = [
   'CHARACTER.WATCHER',
 ];
 
+const STARTER_DECKS: Record<string, string[]> = {
+  'CHARACTER.IRONCLAD':    [...Array(5).fill('CARD.STRIKE_IRONCLAD'), ...Array(4).fill('CARD.DEFEND_IRONCLAD'), 'CARD.BASH'],
+  'CHARACTER.SILENT':      [...Array(5).fill('CARD.STRIKE_SILENT'), ...Array(5).fill('CARD.DEFEND_SILENT'), 'CARD.NEUTRALIZE', 'CARD.SURVIVOR'],
+  'CHARACTER.DEFECT':      [...Array(4).fill('CARD.STRIKE_DEFECT'), ...Array(4).fill('CARD.DEFEND_DEFECT'), 'CARD.ZAP', 'CARD.DUALCAST'],
+  'CHARACTER.NECROBINDER': [...Array(4).fill('CARD.STRIKE_NECROBINDER'), ...Array(4).fill('CARD.DEFEND_NECROBINDER'), 'CARD.UNLEASH', 'CARD.POKE'],
+  'CHARACTER.REGENT':      [...Array(4).fill('CARD.STRIKE_REGENT'), ...Array(4).fill('CARD.DEFEND_REGENT'), 'CARD.FALLING_STAR', 'CARD.VENERATE'],
+  'CHARACTER.WATCHER':     [...Array(4).fill('CARD.STRIKE_WATCHER'), ...Array(4).fill('CARD.DEFEND_WATCHER'), 'CARD.ERUPTION', 'CARD.VIGILANCE'],
+};
+
 const CHARACTER_COLOR: Record<string, string> = {
   IRONCLAD:    'text-gray-200',
   SILENT:      'text-gray-200',
@@ -447,10 +456,11 @@ export default function Advisor() {
   const [allRelics, setAllRelics] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [character, setCharacter] = useState('');
+  const DEFAULT_CHAR = 'CHARACTER.IRONCLAD';
+  const [character, setCharacter] = useState(DEFAULT_CHAR);
   const [floor, setFloor] = useState(1);
   const [addingToDeck, setAddingToDeck] = useState(false);
-  const [deck, setDeck] = useState<string[]>([]);
+  const [deck, setDeck] = useState<string[]>(STARTER_DECKS['CHARACTER.IRONCLAD']);
   const [relics, setRelics] = useState<string[]>([]);
   const [upgrades, setUpgrades] = useState<string[]>([]);
   const [offered, setOffered] = useState<[string, string, string]>(['', '', '']);
@@ -462,6 +472,7 @@ export default function Advisor() {
   const [scores, setScores] = useState<CardScore[] | null>(null);
   const [scoring, setScoring] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncEnabled, setSyncEnabled] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [setupCollapsed, setSetupCollapsed] = useState(false);
   const [combatPace, setCombatPace] = useState<CombatPace | null>(null);
@@ -494,11 +505,12 @@ export default function Advisor() {
   const syncRef = useRef(syncFromSave);
   useEffect(() => { syncRef.current = syncFromSave; });
 
-  // Auto-sync deck/relics every 10s while tab is open
+  // Auto-sync deck/relics every 10s while sync is enabled
   useEffect(() => {
+    if (!syncEnabled) return;
     const interval = setInterval(() => syncRef.current(true), 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [syncEnabled]);
 
   const act = actIndex != null ? actIndex + 1 : (floor <= 0 ? 1 : floor <= 17 ? 1 : floor <= 34 ? 2 : 3);
   const charKey = character.replace('CHARACTER.', '');
@@ -619,15 +631,7 @@ export default function Advisor() {
   }
 
   function starterDeckFor(char: string): string[] {
-    const starters: Record<string, string[]> = {
-      'CHARACTER.IRONCLAD':    Array(5).fill('CARD.STRIKE_IRONCLAD').concat(Array(4).fill('CARD.DEFEND_IRONCLAD'), ['CARD.BASH']),
-      'CHARACTER.SILENT':      Array(5).fill('CARD.STRIKE_SILENT').concat(Array(5).fill('CARD.DEFEND_SILENT'), ['CARD.NEUTRALIZE', 'CARD.SURVIVOR']),
-      'CHARACTER.DEFECT':      Array(4).fill('CARD.STRIKE_DEFECT').concat(Array(4).fill('CARD.DEFEND_DEFECT'), ['CARD.ZAP', 'CARD.DUALCAST']),
-      'CHARACTER.NECROBINDER': Array(4).fill('CARD.STRIKE_NECROBINDER').concat(Array(4).fill('CARD.DEFEND_NECROBINDER'), ['CARD.UNLEASH', 'CARD.POKE']),
-      'CHARACTER.REGENT':      Array(4).fill('CARD.STRIKE_REGENT').concat(Array(4).fill('CARD.DEFEND_REGENT'), ['CARD.FALLING_STAR', 'CARD.VENERATE']),
-      'CHARACTER.WATCHER':     Array(4).fill('CARD.STRIKE_WATCHER').concat(Array(4).fill('CARD.DEFEND_WATCHER'), ['CARD.ERUPTION', 'CARD.VIGILANCE']),
-    };
-    return starters[char] ?? [];
+    return STARTER_DECKS[char] ?? [];
   }
 
   function loadStarterDeck() {
@@ -652,8 +656,22 @@ export default function Advisor() {
     <div className="space-y-5">
       <PageHeader
         title="Advisor"
-        onRefresh={() => syncFromSave(false)}
-        refreshLabel={syncing ? 'Syncing…' : 'Sync'}
+        right={
+          <button
+            onClick={() => {
+              const next = !syncEnabled;
+              setSyncEnabled(next);
+              if (next) syncFromSave(true); // immediate sync when re-enabling
+            }}
+            className={`px-4 py-1.5 rounded-full text-sm transition-all glass-button ${
+              syncEnabled
+                ? 'text-red-400 hover:text-red-300'
+                : 'text-green-400 hover:text-green-300'
+            }`}
+          >
+            {syncing ? '⟳ Syncing…' : syncEnabled ? 'Disable Sync' : 'Enable Sync'}
+          </button>
+        }
       />
 
       {/* ── Setup section (collapsible) ── */}
@@ -688,57 +706,41 @@ export default function Advisor() {
         </div>
       ) : (
         <>
-          {/* ── Controls row ── */}
           {/* ── Controls row: character + floor + deck actions ── */}
-          <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-wrap gap-3 items-center">
             <div>
               <SlidingPill
                 options={CHARACTERS.map(c => ({ id: c, label: formatCharacter(c) }))}
                 value={character}
                 onChange={c => {
-                  if (c === character) {
-                    setCharacter('');
-                    setDeck([]);
-                    setUpgrades([]);
-                    setRelics([]);
-                    setScores(null);
-                  } else {
-                    pickCharacter(c);
-                  }
+                  if (c !== character) pickCharacter(c);
                 }}
               />
             </div>
 
-            {/* Floor */}
-            <div className="space-y-1">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Floor</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  max={55}
-                  value={floor}
-                  onChange={e => setFloor(Math.max(1, Math.min(55, Number(e.target.value))))}
-                  className="w-16 px-2 py-1.5 rounded-full text-gray-100 text-sm glass-input text-center"
-                />
-                <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                  act === 1 ? 'bg-blue-900/40 text-blue-300' :
-                  act === 2 ? 'bg-yellow-900/40 text-yellow-300' :
-                  'bg-red-900/40 text-red-300'
-                }`}>
-                  Act {act}
-                </span>
-              </div>
+            {/* Floor — read-only, auto-synced */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wide">Floor</span>
+              <span className="text-sm font-semibold text-gray-200">{floor}</span>
+              <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                act === 1 ? 'bg-blue-900/40 text-blue-300' :
+                act === 2 ? 'bg-yellow-900/40 text-yellow-300' :
+                'bg-red-900/40 text-red-300'
+              }`}>
+                Act {act}
+              </span>
             </div>
 
             {/* Deck action buttons — same row as character + floor */}
-            <div className="flex gap-2 pb-0.5">
-              <button
-                onClick={loadStarterDeck}
-                className="text-xs px-3 py-1.5 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
-              >
-                Load Starter Deck
-              </button>
+            <div className="flex gap-2">
+              {deck.length === 0 && (
+                <button
+                  onClick={loadStarterDeck}
+                  className="text-xs px-3 py-1.5 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
+                >
+                  Load Starter Deck
+                </button>
+              )}
               {deck.length > 0 && (
                 <button
                   onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}

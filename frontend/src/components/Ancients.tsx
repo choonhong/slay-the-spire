@@ -123,7 +123,7 @@ export default function Ancients() {
             ...orderedChars.map(c => ({ id: c, label: formatCharacter(c) })),
           ]}
           value={selectedChar || '__all__'}
-          onChange={id => setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id))}
+          onChange={id => setSelectedChar(id === '__all__' ? '' : id)}
         />
 
         <SlidingPill

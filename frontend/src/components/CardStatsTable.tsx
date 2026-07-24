@@ -267,7 +267,7 @@ export default function CardStatsTable() {
           onChange={id => {
             if (id === '__all__') { setSelectedChar(''); setColorlessOnly(false); }
             else if (id === '__colorless__') { setSelectedChar(''); setColorlessOnly(c => !c); }
-            else { setColorlessOnly(false); setSelectedChar(prev => prev === id ? '' : id); }
+            else { setColorlessOnly(false); setSelectedChar(id); }
           }}
         />
 
