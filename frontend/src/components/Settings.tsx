@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { fetchConfig, saveConfig, uploadRuns } from '../api';
 import { useAuth } from '../AuthContext';
 import { THEMES, useTheme } from '../themes';
@@ -44,8 +44,12 @@ export default function Settings() {
   const [savingPath, setSavingPath] = useState(false);
   const [pathSaved, setPathSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!pathSaved) return;
+    const t = window.setTimeout(() => setPathSaved(false), 3000);
+    return () => window.clearTimeout(t);
+  }, [pathSaved]);
 
   useEffect(() => {
     fetchConfig()
@@ -65,7 +69,6 @@ export default function Settings() {
       setSavesPath(updated.savesPath ?? '');
       setResolvedSavesPath(updated.resolvedSavesPath ?? null);
       setPathSaved(true);
-      setTimeout(() => setPathSaved(false), 3000);
     } catch (err) {
       setError(`Failed to save path: ${String(err)}`);
     } finally {
@@ -73,7 +76,7 @@ export default function Settings() {
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const all = Array.from(e.target.files ?? []);
     const files = all.filter(f => f.name.endsWith('.run'));
     if (!files.length) {
@@ -173,7 +176,7 @@ export default function Settings() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <input ref={folderInputRef} type="file" multiple
+          <input type="file" multiple
             // @ts-expect-error webkitdirectory is a non-standard attribute
             webkitdirectory="" directory=""
             onChange={handleUpload} className="hidden" id="run-folder-input"
@@ -185,7 +188,7 @@ export default function Settings() {
             {uploading ? 'Uploading…' : 'Choose history folder…'}
           </label>
 
-          <input ref={fileInputRef} type="file" accept=".run" multiple
+          <input type="file" accept=".run" multiple
             onChange={handleUpload} className="hidden" id="run-file-input"
           />
           <label

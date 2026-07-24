@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchRuns, fetchCharacters, fetchBuilds, type RunRow } from '../api';
 import { formatCharacter } from '../utils';
+import { sortCharacters } from '../constants/characters';
 import RunDetailPanel from './RunDetailPanel';
 import PageHeader from './PageHeader';
 import SlidingPill from './SlidingPill';
@@ -31,8 +32,6 @@ function formatActs(actsJson: string): string {
     return actsJson;
   }
 }
-
-const CHARACTER_ORDER = ['IRONCLAD', 'SILENT', 'NECROBINDER', 'REGENT', 'DEFECT', 'WATCHER'];
 
 const PAGE_SIZE = 20;
 
@@ -73,7 +72,6 @@ export default function RunHistory() {
     }
   };
 
-  useEffect(() => { setPage(0); }, [selectedChar, selectedBuild]);
   useEffect(() => { load(); }, [page, selectedChar, selectedBuild]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -85,11 +83,7 @@ export default function RunHistory() {
     return next;
   });
 
-  const sortedChars = [...characters].sort((a, b) => {
-    const ai = CHARACTER_ORDER.indexOf(a.replace(/^CHARACTER\./, ''));
-    const bi = CHARACTER_ORDER.indexOf(b.replace(/^CHARACTER\./, ''));
-    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-  });
+  const sortedChars = sortCharacters(characters);
 
   return (
     <div className="space-y-5">
@@ -107,13 +101,16 @@ export default function RunHistory() {
             ...sortedChars.map(c => ({ id: c, label: formatCharacter(c) })),
           ]}
           value={selectedChar || '__all__'}
-          onChange={id => setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id))}
+          onChange={id => {
+            setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id));
+            setPage(0);
+          }}
         />
 
         {builds.length > 1 && (
           <select
             value={selectedBuild}
-            onChange={e => setSelectedBuild(e.target.value)}
+            onChange={e => { setSelectedBuild(e.target.value); setPage(0); }}
             className="ml-auto px-3 py-1.5 rounded-full text-sm text-gray-100 glass-input"
           >
             <option value="">All Versions</option>

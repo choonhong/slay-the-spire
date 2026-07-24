@@ -64,6 +64,11 @@ const FACTOR_LABELS: Record<string, { label: string; max: number; color: string 
   win_con:     { label: 'Win Con',    max: 20, color: 'bg-amber-500' },
 };
 
+const COST_COLORS: Record<string, string> = {
+  '0': 'bg-green-700', '1': 'bg-blue-700', '2': 'bg-yellow-700',
+  '3': 'bg-red-800',   'X': 'bg-purple-700', 'N/A': 'bg-gray-700',
+};
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 type SearchEntry = { card: CardText; upgraded: boolean };
 
@@ -177,15 +182,10 @@ function CardSearch({
 
   // Focus input when entering edit mode
   useEffect(() => {
-    if (editing) {
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
+    if (!editing) return;
+    const t = window.setTimeout(() => inputRef.current?.focus(), 0);
+    return () => window.clearTimeout(t);
   }, [editing]);
-
-  const COST_COLORS: Record<string, string> = {
-    '0': 'bg-green-700', '1': 'bg-blue-700', '2': 'bg-yellow-700',
-    '3': 'bg-red-800', 'X': 'bg-purple-700', 'N/A': 'bg-gray-700',
-  };
 
   return (
     <div ref={ref} className="relative">
