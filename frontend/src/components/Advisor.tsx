@@ -858,7 +858,7 @@ export default function Advisor() {
                   ) : relics.map((r, i) => (
                     <span
                       key={`${r}-${i}`}
-                      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm text-yellow-300"
+                      className="group inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-sm text-yellow-300"
                       style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.2)' }}
                     >
                       {formatRelicId(r)}

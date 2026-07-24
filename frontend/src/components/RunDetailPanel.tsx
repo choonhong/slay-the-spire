@@ -81,7 +81,7 @@ export default function RunDetailPanel({ runId }: Props) {
           </p>
           <div className="flex flex-wrap gap-1.5">
             {details.relics.map((r, i) => (
-              <span key={i} className="px-2 py-0.5 bg-gray-800 border border-gray-700 rounded text-xs text-gray-300">
+              <span key={i} className="px-3 py-0.5 bg-gray-800 border border-gray-700 rounded-full text-xs text-gray-300">
                 {r}
               </span>
             ))}
