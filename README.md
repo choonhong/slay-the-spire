@@ -1,6 +1,6 @@
 # STS2 Card Advisor
 
-A companion app for **Slay the Spire 2** that tracks your runs, surfaces card pick-rate stats, and gives real-time deck recommendations while you play.
+A companion app for **Slay the Spire 2** that tracks your runs, surfaces card stats, and gives real-time deck recommendations while you play.
 
 ---
 
@@ -54,7 +54,7 @@ Get a real-time card pick recommendation while you play:
 
 ## Contributing your runs
 
-Help grow the community dataset by sharing your `.run` files. The more runs contributed, the better the pick-rate statistics become for everyone.
+Help grow the community dataset by sharing your `.run` files. The more runs contributed, the better the statistics become for everyone.
 
 ### Easy way — `make upload`
 
@@ -83,7 +83,7 @@ This will:
    ```
 3. Open a Pull Request on GitHub.
 
-The backend imports community runs automatically on the next `make dev` startup. They count towards global stats for all users.
+The backend imports community runs automatically on the next `make dev` startup.
 
 ---
 
@@ -96,5 +96,5 @@ The backend imports community runs automatically on the next `make dev` startup.
 | `make frontend` | Start frontend only |
 | `make install` | Install npm dependencies |
 | `make upload` | Upload your runs and open a PR |
-| `make scrape` | Scrape community card pick rates |
+| `make scrape` | Scrape community card data |
 | `make scrape-text` | Scrape card text/descriptions |
