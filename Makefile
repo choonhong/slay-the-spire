@@ -1,4 +1,4 @@
-.PHONY: dev backend frontend install scrape scrape-text
+.PHONY: dev backend frontend install scrape scrape-text upload
 
 dev:
 	npm run dev
@@ -17,3 +17,6 @@ scrape:
 
 scrape-text:
 	python3 scripts/scrape_card_text.py
+
+upload:
+	@bash scripts/upload_runs.sh

@@ -102,7 +102,7 @@ export default function RunHistory() {
           ]}
           value={selectedChar || '__all__'}
           onChange={id => {
-            setSelectedChar(id === '__all__' ? '' : (selectedChar === id ? '' : id));
+            setSelectedChar(id === '__all__' ? '' : id);
             setPage(0);
           }}
         />

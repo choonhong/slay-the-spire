@@ -42,6 +42,15 @@ const CHARACTERS = [
   'CHARACTER.WATCHER',
 ];
 
+const STARTER_DECKS: Record<string, string[]> = {
+  'CHARACTER.IRONCLAD':    [...Array(5).fill('CARD.STRIKE_IRONCLAD'), ...Array(4).fill('CARD.DEFEND_IRONCLAD'), 'CARD.BASH'],
+  'CHARACTER.SILENT':      [...Array(5).fill('CARD.STRIKE_SILENT'), ...Array(5).fill('CARD.DEFEND_SILENT'), 'CARD.NEUTRALIZE', 'CARD.SURVIVOR'],
+  'CHARACTER.DEFECT':      [...Array(4).fill('CARD.STRIKE_DEFECT'), ...Array(4).fill('CARD.DEFEND_DEFECT'), 'CARD.ZAP', 'CARD.DUALCAST'],
+  'CHARACTER.NECROBINDER': [...Array(4).fill('CARD.STRIKE_NECROBINDER'), ...Array(4).fill('CARD.DEFEND_NECROBINDER'), 'CARD.UNLEASH', 'CARD.POKE'],
+  'CHARACTER.REGENT':      [...Array(4).fill('CARD.STRIKE_REGENT'), ...Array(4).fill('CARD.DEFEND_REGENT'), 'CARD.FALLING_STAR', 'CARD.VENERATE'],
+  'CHARACTER.WATCHER':     [...Array(4).fill('CARD.STRIKE_WATCHER'), ...Array(4).fill('CARD.DEFEND_WATCHER'), 'CARD.ERUPTION', 'CARD.VIGILANCE'],
+};
+
 const CHARACTER_COLOR: Record<string, string> = {
   IRONCLAD:    'text-gray-200',
   SILENT:      'text-gray-200',
@@ -80,6 +89,7 @@ function CardSearch({
   upgraded,
   onChange,
   onSelected,
+  onCancel,
   requestFocus,
   onFocusHandled,
 }: {
@@ -90,6 +100,7 @@ function CardSearch({
   upgraded: boolean;
   onChange: (id: string, upgraded: boolean) => void;
   onSelected?: () => void;
+  onCancel?: () => void;
   requestFocus?: boolean;
   onFocusHandled?: () => void;
 }) {
@@ -100,6 +111,8 @@ function CardSearch({
   const ref = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const onFocusHandledRef = useRef(onFocusHandled);
+  useEffect(() => { onFocusHandledRef.current = onFocusHandled; });
 
   const charColor = character.replace('CHARACTER.', '').toLowerCase();
 
@@ -122,7 +135,9 @@ function CardSearch({
     item?.scrollIntoView({ block: 'nearest' });
   }, [highlightedIdx]);
 
-  // Parent asked us to start typing (after previous slot was confirmed)
+  // Parent asked us to start typing (after previous slot was confirmed).
+  // We intentionally exclude onFocusHandled from deps — it's captured via ref
+  // so a new inline function on every parent re-render doesn't retrigger this effect.
   useEffect(() => {
     if (!requestFocus) return;
     setQuery('');
@@ -130,10 +145,11 @@ function CardSearch({
     setOpen(false);
     const t = window.setTimeout(() => {
       inputRef.current?.focus();
-      onFocusHandled?.();
+      onFocusHandledRef.current?.();
     }, 0);
     return () => window.clearTimeout(t);
-  }, [requestFocus, onFocusHandled]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestFocus]);
 
   const selectItem = useCallback((e: SearchEntry, advance = false) => {
     onChange(e.card.id, e.upgraded);
@@ -164,21 +180,7 @@ function CardSearch({
     }
   }, [open, filtered, highlightedIdx, selectItem]);
 
-  // Outside click — auto-select first result if dropdown is open, otherwise just close
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        if (open && filtered.length > 0) {
-          const target = filtered[highlightedIdx] ?? filtered[0];
-          if (target) selectItem(target);
-        } else {
-          setOpen(false);
-        }
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open, filtered, highlightedIdx, selectItem]);
+  // Dropdown only closes via X button, Escape key, or selecting a card — no outside-click dismissal.
 
   // Focus input when entering edit mode
   useEffect(() => {
@@ -234,7 +236,8 @@ function CardSearch({
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            className="w-full px-4 py-2 pr-8 rounded-full text-sm text-gray-100 placeholder-gray-500 glass-input"
+            className="w-full px-4 py-2 pr-8 rounded-full text-sm text-gray-100 placeholder-gray-500"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }}
           />
           {query && (
             <button
@@ -243,7 +246,7 @@ function CardSearch({
                 setQuery('');
                 setEditing(false);
                 setOpen(false);
-                inputRef.current?.focus();
+                onCancel?.();
               }}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-200 text-lg leading-none"
             >×</button>
@@ -252,8 +255,8 @@ function CardSearch({
       )}
 
       {open && filtered.length > 0 && (
-        <div ref={listRef} className="absolute z-50 top-full mt-1 w-full rounded-xl shadow-2xl max-h-56 overflow-y-auto glass"
-          style={{ background: 'rgba(12, 15, 28, 0.92)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div ref={listRef} className="absolute z-50 top-full mt-1 w-full rounded-xl shadow-2xl max-h-56 overflow-y-auto"
+          style={{ background: 'rgba(10, 12, 22, 0.98)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
           {filtered.map((entry, i) => (
             <button
               key={`${entry.card.id}-${entry.upgraded}`}
@@ -312,7 +315,7 @@ function RelicSearch({
   }, [requestFocus]);
 
   return (
-    <div className="rounded-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(12, 15, 28, 0.92)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+    <div className="rounded-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(10, 12, 22, 0.98)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
       <input
         ref={inputRef}
         type="text"
@@ -453,9 +456,11 @@ export default function Advisor() {
   const [allRelics, setAllRelics] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [character, setCharacter] = useState('');
+  const DEFAULT_CHAR = 'CHARACTER.IRONCLAD';
+  const [character, setCharacter] = useState(DEFAULT_CHAR);
   const [floor, setFloor] = useState(1);
-  const [deck, setDeck] = useState<string[]>([]);
+  const [addingToDeck, setAddingToDeck] = useState(false);
+  const [deck, setDeck] = useState<string[]>(STARTER_DECKS['CHARACTER.IRONCLAD']);
   const [relics, setRelics] = useState<string[]>([]);
   const [upgrades, setUpgrades] = useState<string[]>([]);
   const [offered, setOffered] = useState<[string, string, string]>(['', '', '']);
@@ -467,10 +472,10 @@ export default function Advisor() {
   const [scores, setScores] = useState<CardScore[] | null>(null);
   const [scoring, setScoring] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncEnabled, setSyncEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [setupCollapsed, setSetupCollapsed] = useState(false);
   const [combatPace, setCombatPace] = useState<CombatPace | null>(null);
-  const [addingToDeck, setAddingToDeck] = useState(false);
   const [addingRelic, setAddingRelic] = useState(false);
 
   // Load card text + relic list once, then immediately sync
@@ -500,11 +505,12 @@ export default function Advisor() {
   const syncRef = useRef(syncFromSave);
   useEffect(() => { syncRef.current = syncFromSave; });
 
-  // Auto-sync deck/relics every 10s while tab is open
+  // Auto-sync deck/relics every 10s while sync is enabled
   useEffect(() => {
+    if (!syncEnabled) return;
     const interval = setInterval(() => syncRef.current(true), 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [syncEnabled]);
 
   const act = actIndex != null ? actIndex + 1 : (floor <= 0 ? 1 : floor <= 17 ? 1 : floor <= 34 ? 2 : 3);
   const charKey = character.replace('CHARACTER.', '');
@@ -625,15 +631,7 @@ export default function Advisor() {
   }
 
   function starterDeckFor(char: string): string[] {
-    const starters: Record<string, string[]> = {
-      'CHARACTER.IRONCLAD':    Array(5).fill('CARD.STRIKE_IRONCLAD').concat(Array(4).fill('CARD.DEFEND_IRONCLAD'), ['CARD.BASH']),
-      'CHARACTER.SILENT':      Array(5).fill('CARD.STRIKE_SILENT').concat(Array(5).fill('CARD.DEFEND_SILENT'), ['CARD.NEUTRALIZE', 'CARD.SURVIVOR']),
-      'CHARACTER.DEFECT':      Array(4).fill('CARD.STRIKE_DEFECT').concat(Array(4).fill('CARD.DEFEND_DEFECT'), ['CARD.ZAP', 'CARD.DUALCAST']),
-      'CHARACTER.NECROBINDER': Array(4).fill('CARD.STRIKE_NECROBINDER').concat(Array(4).fill('CARD.DEFEND_NECROBINDER'), ['CARD.UNLEASH', 'CARD.POKE']),
-      'CHARACTER.REGENT':      Array(4).fill('CARD.STRIKE_REGENT').concat(Array(4).fill('CARD.DEFEND_REGENT'), ['CARD.FALLING_STAR', 'CARD.VENERATE']),
-      'CHARACTER.WATCHER':     Array(4).fill('CARD.STRIKE_WATCHER').concat(Array(4).fill('CARD.DEFEND_WATCHER'), ['CARD.ERUPTION', 'CARD.VIGILANCE']),
-    };
-    return starters[char] ?? [];
+    return STARTER_DECKS[char] ?? [];
   }
 
   function loadStarterDeck() {
@@ -658,8 +656,22 @@ export default function Advisor() {
     <div className="space-y-5">
       <PageHeader
         title="Advisor"
-        onRefresh={() => syncFromSave(false)}
-        refreshLabel={syncing ? 'Syncing…' : 'Sync'}
+        right={
+          <button
+            onClick={() => {
+              const next = !syncEnabled;
+              setSyncEnabled(next);
+              if (next) syncFromSave(true); // immediate sync when re-enabling
+            }}
+            className={`px-4 py-1.5 rounded-full text-sm transition-all glass-button ${
+              syncEnabled
+                ? 'text-red-400 hover:text-red-300'
+                : 'text-green-400 hover:text-green-300'
+            }`}
+          >
+            {syncing ? '⟳ Syncing…' : syncEnabled ? 'Disable Sync' : 'Enable Sync'}
+          </button>
+        }
       />
 
       {/* ── Setup section (collapsible) ── */}
@@ -694,79 +706,64 @@ export default function Advisor() {
         </div>
       ) : (
         <>
-          {/* ── Controls row ── */}
-          <div className="flex flex-wrap gap-4 items-end">
+          {/* ── Controls row: character + floor + deck actions ── */}
+          <div className="flex flex-wrap gap-3 items-center">
             <div>
               <SlidingPill
                 options={CHARACTERS.map(c => ({ id: c, label: formatCharacter(c) }))}
                 value={character}
                 onChange={c => {
-                  if (c === character) {
-                    setCharacter('');
-                    setDeck([]);
-                    setUpgrades([]);
-                    setRelics([]);
-                    setScores(null);
-                  } else {
-                    pickCharacter(c);
-                  }
+                  if (c !== character) pickCharacter(c);
                 }}
               />
             </div>
 
-            {/* Floor */}
-            <div className="space-y-1">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Floor</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  max={55}
-                  value={floor}
-                  onChange={e => setFloor(Math.max(1, Math.min(55, Number(e.target.value))))}
-                  className="w-16 px-2 py-1.5 rounded-full text-gray-100 text-sm glass-input text-center"
-                />
-                <span className={`text-sm font-medium px-2 py-1 rounded ${
-                  act === 1 ? 'bg-blue-900/40 text-blue-300' :
-                  act === 2 ? 'bg-yellow-900/40 text-yellow-300' :
-                  'bg-red-900/40 text-red-300'
-                }`}>
-                  Act {act}
-                </span>
-              </div>
+            {/* Floor — read-only, auto-synced */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">Floor</span>
+              <span className="text-base font-bold text-gray-200">{floor}</span>
+              <span className={`text-sm font-semibold px-4 py-1.5 rounded-full ${
+                act === 1 ? 'bg-blue-900/40 text-blue-300' :
+                act === 2 ? 'bg-yellow-900/40 text-yellow-300' :
+                'bg-red-900/40 text-red-300'
+              }`}>
+                Act {act}
+              </span>
             </div>
 
+            {/* Deck action buttons — same row as character + floor */}
+            <div className="flex gap-2">
+              {deck.length === 0 && (
+                <button
+                  onClick={loadStarterDeck}
+                  className="text-sm px-4 py-1.5 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
+                >
+                  Load Starter Deck
+                </button>
+              )}
+              {deck.length > 0 && (
+                <button
+                  onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}
+                  className="text-sm px-4 py-1.5 rounded-full text-gray-400 hover:text-red-400 transition-all glass-button"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
           {/* ── Deck builder ── */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">
-                Current Deck <span className="text-gray-600">({deck.length} cards)</span>
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={loadStarterDeck}
-                  className="text-xs px-3 py-1 rounded-full text-gray-400 hover:text-gray-200 transition-all glass-button"
-                >
-                  Load Starter Deck
-                </button>
-                {deck.length > 0 && (
-                  <button
-                    onClick={() => { setDeck([]); setUpgrades([]); setScores(null); }}
-                    className="text-xs px-3 py-1 rounded-full text-gray-400 hover:text-red-400 transition-all glass-button"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </div>
+            <label className="text-xs text-gray-500">
+              Current Deck <span className="text-gray-600">({deck.length} cards)</span>
+            </label>
 
             {/* Deck chips */}
-            <div className="relative flex gap-1.5 min-h-[44px] p-2 rounded-xl glass-sm">
+            <div className="relative"> {/* outer wrapper — no stacking context, so popup can paint above relic section */}
+            <div className="flex gap-1.5 min-h-[44px] p-2 rounded-xl glass-sm">
               <div className="flex-1 min-w-0">
                 {deck.length === 0 ? (
-                  <span className="text-xs text-gray-600">Empty — pick a character, tap +, or Sync from a live run</span>
+                  <span className="text-xs text-gray-600">Empty — pick a character, load a starter deck, or Sync from a live run</span>
                 ) : (
                   <>
                     {/* Rarity summary line */}
@@ -792,9 +789,7 @@ export default function Advisor() {
                       {deck.map((id, i) => {
                         const ct = cardMap.get(id);
                         const colorClass = RARITY_COLOR[ct?.rarity ?? ''] ?? 'text-gray-300';
-                        // nth copy of this card in the deck (1-indexed)
                         const deckCopyIndex = deck.slice(0, i + 1).filter(d => d === id).length;
-                        // how many copies of this card are upgraded total
                         const totalUpgraded = upgrades.filter(u => u === id).length;
                         const isUpgraded = deckCopyIndex <= totalUpgraded;
                         return (
@@ -817,7 +812,8 @@ export default function Advisor() {
                 )}
               </div>
 
-              <div className="relative shrink-0 flex items-end">
+              {/* + button on the right, same pattern as Relics */}
+              <div className="shrink-0 flex items-end">
                 <button
                   type="button"
                   title={character ? 'Add card' : 'Pick a character first'}
@@ -827,30 +823,33 @@ export default function Advisor() {
                 >
                   +
                 </button>
-
-                {addingToDeck && character && (
-                  <div className="absolute bottom-full right-0 mb-1.5 z-50 w-72">
-                    <CardSearch
-                      cards={allCards}
-                      character={character}
-                      placeholder="Search card…"
-                      value=""
-                      upgraded={false}
-                      onChange={(id, isUpgraded) => {
-                        addToDeck(id, isUpgraded);
-                        setAddingToDeck(false);
-                      }}
-                      requestFocus
-                      onFocusHandled={() => {}}
-                    />
-                  </div>
-                )}
               </div>
-            </div>
+            </div> {/* end glass-sm */}
+
+            {/* Popup lives OUTSIDE glass-sm so backdrop-filter doesn't trap its z-index */}
+            {addingToDeck && character && (
+              <div className="absolute bottom-full right-0 mb-1.5 z-[200] w-72">
+                <CardSearch
+                  cards={allCards}
+                  character={character}
+                  placeholder="Search card…"
+                  value=""
+                  upgraded={false}
+                  onChange={(id, isUpgraded) => {
+                    addToDeck(id, isUpgraded);
+                    setAddingToDeck(false);
+                  }}
+                  onCancel={() => setAddingToDeck(false)}
+                  requestFocus
+                  onFocusHandled={() => {}}
+                />
+              </div>
+            )}
+            </div> {/* end outer wrapper */}
 
             {/* Relics */}
             <div className="space-y-1.5">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Relics {relics.length > 0 && `(${relics.length})`}</label>
+              <label className="text-xs text-gray-500">Relics {relics.length > 0 && `(${relics.length})`}</label>
               <div className="relative flex gap-1.5 min-h-[36px] p-2 rounded-xl glass-sm">
                 <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
                   {relics.length === 0 ? (
@@ -858,7 +857,7 @@ export default function Advisor() {
                   ) : relics.map((r, i) => (
                     <span
                       key={`${r}-${i}`}
-                      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm text-yellow-300"
+                      className="group inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-sm text-yellow-300"
                       style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.2)' }}
                     >
                       {formatRelicId(r)}
@@ -904,7 +903,7 @@ export default function Advisor() {
 
       {/* ── Offered cards ── */}
       <div className="space-y-2">
-        <label className="text-xs text-gray-500 uppercase tracking-wide">Offered Cards</label>
+        <label className="text-xs text-gray-500">Offered Cards</label>
         <div className="grid grid-cols-3 gap-3">
           {([0, 1, 2] as const).map(slot => (
             <div key={slot} className="space-y-1">
