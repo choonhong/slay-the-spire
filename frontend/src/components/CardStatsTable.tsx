@@ -121,7 +121,7 @@ const ENERGY_COLOR: Record<string, string> = {
 
 function TierBadge({ tier, score }: { tier: string; score: number }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-bold ${TIER_COLOR[tier] ?? 'bg-gray-700 text-gray-300'}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${TIER_COLOR[tier] ?? 'bg-gray-700 text-gray-300'}`}>
       {tier} <span className="font-normal opacity-80">{score.toFixed(0)}</span>
     </span>
   );
@@ -318,7 +318,7 @@ export default function CardStatsTable() {
           onChange={e => setSelectedBuild(e.target.value)}
           className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
         >
-          <option value="">All Patches</option>
+          <option value="">All Versions</option>
           {builds.map(b => (
             <option key={b} value={b}>{b}</option>
           ))}

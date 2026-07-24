@@ -104,6 +104,18 @@ export async function startWatcher(): Promise<void> {
     return;
   }
 
+  // Guard: if the DB was wiped and recreated, the stored userId may no longer exist.
+  // Clear the stale config entry and wait for the user to log in again.
+  const db = getDb();
+  const userRow = db.prepare('SELECT id FROM users WHERE id = ?').get(userId) as { id: number } | undefined;
+  if (!userRow) {
+    console.log(`[watcher] User id=${userId} from config no longer exists in DB (DB was reset?). Clearing stale userId — please log in again.`);
+    const cfg = loadConfig();
+    saveConfig({ ...cfg, watcherUserId: undefined });
+    retryTimer = setTimeout(() => { void startWatcher(); }, 15_000);
+    return;
+  }
+
   if (!fs.existsSync(savesPath)) {
     console.log(`[watcher] Saves path does not exist yet: ${savesPath}`);
     console.log('[watcher] Will retry in 30s...');

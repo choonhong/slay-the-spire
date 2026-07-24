@@ -6,7 +6,6 @@ import Synergies from './components/Synergies';
 import Ancients from './components/Ancients';
 import Advisor from './components/Advisor';
 import Settings from './components/Settings';
-import SlidingPill from './components/SlidingPill';
 import { useTheme } from './themes';
 
 type Tab = 'stats' | 'synergies' | 'ancients' | 'runs' | 'advisor' | 'settings';
@@ -42,20 +41,25 @@ function AppInner() {
               STS2 Advisor
             </span>
           </div>
-          <nav className="ml-4">
-            <SlidingPill
-              options={([
-                { id: 'stats',     label: 'Card Stats' },
-                { id: 'synergies', label: 'Synergies' },
-                { id: 'ancients',  label: 'Ancient Relics' },
-                { id: 'runs',      label: 'Run History' },
-                { id: 'advisor',   label: 'Advisor' },
-                { id: 'settings',  label: 'Settings' },
-              ] as const).map(o => ({ ...o, activeClass: 'bg-white/10 border border-white/20' }))}
-              value={tab}
-              onChange={id => setTab(id as Tab)}
-              bare
-            />
+          <nav className="ml-4 flex items-center gap-1">
+            {([
+              { id: 'stats',     label: 'Card Stats' },
+              { id: 'synergies', label: 'Synergies' },
+              { id: 'ancients',  label: 'Ancient Relics' },
+              { id: 'runs',      label: 'Run History' },
+              { id: 'advisor',   label: 'Advisor' },
+              { id: 'settings',  label: 'Settings' },
+            ] as const).map(o => (
+              <button
+                key={o.id}
+                onClick={() => setTab(o.id)}
+                className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors duration-150 ${
+                  tab === o.id ? 'text-white' : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
           </nav>
         </div>
       </header>

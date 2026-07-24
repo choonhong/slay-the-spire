@@ -149,7 +149,7 @@ export default function Synergies({ active = true }: { active?: boolean }) {
           onChange={e => setSelectedBuild(e.target.value)}
           className="px-4 py-1.5 rounded-full text-sm text-gray-100 glass-input"
         >
-          <option value="">All Patches</option>
+          <option value="">All Versions</option>
           {builds.map(b => <option key={b} value={b}>{b}</option>)}
         </select>
         <div className="flex items-center gap-2 text-sm text-gray-400">

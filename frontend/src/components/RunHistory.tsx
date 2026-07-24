@@ -114,9 +114,9 @@ export default function RunHistory() {
           <select
             value={selectedBuild}
             onChange={e => setSelectedBuild(e.target.value)}
-            className="ml-auto px-3 py-1.5 rounded-md text-sm text-gray-100 glass-input"
+            className="ml-auto px-3 py-1.5 rounded-full text-sm text-gray-100 glass-input"
           >
-            <option value="">All Patches</option>
+            <option value="">All Versions</option>
             {builds.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
         )}
