@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchRuns, fetchCharacters, fetchBuilds, type RunRow } from '../api';
 import { formatCharacter } from '../utils';
-import { sortCharacters } from '../constants/characters';
+import { sortCharacters, CHARACTER_COLORS } from '../constants/characters';
 import RunDetailPanel from './RunDetailPanel';
 import PageHeader from './PageHeader';
 import SlidingPill from './SlidingPill';
@@ -143,10 +143,16 @@ export default function RunHistory() {
                 className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
               >
                 {/* Character badge */}
-                <span className="px-2 py-0.5 text-xs rounded-full font-medium text-gray-300"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  {formatCharacter(run.character)}
-                </span>
+                {(() => {
+                  const key = run.character.replace('CHARACTER.', '');
+                  const col = CHARACTER_COLORS[key] ?? { bg: 'rgba(255,255,255,0.08)', border: 'rgba(255,255,255,0.1)', text: '#d1d5db' };
+                  return (
+                    <span className="px-2 py-0.5 text-xs rounded-full font-medium shrink-0"
+                      style={{ background: col.bg, border: `1px solid ${col.border}`, color: col.text }}>
+                      {formatCharacter(run.character)}
+                    </span>
+                  );
+                })()}
 
                 {/* Ascension */}
                 <span className="text-xs text-gray-400 font-mono shrink-0">A{run.ascension}</span>
