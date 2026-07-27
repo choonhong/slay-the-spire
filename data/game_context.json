@@ -126,7 +126,7 @@
       "good_keywords": ["Channel", "Focus", "Evoke", "Orb", "Draw"],
       "key_synergy_cards": [
         "CARD.BIASED_COGNITION", "CARD.ELECTRODYNAMICS", "CARD.ECHO_FORM",
-        "CARD.COMPILE_DRIVER"
+        "CARD.COMPILE_DRIVER", "CARD.WHITE_NOISE"
       ],
       "meta_builds": {
         "frost_focus": {
@@ -138,6 +138,11 @@
           "tier": "A",
           "description": "Electrodynamics makes all orbs deal passive AoE — simple and consistent",
           "core": ["CARD.ELECTRODYNAMICS", "CARD.BALL_LIGHTNING", "CARD.THUNDER_STRIKE"]
+        },
+        "echo_form_engine": {
+          "tier": "S",
+          "description": "Echo Form doubles the first card each turn — doubles Storm Lightning channels and Subroutine energy gains for explosive turns",
+          "core": ["CARD.ECHO_FORM", "CARD.STORM", "CARD.SUBROUTINE"]
         }
       },
       "avoid_cards": ["CARD.CLUMSY", "CARD.STATIC_DISCHARGE"],
@@ -448,13 +453,56 @@
       "filter": { "id": "CARD.VICIOUS" },
       "bonus": 12,
       "reason": "Taunt in deck — Vicious draws a card every time Taunt applies Vulnerable"
+    },
+    "scrape_zero_cost_draw": {
+      "enabler_filter": { "cost": "0" },
+      "filter": { "id": "CARD.SCRAPE" },
+      "bonus": 12,
+      "penalty_if_below": 1,
+      "reason": "Scrape only retains 0-cost cards drawn — draw is wasted without 0-cost cards in deck"
+    },
+    "storm_white_noise": {
+      "enablers": ["CARD.STORM"],
+      "filter": { "id": "CARD.WHITE_NOISE" },
+      "bonus": 8,
+      "reason": "Storm in deck — White Noise plays a free Power each combat, channelling 1 Lightning"
+    },
+    "white_noise_storm": {
+      "enablers": ["CARD.WHITE_NOISE"],
+      "filter": { "id": "CARD.STORM" },
+      "bonus": 8,
+      "reason": "White Noise in deck — free Power each combat triggers Storm's Lightning channel"
+    },
+    "echo_form_storm": {
+      "enablers": ["CARD.ECHO_FORM"],
+      "filter": { "id": "CARD.STORM" },
+      "bonus": 10,
+      "reason": "Echo Form in deck — first Power played twice, channelling 2 Lightning instead of 1"
+    },
+    "storm_echo_form": {
+      "enablers": ["CARD.STORM"],
+      "filter": { "id": "CARD.ECHO_FORM" },
+      "bonus": 10,
+      "reason": "Storm in deck — Echo Form doubles first Power, triggering 2 Lightning channels"
+    },
+    "echo_form_subroutine": {
+      "enablers": ["CARD.ECHO_FORM"],
+      "filter": { "id": "CARD.SUBROUTINE" },
+      "bonus": 8,
+      "reason": "Echo Form in deck — first Power played twice, generating 2 Energy from Subroutine"
+    },
+    "subroutine_echo_form": {
+      "enablers": ["CARD.SUBROUTINE"],
+      "filter": { "id": "CARD.ECHO_FORM" },
+      "bonus": 8,
+      "reason": "Subroutine in deck — Echo Form doubles first Power, generating 2 Energy instead of 1"
     }
   },
 
   "relic_synergies": {
     "_comment": "Keys are unique IDs (use relic_id field when one relic needs multiple rules). Add new relics as you obtain them.",
-    "RELIC.CRACKED_CORE.focus": { "relic_id": "RELIC.CRACKED_CORE", "filter": { "keyword": "Focus" }, "bonus": 5, "reason": "Cracked Core channels Lightning — Focus cards increase its damage" },
-    "RELIC.CRACKED_CORE.orb":   { "relic_id": "RELIC.CRACKED_CORE", "filter": { "keyword": "Orb" },   "bonus": 4, "reason": "Cracked Core channels Lightning — Orb synergy cards amplify it" },
+    "RELIC.CRACKED_CORE.focus": { "relic_id": "RELIC.CRACKED_CORE", "filter": { "keyword": "Focus", "keywords_only": true }, "bonus": 5, "reason": "Cracked Core channels Lightning — Focus cards increase its damage" },
+    "RELIC.CRACKED_CORE.orb":   { "relic_id": "RELIC.CRACKED_CORE", "filter": { "keyword": "Orb",   "keywords_only": true }, "bonus": 4, "reason": "Cracked Core channels Lightning — Orb synergy cards amplify it" },
     "RELIC.NEOWS_TORMENT":            { "filter": { "cost": "0" },                                           "bonus": 7, "reason": "Neow's Torment — boosts all 0-cost cards, making them trigger its effect" },
     "RELIC.BAG_OF_MARBLES":       { "filter": { "type": "Attack" },                                       "bonus": 5, "reason": "Bag of Marbles applies Vulnerable — attacks deal 50% more damage" },
     "RELIC.ORNAMENTAL_FAN":       { "filter": { "cost": "0", "type": "Attack" },                           "bonus": 6, "reason": "Ornamental Fan — 0-cost attacks trigger Block every 3rd hit faster" },

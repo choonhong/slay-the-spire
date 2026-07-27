@@ -40,5 +40,6 @@
   "CARD.SWEEPING_BEAM":     ["aoe"],
   "CARD.THE_BOMB":          ["aoe"],
   "CARD.THUNDERCLAP":       ["aoe"],
-  "CARD.WHIRLWIND":         ["aoe"]
+  "CARD.WHIRLWIND":         ["aoe"],
+  "CARD.GLASSWORK":         ["aoe"]
 }

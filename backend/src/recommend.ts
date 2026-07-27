@@ -68,6 +68,8 @@ interface RelicSynergy {
     cost?: string;
     type?: string;
     keyword?: string;
+    /** When true, keyword is matched only against the card's formal keywords[] array, not description text. */
+    keywords_only?: boolean;
     card_id?: string;
     /** True = card grants numeric Block on play (not Powers / "unblocked" text). */
     gains_block?: boolean;
@@ -636,7 +638,7 @@ function scoreCard(
     const costMatch   = filter.cost    === undefined || ct?.cost === filter.cost;
     const typeMatch   = filter.type    === undefined || ct?.type?.toLowerCase() === filter.type.toLowerCase();
     const kwMatch     = filter.keyword === undefined || (ct?.keywords ?? []).some(k => k.toLowerCase() === filter.keyword!.toLowerCase())
-                          || (ct?.description ?? '').toLowerCase().includes((filter.keyword ?? '').toLowerCase());
+                          || (!filter.keywords_only && (ct?.description ?? '').toLowerCase().includes((filter.keyword ?? '').toLowerCase()));
     const cardMatch   = filter.card_id === undefined || cardId === filter.card_id;
     const blockMatch  = filter.gains_block === undefined || filter.gains_block === cardGainsNumericBlock(ct);
     if (costMatch && typeMatch && kwMatch && cardMatch && blockMatch) {
@@ -745,6 +747,9 @@ function scoreCard(
   // Relic bonuses sit outside the deck-synergy clamp so strong relic picks aren't muted
   synergy = Math.round(clamp(synergy + relicBonus, -20, 40));
 
+  // ── Factor 4 placeholder — declared here so special cases in Factor 3 can set a floor ──
+  let winCon = 0;
+
   // ── Factor 3: Deck Needs (0–40) ────────────────────────────────────────────
   let deckNeeds = 10; // neutral baseline
 
@@ -762,6 +767,48 @@ function scoreCard(
   if (!isNaN(cardCost) && avgCost > 2.0 && cardCost <= 1) {
     deckNeeds += 5;
     reasons.push('Deck is expensive — cheap card improves curve');
+  }
+
+  // White Noise (Defect): generates a free random Power — solves scaling gap regardless of which Power appears.
+  // All Defect win conditions rely on Powers (Defragment, Biased Cognition, Echo Form, Electrodynamics),
+  // so White Noise universally advances the win condition and fills the power gap.
+  if (cardId === 'CARD.WHITE_NOISE' && character === 'CHARACTER.DEFECT' && alreadyInDeck === 0) {
+    if (powerCount < 3) {
+      deckNeeds += 16;
+      reasons.push(`Power generator — adds a free random scaling Power (${powerCount} power${powerCount === 1 ? '' : 's'} in deck)`);
+    }
+    if (winCon < 10) {
+      winCon = 10;
+      reasons.push('Generates Powers that advance every Defect win condition');
+    }
+  }
+
+  // Energy generation cards: burst energy unlocks explosive turns and expensive combos.
+  // For Defect in particular, extra energy = more orb channels = win condition fuel.
+  // Distinguish immediate ("Gain N Energy") from delayed ("Next turn, gain N Energy").
+  const gainEnergyMatch = (ct?.description ?? '').match(/gain (\d+) energy/i);
+  if (gainEnergyMatch && ct?.type !== 'Power') {
+    const energyGainInDeck = deckTexts.filter(c =>
+      /gain \d+ energy/i.test(c.description ?? ''),
+    ).length;
+    const isImmediate = !/next turn/i.test(ct?.description ?? '');
+    const isFirstCopy = alreadyInDeck === 0 && energyGainInDeck === 0;
+
+    if (isFirstCopy) {
+      const dnBonus = isImmediate ? 20 : 10;
+      const wcFloor = isImmediate ? 12 : 6;
+      deckNeeds += dnBonus;
+      if (winCon < wcFloor) winCon = wcFloor;
+      reasons.push(
+        isImmediate
+          ? 'First energy gain — unlocks burst turns and expensive combos'
+          : 'First delayed energy gain — extra energy next turn improves sequencing',
+      );
+      if (winCon >= wcFloor) reasons.push('Energy generation is the win condition engine for Defect');
+    } else if (energyGainInDeck >= 1 || alreadyInDeck >= 1) {
+      deckNeeds += 8;
+      if (winCon < 6) winCon = 6;
+    }
   }
 
   // Afterimage: must-take — 1 energy Power that turns every card into Block (stacks)
@@ -1280,7 +1327,7 @@ function scoreCard(
 
   // ── Factor 4: Win Condition (0–20) ─────────────────────────────────────────
   // Scores how well the offered card advances or completes the deck's win conditions
-  let winCon = 0;
+  // (winCon is declared above Factor 3 so energy/power special cases can set a floor)
   const metaBuilds = charCtx?.meta_builds;
   if (metaBuilds) {
     let bestWinConBonus = 0;

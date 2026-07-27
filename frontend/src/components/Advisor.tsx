@@ -123,7 +123,16 @@ function CardSearch({
       (c.color === charColor || c.color === 'colorless' || c.color === 'event') &&
       (c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
     );
-    return sortByQuery(matches, q).slice(0, 12).map(c => ({ card: c, upgraded: false }));
+    const sorted = [...matches].sort((a, b) => {
+      const ra = searchRank(a.name, q), rb = searchRank(b.name, q);
+      if (ra !== rb) return ra - rb;
+      // Character cards before colorless/event at same match rank
+      const aIsChar = a.color === charColor ? 0 : 1;
+      const bIsChar = b.color === charColor ? 0 : 1;
+      if (aIsChar !== bIsChar) return aIsChar - bIsChar;
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    });
+    return sorted.slice(0, 12).map(c => ({ card: c, upgraded: false }));
   }, [query, cards, charColor]);
 
   const selected = cards.find(c => c.id === value);
