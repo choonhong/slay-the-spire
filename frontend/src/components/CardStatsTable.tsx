@@ -92,19 +92,22 @@ function PickRateBar({ value }: { value: number }) {
   );
 }
 
-const TIER_COLOR: Record<string, string> = {
-  S: 'bg-yellow-500 text-white',
-  A: 'bg-green-600 text-white',
-  B: 'bg-blue-600 text-white',
-  C: 'bg-gray-600 text-white',
-  D: 'bg-red-900 text-gray-300',
+const TIER_STYLE: Record<string, { bg: string; border: string; text: string }> = {
+  S: { bg: 'rgba(234,179,8,0.2)',    border: 'rgba(234,179,8,0.45)',   text: '#fcd34d' },
+  A: { bg: 'rgba(34,197,94,0.18)',   border: 'rgba(74,222,128,0.38)',  text: '#86efac' },
+  B: { bg: 'rgba(59,130,246,0.18)',  border: 'rgba(96,165,250,0.38)',  text: '#93c5fd' },
+  C: { bg: 'rgba(107,114,128,0.2)',  border: 'rgba(156,163,175,0.3)',  text: '#d1d5db' },
+  D: { bg: 'rgba(239,68,68,0.15)',   border: 'rgba(239,68,68,0.32)',   text: '#fca5a5' },
+  F: { bg: 'rgba(185,28,28,0.25)',   border: 'rgba(239,68,68,0.45)',   text: '#f87171' },
 };
 
-
-
 function TierBadge({ tier, score }: { tier: string; score: number }) {
+  const s = TIER_STYLE[tier] ?? { bg: 'rgba(107,114,128,0.2)', border: 'rgba(156,163,175,0.3)', text: '#9ca3af' };
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${TIER_COLOR[tier] ?? 'bg-gray-700 text-gray-300'}`}>
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+      style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.text }}
+    >
       {tier} <span className="font-normal opacity-80">{score.toFixed(0)}</span>
     </span>
   );

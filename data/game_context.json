@@ -145,6 +145,7 @@
           "core": ["CARD.ECHO_FORM", "CARD.STORM", "CARD.SUBROUTINE"]
         }
       },
+      "tier_list_s": ["CARD.ECHO_FORM"],
       "avoid_cards": ["CARD.CLUMSY", "CARD.STATIC_DISCHARGE"],
       "deck_thinning_targets": ["CARD.STRIKE_DEFECT", "CARD.DEFEND_DEFECT"],
       "starter_deck": [
