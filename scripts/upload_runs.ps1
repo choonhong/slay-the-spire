@@ -39,9 +39,42 @@ if (-not (Test-Path $UuidDir)) { New-Item -ItemType Directory -Path $UuidDir | O
 $RunFiles = Get-ChildItem -Path $UuidDir -Filter "*.run" -Recurse -ErrorAction SilentlyContinue
 $RunCount = $RunFiles.Count
 
+# If folder is empty, try to copy from the user's configured saves path
 if ($RunCount -eq 0) {
-    Write-Host "No .run files yet - play a run and the watcher will mirror it here automatically." -ForegroundColor Yellow
-    Write-Host "Re-run 'make upload' after your next completed run."
+    $SavesPath = $null
+    if (Test-Path $ConfigFile) {
+        try {
+            $cfg = Get-Content $ConfigFile -Raw | ConvertFrom-Json
+            # Prefer effectiveSavesPath (written by watcher on startup) over manual savesPath
+            $SavesPath = $cfg.effectiveSavesPath
+            if (-not $SavesPath) { $SavesPath = $cfg.savesPath }
+        } catch { }
+    }
+    # Fall back to OS default if not configured
+    if (-not $SavesPath) {
+        $SavesPath = Join-Path $env:APPDATA "SlayTheSpire2\steam"
+    }
+
+    if (Test-Path $SavesPath) {
+        Write-Host "Backfilling from saves path: $SavesPath" -ForegroundColor Yellow
+        $Copied = 0
+        Get-ChildItem -Path $SavesPath -Filter "*.run" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+            $Dest = Join-Path $UuidDir $_.Name
+            if (-not (Test-Path $Dest)) {
+                Copy-Item $_.FullName $Dest
+                $Copied++
+            }
+        }
+        Write-Host "Copied $Copied run file(s) into community_runs\$Uuid\" -ForegroundColor Yellow
+    }
+
+    $RunFiles = Get-ChildItem -Path $UuidDir -Filter "*.run" -Recurse -ErrorAction SilentlyContinue
+    $RunCount  = $RunFiles.Count
+}
+
+if ($RunCount -eq 0) {
+    Write-Host "No .run files found. Play a run first - the watcher will mirror it automatically." -ForegroundColor Yellow
+    Write-Host "Saves path checked: $SavesPath"
     exit 0
 }
 

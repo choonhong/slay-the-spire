@@ -10,6 +10,8 @@ export interface AppConfig {
   watcherUserId?: number;
   /** Username (UUID string) of the watcher user — used by upload scripts. */
   watcherUserUuid?: string;
+  /** Resolved saves path actually used by the watcher — written on startup so upload scripts can find .run files. */
+  effectiveSavesPath?: string;
 }
 
 export function loadConfig(): AppConfig {

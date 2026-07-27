@@ -137,6 +137,13 @@ export async function startWatcher(): Promise<void> {
     return;
   }
 
+  // Persist the effective saves path so upload scripts can find .run files
+  // even when the user never explicitly set it in Settings.
+  const cfg = loadConfig();
+  if (cfg.effectiveSavesPath !== savesPath) {
+    saveConfig({ ...cfg, effectiveSavesPath: savesPath });
+  }
+
   console.log(`[watcher] Watching: ${savesPath} (user_id=${userId})`);
 
   await parseExistingRuns(savesPath, userId);

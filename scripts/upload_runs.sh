@@ -34,9 +34,42 @@ UUID_DIR="$RUNS_DIR/$UUID"
 
 RUN_COUNT="$(find "$UUID_DIR" -name '*.run' | wc -l | tr -d ' ')"
 
+# If folder is empty, try to copy from the user's configured saves path
 if [ "$RUN_COUNT" -eq 0 ]; then
-  echo "No .run files yet — play a run and the watcher will mirror it here automatically."
-  echo "Re-run 'make upload' after your next completed run."
+  SAVES_PATH=""
+  if [ -f "$CONFIG_FILE" ]; then
+    # Prefer effectiveSavesPath (written by watcher on startup) over manual savesPath
+    SAVES_PATH="$(python3 -c "import json; d=json.load(open('$CONFIG_FILE')); print(d.get('effectiveSavesPath','') or d.get('savesPath',''))" 2>/dev/null || true)"
+  fi
+
+  # Fall back to OS default if not configured
+  if [ -z "$SAVES_PATH" ]; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      SAVES_PATH="$HOME/Library/Application Support/SlayTheSpire2"
+    else
+      SAVES_PATH="$HOME/.local/share/SlayTheSpire2"
+    fi
+  fi
+
+  if [ -d "$SAVES_PATH" ]; then
+    echo "Backfilling from saves path: $SAVES_PATH"
+    COPIED=0
+    while IFS= read -r -d '' f; do
+      dest="$UUID_DIR/$(basename "$f")"
+      if [ ! -f "$dest" ]; then
+        cp "$f" "$dest"
+        COPIED=$((COPIED + 1))
+      fi
+    done < <(find "$SAVES_PATH" -name '*.run' -print0 2>/dev/null)
+    echo "Copied $COPIED run file(s) into community_runs/$UUID/"
+  fi
+
+  RUN_COUNT="$(find "$UUID_DIR" -name '*.run' | wc -l | tr -d ' ')"
+fi
+
+if [ "$RUN_COUNT" -eq 0 ]; then
+  echo "No .run files found. Play a run first — the watcher will mirror it automatically."
+  echo "Saves path checked: ${SAVES_PATH:-not configured}"
   exit 0
 fi
 
