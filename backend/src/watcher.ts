@@ -40,15 +40,29 @@ export function getWatcherUserId(): number | null {
 
 /**
  * Bind the local disk watcher to the signed-in UUID user.
+ * Also persists the UUID string so upload scripts can find the right folder.
  * Restarts the watcher when the owner changes.
  */
 export function claimWatcherUser(userId: number): void {
   const cfg = loadConfig();
-  if (cfg.watcherUserId === userId) return;
-  saveConfig({ ...cfg, watcherUserId: userId });
-  console.log(`[watcher] Claimed by user_id=${userId}`);
-  stopWatcher();
-  void startWatcher();
+  // Resolve the UUID string (username) for this user so upload scripts can use it
+  const db = getDb();
+  const row = db.prepare('SELECT username FROM users WHERE id = ?').get(userId) as { username: string } | undefined;
+  const uuid = row?.username;
+
+  // Always persist watcherUserUuid in case it was missing (e.g. older installs)
+  const uuidChanged = cfg.watcherUserUuid !== uuid;
+  const userChanged = cfg.watcherUserId !== userId;
+
+  if (!userChanged && !uuidChanged) return;
+
+  saveConfig({ ...cfg, watcherUserId: userId, watcherUserUuid: uuid });
+  console.log(`[watcher] Claimed by user_id=${userId} uuid=${uuid ?? '?'}`);
+
+  if (userChanged) {
+    stopWatcher();
+    void startWatcher();
+  }
 }
 
 let watcher: ReturnType<typeof chokidar.watch> | null = null;
@@ -160,6 +174,18 @@ function importRunFromDisk(filePath: string, userId: number): void {
   if (isRunAlreadyImported(db, userId, filePath)) return;
   const key = runStorageKey(userId, filePath);
   console.log(`[watcher] New run: ${path.basename(filePath)}`);
+
+  // Mirror the raw .run file into community_runs/<uuid>/ so `make upload` can submit it
+  const userRow = db.prepare('SELECT username FROM users WHERE id = ?').get(userId) as { username: string } | undefined;
+  if (userRow?.username) {
+    const userRunsDir = path.join(COMMUNITY_RUNS_DIR, userRow.username);
+    fs.mkdirSync(userRunsDir, { recursive: true });
+    const destPath = path.join(userRunsDir, path.basename(filePath));
+    if (!fs.existsSync(destPath)) {
+      fs.copyFileSync(filePath, destPath);
+    }
+  }
+
   const result = parseRunFile(filePath, userId, key);
   if (result) {
     console.log(

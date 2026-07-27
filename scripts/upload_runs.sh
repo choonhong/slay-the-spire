@@ -6,21 +6,33 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
 RUNS_DIR="data/community_runs"
+CONFIG_FILE="data/config.json"
 
-# ── 1. Discover the user's UUID folder ────────────────────────────────────────
-# Each contributor has exactly one UUID sub-directory under community_runs/.
-UUID_DIR=""
-for d in "$RUNS_DIR"/*/; do
-  [ -d "$d" ] && UUID_DIR="$d" && break
-done
+# ── 1. Resolve the user's UUID from config.json ────────────────────────────────
+UUID=""
+if [ -f "$CONFIG_FILE" ]; then
+  UUID="$(python3 -c "import json,sys; d=json.load(open('$CONFIG_FILE')); print(d.get('watcherUserUuid',''))" 2>/dev/null || true)"
+fi
 
-if [ -z "$UUID_DIR" ]; then
-  echo "❌  No run folder found under $RUNS_DIR."
-  echo "    Start the app and play at least one run so the watcher can record it."
+if [ -z "$UUID" ]; then
+  # Fallback: take the first folder if config has no UUID yet
+  for d in "$RUNS_DIR"/*/; do
+    [ -d "$d" ] && UUID="$(basename "$d")" && break
+  done
+fi
+
+if [ -z "$UUID" ]; then
+  echo "❌  Could not determine your user UUID."
+  echo "    Open the app at least once and play a run so the watcher can record it."
   exit 1
 fi
 
-UUID="$(basename "$UUID_DIR")"
+UUID_DIR="$RUNS_DIR/$UUID"
+if [ ! -d "$UUID_DIR" ]; then
+  echo "❌  No run folder found at $UUID_DIR."
+  echo "    Play at least one complete run so the watcher can mirror it."
+  exit 1
+fi
 RUN_COUNT="$(find "$UUID_DIR" -name '*.run' | wc -l | tr -d ' ')"
 
 if [ "$RUN_COUNT" -eq 0 ]; then
@@ -102,7 +114,6 @@ else
 fi
 
 # ── 7. Restore stash if we stashed earlier ────────────────────────────────────
-git checkout "$BASE_BRANCH"
 [ "$STASHED" = true ] && git stash pop && echo "✅  Restored stashed changes"
 
 echo ""

@@ -8,6 +8,8 @@ export interface AppConfig {
   savesPath?: string;
   /** User that auto-imported .run files are attributed to. */
   watcherUserId?: number;
+  /** Username (UUID string) of the watcher user — used by upload scripts. */
+  watcherUserUuid?: string;
 }
 
 export function loadConfig(): AppConfig {

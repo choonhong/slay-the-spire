@@ -5,26 +5,44 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $RepoRoot
 
-$RunsDir = "data\community_runs"
+$RunsDir    = "data\community_runs"
+$ConfigFile = "data\config.json"
 
-# -- 1. Discover the user's UUID folder ---------------------------------------
-$UuidDir = $null
-if (Test-Path $RunsDir) {
-    $UuidDir = Get-ChildItem -Path $RunsDir -Directory | Select-Object -First 1
+# -- 1. Resolve the user's UUID from config.json --------------------------------
+$Uuid = $null
+if (Test-Path $ConfigFile) {
+    try {
+        $cfg  = Get-Content $ConfigFile -Raw | ConvertFrom-Json
+        $Uuid = $cfg.watcherUserUuid
+    } catch { }
 }
 
-if (-not $UuidDir) {
-    Write-Host "ERROR: No run folder found under $RunsDir." -ForegroundColor Red
-    Write-Host "       Start the app and play at least one run so the watcher can record it."
+if (-not $Uuid) {
+    # Fallback: take the first folder if config has no UUID yet
+    if (Test-Path $RunsDir) {
+        $first = Get-ChildItem -Path $RunsDir -Directory | Select-Object -First 1
+        if ($first) { $Uuid = $first.Name }
+    }
+}
+
+if (-not $Uuid) {
+    Write-Host "ERROR: Could not determine your user UUID." -ForegroundColor Red
+    Write-Host "       Open the app at least once and play a run so the watcher can record it."
     exit 1
 }
 
-$Uuid     = $UuidDir.Name
-$RunFiles = Get-ChildItem -Path $UuidDir.FullName -Filter "*.run" -Recurse
+$UuidDir = Join-Path $RunsDir $Uuid
+if (-not (Test-Path $UuidDir)) {
+    Write-Host "ERROR: No run folder found at $UuidDir." -ForegroundColor Red
+    Write-Host "       Play at least one complete run so the watcher can mirror it."
+    exit 1
+}
+
+$RunFiles = Get-ChildItem -Path $UuidDir -Filter "*.run" -Recurse
 $RunCount = $RunFiles.Count
 
 if ($RunCount -eq 0) {
-    Write-Host "ERROR: No .run files found in $($UuidDir.FullName)." -ForegroundColor Red
+    Write-Host "ERROR: No .run files found in $UuidDir." -ForegroundColor Red
     Write-Host "       Play a complete run first, then try again."
     exit 1
 }
@@ -93,7 +111,6 @@ if ($GhPath) {
 }
 
 # -- 7. Restore stash ----------------------------------------------------------
-git checkout $BaseBranch
 if ($Stashed) {
     git stash pop
     Write-Host "Restored stashed changes" -ForegroundColor Green
