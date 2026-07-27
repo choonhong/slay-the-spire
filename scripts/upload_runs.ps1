@@ -27,43 +27,29 @@ if (-not $Uuid) {
 
 if (-not $Uuid) {
     Write-Host "ERROR: Could not determine your user UUID." -ForegroundColor Red
-    Write-Host "       Open the app at least once and play a run so the watcher can record it."
+    Write-Host "       Open the app at least once so the watcher can record your UUID."
     exit 1
 }
 
 $UuidDir = Join-Path $RunsDir $Uuid
-if (-not (Test-Path $UuidDir)) {
-    Write-Host "ERROR: No run folder found at $UuidDir." -ForegroundColor Red
-    Write-Host "       Play at least one complete run so the watcher can mirror it."
-    exit 1
-}
 
-$RunFiles = Get-ChildItem -Path $UuidDir -Filter "*.run" -Recurse
+# Create the folder if it doesn't exist yet
+if (-not (Test-Path $UuidDir)) { New-Item -ItemType Directory -Path $UuidDir | Out-Null }
+
+$RunFiles = Get-ChildItem -Path $UuidDir -Filter "*.run" -Recurse -ErrorAction SilentlyContinue
 $RunCount = $RunFiles.Count
 
 if ($RunCount -eq 0) {
-    Write-Host "ERROR: No .run files found in $UuidDir." -ForegroundColor Red
-    Write-Host "       Play a complete run first, then try again."
-    exit 1
+    Write-Host "No .run files yet - play a run and the watcher will mirror it here automatically." -ForegroundColor Yellow
+    Write-Host "Re-run 'make upload' after your next completed run."
+    exit 0
 }
 
-Write-Host "OK: Found $RunCount run(s) for user $Uuid" -ForegroundColor Green
+Write-Host "Found $RunCount run(s) for user $Uuid" -ForegroundColor Green
 
 # -- 2. Determine base branch --------------------------------------------------
 $BaseBranch = (git rev-parse --abbrev-ref HEAD).Trim()
 if ($BaseBranch -eq "HEAD") { $BaseBranch = "main" }
-
-# Stash any unrelated local changes
-$Stashed = $false
-git diff --quiet 2>$null
-$DiffIdx = $LASTEXITCODE
-git diff --cached --quiet 2>$null
-$CachIdx = $LASTEXITCODE
-if ($DiffIdx -ne 0 -or $CachIdx -ne 0) {
-    Write-Host "Stashing uncommitted changes..." -ForegroundColor Yellow
-    git stash push -m "upload_runs: auto-stash" --include-untracked
-    $Stashed = $true
-}
 
 # -- 3. Create a fresh branch --------------------------------------------------
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
@@ -81,9 +67,6 @@ git add $RelRunsPath
 $Staged = (git diff --cached --name-only | Measure-Object -Line).Lines
 if ($Staged -eq 0) {
     Write-Host "No new run files to commit (all already tracked)." -ForegroundColor Yellow
-    git checkout $BaseBranch
-    git branch -D $Branch
-    if ($Stashed) { git stash pop }
     exit 0
 }
 
@@ -108,12 +91,6 @@ if ($GhPath) {
     Write-Host "WARNING: 'gh' CLI not found - skipping PR creation." -ForegroundColor Yellow
     Write-Host "         Open a PR manually from branch: $Branch"
     Write-Host "         Install gh: https://cli.github.com"
-}
-
-# -- 7. Restore stash ----------------------------------------------------------
-if ($Stashed) {
-    git stash pop
-    Write-Host "Restored stashed changes" -ForegroundColor Green
 }
 
 Write-Host ""
