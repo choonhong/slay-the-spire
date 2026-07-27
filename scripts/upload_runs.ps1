@@ -1,4 +1,4 @@
-# upload_runs.ps1 — bundle a user's .run files into a PR for the community dataset
+# upload_runs.ps1 - bundle a user's .run files into a PR for the community dataset
 # Run with: powershell -ExecutionPolicy Bypass -File scripts\upload_runs.ps1
 $ErrorActionPreference = "Stop"
 
@@ -7,15 +7,15 @@ Set-Location $RepoRoot
 
 $RunsDir = "data\community_runs"
 
-# ── 1. Discover the user's UUID folder ────────────────────────────────────────
+# -- 1. Discover the user's UUID folder ---------------------------------------
 $UuidDir = $null
 if (Test-Path $RunsDir) {
     $UuidDir = Get-ChildItem -Path $RunsDir -Directory | Select-Object -First 1
 }
 
 if (-not $UuidDir) {
-    Write-Host "❌  No run folder found under $RunsDir." -ForegroundColor Red
-    Write-Host "    Start the app and play at least one run so the watcher can record it."
+    Write-Host "ERROR: No run folder found under $RunsDir." -ForegroundColor Red
+    Write-Host "       Start the app and play at least one run so the watcher can record it."
     exit 1
 }
 
@@ -24,97 +24,80 @@ $RunFiles = Get-ChildItem -Path $UuidDir.FullName -Filter "*.run" -Recurse
 $RunCount = $RunFiles.Count
 
 if ($RunCount -eq 0) {
-    Write-Host "❌  No .run files found in $($UuidDir.FullName)." -ForegroundColor Red
-    Write-Host "    Play a complete run first, then try again."
+    Write-Host "ERROR: No .run files found in $($UuidDir.FullName)." -ForegroundColor Red
+    Write-Host "       Play a complete run first, then try again."
     exit 1
 }
 
-Write-Host "✅  Found $RunCount run(s) for user $Uuid" -ForegroundColor Green
+Write-Host "OK: Found $RunCount run(s) for user $Uuid" -ForegroundColor Green
 
-# ── 2. Make sure we're on a clean base ────────────────────────────────────────
+# -- 2. Determine base branch --------------------------------------------------
 $BaseBranch = (git rev-parse --abbrev-ref HEAD).Trim()
 if ($BaseBranch -eq "HEAD") { $BaseBranch = "main" }
 
-# Stash any unrelated local changes so they don't sneak into the PR
+# Stash any unrelated local changes
 $Stashed = $false
-$DiffOut  = git diff --quiet 2>&1; $DiffIdx = $LASTEXITCODE
-$CachOut  = git diff --cached --quiet 2>&1; $CachIdx = $LASTEXITCODE
+git diff --quiet 2>$null
+$DiffIdx = $LASTEXITCODE
+git diff --cached --quiet 2>$null
+$CachIdx = $LASTEXITCODE
 if ($DiffIdx -ne 0 -or $CachIdx -ne 0) {
-    Write-Host "⚠️   Stashing uncommitted changes…" -ForegroundColor Yellow
+    Write-Host "Stashing uncommitted changes..." -ForegroundColor Yellow
     git stash push -m "upload_runs: auto-stash" --include-untracked
     $Stashed = $true
 }
 
-# ── 3. Create a fresh branch ───────────────────────────────────────────────────
-$Timestamp  = Get-Date -Format "yyyyMMdd-HHmmss"
-$UuidShort  = $Uuid.Substring(0, [Math]::Min(8, $Uuid.Length))
-$Branch     = "runs/$UuidShort-$Timestamp"
+# -- 3. Create a fresh branch --------------------------------------------------
+$Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$UuidShort = $Uuid.Substring(0, [Math]::Min(8, $Uuid.Length))
+$Branch    = "runs/$UuidShort-$Timestamp"
 
 git fetch origin $BaseBranch --quiet
 git checkout -b $Branch "origin/$BaseBranch"
-Write-Host "🌿  Created branch: $Branch" -ForegroundColor Cyan
+Write-Host "Created branch: $Branch" -ForegroundColor Cyan
 
-# ── 4. Stage only this user's run files ───────────────────────────────────────
+# -- 4. Stage only this user's run files ---------------------------------------
 $RelRunsPath = "data/community_runs/$Uuid"
 git add $RelRunsPath
 
 $Staged = (git diff --cached --name-only | Measure-Object -Line).Lines
 if ($Staged -eq 0) {
-    Write-Host "ℹ️   No new run files to commit (all already tracked)." -ForegroundColor Yellow
+    Write-Host "No new run files to commit (all already tracked)." -ForegroundColor Yellow
     git checkout $BaseBranch
     git branch -D $Branch
     if ($Stashed) { git stash pop }
     exit 0
 }
 
-Write-Host "📦  Staging $Staged file(s)…" -ForegroundColor Cyan
+Write-Host "Staging $Staged file(s)..." -ForegroundColor Cyan
 
-$CommitMsg = @"
-runs: add $RunCount run(s) from $Uuid
-
-User UUID : $Uuid
-Run files : $RunCount
-Timestamp : $Timestamp
-"@
+$CommitMsg = "runs: add $RunCount run(s) from $Uuid`n`nUser UUID : $Uuid`nRun files : $RunCount`nTimestamp : $Timestamp"
 git commit -m $CommitMsg
 
-# ── 5. Push ────────────────────────────────────────────────────────────────────
+# -- 5. Push -------------------------------------------------------------------
 git push origin $Branch
-Write-Host "⬆️   Pushed $Branch to origin" -ForegroundColor Cyan
+Write-Host "Pushed $Branch to origin" -ForegroundColor Cyan
 
-# ── 6. Open a PR via the GitHub CLI ───────────────────────────────────────────
+# -- 6. Open a PR via the GitHub CLI -------------------------------------------
 $GhPath = Get-Command gh -ErrorAction SilentlyContinue
 if ($GhPath) {
-    $PrBody = @"
-## Community run upload
+    $PrTitle = "Community runs: $Uuid ($RunCount runs)"
+    $PrBody  = "## Community run upload`n`n| Field | Value |`n|---|---|`n| User UUID | ``$Uuid`` |`n| Run files | $RunCount |`n| Branch | ``$Branch`` |`n`nAuto-generated by ``make upload``."
 
-| Field | Value |
-|---|---|
-| User UUID | ``$Uuid`` |
-| Run files | $RunCount |
-| Branch | ``$Branch`` |
-
-Auto-generated by ``make upload``.
-"@
-    $PrUrl = gh pr create `
-        --base $BaseBranch `
-        --head $Branch `
-        --title "Community runs: $Uuid ($RunCount runs)" `
-        --body $PrBody
-
-    Write-Host "🎉  PR created: $PrUrl" -ForegroundColor Green
+    $PrUrl = gh pr create --base $BaseBranch --head $Branch --title $PrTitle --body $PrBody
+    Write-Host "PR created: $PrUrl" -ForegroundColor Green
 } else {
-    Write-Host "⚠️   'gh' CLI not found — skipping PR creation." -ForegroundColor Yellow
-    Write-Host "    Open a PR manually from branch: $Branch"
-    Write-Host "    Install gh: https://cli.github.com"
+    Write-Host "WARNING: 'gh' CLI not found - skipping PR creation." -ForegroundColor Yellow
+    Write-Host "         Open a PR manually from branch: $Branch"
+    Write-Host "         Install gh: https://cli.github.com"
 }
 
-# ── 7. Restore stash if we stashed earlier ────────────────────────────────────
+# -- 7. Restore stash ----------------------------------------------------------
 git checkout $BaseBranch
 if ($Stashed) {
     git stash pop
-    Write-Host "✅  Restored stashed changes" -ForegroundColor Green
+    Write-Host "Restored stashed changes" -ForegroundColor Green
 }
 
 Write-Host ""
-Write-Host "Done! Your runs are on their way to the community dataset. 🗡️" -ForegroundColor Green
+Write-Host "Done! Your runs are on their way to the community dataset." -ForegroundColor Green

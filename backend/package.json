@@ -6,10 +6,10 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "node ../scripts/check-node.js && ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "node ../scripts/check-node.js && tsx watch src/index.ts",
     "build": "node ../scripts/check-node.js && tsc",
     "start": "node ../scripts/check-node.js && node dist/index.js",
-    "seed": "node ../scripts/check-node.js && ts-node src/seed.ts"
+    "seed": "node ../scripts/check-node.js && tsx src/seed.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -24,8 +24,7 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.5.0",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.4.2"
   }
 }
