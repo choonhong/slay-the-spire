@@ -5,7 +5,7 @@ import { type AuthRequest } from '../middleware/auth';
 import { parseRunJson } from '../parser';
 import { getDb } from '../db';
 
-const COMMUNITY_RUNS_DIR = path.join(__dirname, '../../../data/community_runs');
+const COMMUNITY_RUNS_DIR = path.join(__dirname, '../../data/community_runs');
 
 const router = Router();
 

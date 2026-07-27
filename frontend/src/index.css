@@ -61,6 +61,12 @@
     padding-right: 2rem;
   }
 
+  /* Force dark background on native option lists (Windows Chrome/Edge) */
+  select.glass-input option {
+    background-color: #1a1d2e;
+    color: #e5e7eb;
+  }
+
   .glass-button {
     background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(12px);

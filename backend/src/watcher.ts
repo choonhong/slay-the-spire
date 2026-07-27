@@ -7,7 +7,7 @@ import { getDb, isRunParsed, getRunCount, getCommunityUserId } from './db';
 import type { DatabaseSync } from 'node:sqlite';
 import { loadConfig, saveConfig } from './config';
 
-const COMMUNITY_RUNS_DIR = path.join(__dirname, '../../../data/community_runs');
+const COMMUNITY_RUNS_DIR = path.join(__dirname, '../../data/community_runs');
 
 export function getSavesPath(): string {
   const cfg = loadConfig();
@@ -146,13 +146,22 @@ export async function startWatcher(): Promise<void> {
 
   console.log(`[watcher] Watching: ${savesPath} (user_id=${userId})`);
 
+  // Resolve the current user's UUID so we can exclude their own community_runs folder
+  // from the community watcher — those files are already imported as personal runs.
+  const currentUserRow = db.prepare('SELECT username FROM users WHERE id = ?').get(userId) as { username: string } | undefined;
+  const ownCommunityDir = currentUserRow?.username
+    ? path.join(COMMUNITY_RUNS_DIR, currentUserRow.username)
+    : null;
+
   await parseExistingRuns(savesPath, userId);
-  await parseCommunityRuns();
+  await parseCommunityRuns(ownCommunityDir ?? undefined);
 
   watcher = chokidar.watch([`${savesPath}/**/*.run`, `${COMMUNITY_RUNS_DIR}/**/*.run`], {
     persistent: true,
     ignoreInitial: true,
     awaitWriteFinish: { stabilityThreshold: 1000, pollInterval: 200 },
+    // Exclude the current user's own UUID folder — already imported as personal runs
+    ignored: ownCommunityDir ? [ownCommunityDir] : [],
   });
 
   watcher.on('add', (filePath) => {
@@ -224,7 +233,7 @@ function importCommunityRun(filePath: string): void {
   }
 }
 
-async function parseCommunityRuns(): Promise<void> {
+async function parseCommunityRuns(excludeDir?: string): Promise<void> {
   if (!fs.existsSync(COMMUNITY_RUNS_DIR)) return;
   const db = getDb();
   const communityUserId = getCommunityUserId(db);
@@ -232,6 +241,8 @@ async function parseCommunityRuns(): Promise<void> {
   let parsed = 0;
   let skipped = 0;
   for (const filePath of runFiles) {
+    // Skip the current user's own folder — those runs are already in as personal runs
+    if (excludeDir && filePath.startsWith(excludeDir)) continue;
     const key = `community:${path.basename(filePath)}`;
     if (isRunParsed(db, communityUserId, key)) { skipped++; continue; }
     const result = parseRunFile(filePath, communityUserId, key);
