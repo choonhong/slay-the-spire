@@ -19,4 +19,8 @@ scrape-text:
 	python3 scripts/scrape_card_text.py
 
 upload:
+ifeq ($(OS),Windows_NT)
+	@powershell -ExecutionPolicy Bypass -File scripts\upload_runs.ps1
+else
 	@bash scripts/upload_runs.sh
+endif

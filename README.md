@@ -62,10 +62,17 @@ Help grow the community dataset by sharing your `.run` files. The more runs cont
 make upload
 ```
 
+Works on **macOS/Linux** (bash) and **Windows** (PowerShell) — the Makefile picks the right script automatically.
+
 This will:
 1. Detect your run folder automatically.
 2. Create a new git branch with your runs.
 3. Push it and open a Pull Request on GitHub (requires `gh` CLI).
+
+> **Windows users:** if `make` isn't available, you can run the script directly:
+> ```powershell
+> powershell -ExecutionPolicy Bypass -File scripts\upload_runs.ps1
+> ```
 
 ### Manual way
 
